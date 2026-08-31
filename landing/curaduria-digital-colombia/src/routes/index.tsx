@@ -223,7 +223,7 @@ function Landing() {
       </section>
 
       <section id="registro" className="surface-dark scroll-mt-8">
-        <div className="mx-auto max-w-3xl px-5 py-20">
+        <div className="mx-auto max-w-4xl px-5 py-20">
           <div className="text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-lav-50 sm:text-4xl">
               Sé de los primeros en conocerlo
@@ -233,7 +233,7 @@ function Landing() {
               tus datos y te contactaremos para mostrarte el avance y escuchar tus necesidades.
             </p>
           </div>
-          <div className="mx-auto mt-10 max-w-md rounded-xl border border-peri-700/60 bg-indigo-x-950/40 p-6 sm:p-8">
+          <div className="mx-auto mt-10 max-w-4xl rounded-xl border border-peri-700/60 bg-indigo-x-950/40 p-6 sm:p-8">
             <LeadForm />
           </div>
         </div>

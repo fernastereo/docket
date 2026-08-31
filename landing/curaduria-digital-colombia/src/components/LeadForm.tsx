@@ -92,18 +92,20 @@ export function LeadForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="grid gap-5">
-      <Field id="nombre" label="Nombre completo" error={errors.nombre}>
-        <input
-          id="nombre"
-          name="nombre"
-          className={fieldClass}
-          value={values.nombre}
-          onChange={set("nombre")}
-          placeholder="Ana María Rodríguez"
-          autoComplete="name"
-        />
-      </Field>
+    <form onSubmit={handleSubmit} noValidate className="grid gap-5 sm:grid-cols-2">
+      <div className="sm:col-span-2">
+        <Field id="nombre" label="Nombre completo" error={errors.nombre}>
+          <input
+            id="nombre"
+            name="nombre"
+            className={fieldClass}
+            value={values.nombre}
+            onChange={set("nombre")}
+            placeholder="Ana María Rodríguez"
+            autoComplete="name"
+          />
+        </Field>
+      </div>
       <Field id="curaduria" label="Curaduría o entidad" error={errors.curaduria}>
         <input
           id="curaduria"
@@ -126,7 +128,7 @@ export function LeadForm() {
           autoComplete="email"
         />
       </Field>
-      <div className="mt-2 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="sm:col-span-2 mt-2 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-lav-300">
           Usaremos tus datos únicamente para contactarte sobre CuraduriAPP.
         </p>
