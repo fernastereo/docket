@@ -13,6 +13,8 @@ import { z } from "zod";
 const leadSchema = z.object({
   nombre: z.string().trim().min(2).max(100),
   curaduria: z.string().trim().min(2).max(150),
+  cargo: z.string().trim().min(2).max(100),
+  ciudad: z.string().trim().min(2).max(100),
   email: z.string().trim().email().max(255),
 });
 
@@ -51,6 +53,8 @@ export const submitLead = createServerFn({ method: "POST" })
         attributes: {
           NOMBRE_CURADURIAPP: data.nombre,
           CURADURIA_CURADURIAPP: data.curaduria,
+          CARGO_CURADURIAPP: data.cargo,
+          CIUDAD_CURADURIAPP: data.ciudad,
         },
       }),
     });

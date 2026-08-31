@@ -7,18 +7,24 @@ import { submitLead } from "@/lib/brevo";
 export type LeadFormData = {
   nombre: string;
   curaduria: string;
+  cargo: string;
+  ciudad: string;
   email: string;
 };
 
 const leadSchema = z.object({
   nombre: z.string().trim().min(2, "Ingresa tu nombre completo").max(100),
   curaduria: z.string().trim().min(2, "Ingresa la curaduría o entidad").max(150),
+  cargo: z.string().trim().min(2, "Ingresa tu cargo").max(100),
+  ciudad: z.string().trim().min(2, "Ingresa tu ciudad").max(100),
   email: z.string().trim().email("Correo electrónico inválido").max(255),
 });
 
 const EMPTY: LeadFormData = {
   nombre: "",
   curaduria: "",
+  cargo: "",
+  ciudad: "",
   email: "",
 };
 
@@ -114,6 +120,26 @@ export function LeadForm() {
           value={values.curaduria}
           onChange={set("curaduria")}
           placeholder="Curaduría Urbana No. 2 / Secretaría de Planeación"
+        />
+      </Field>
+      <Field id="cargo" label="Cargo" error={errors.cargo}>
+        <input
+          id="cargo"
+          name="cargo"
+          className={fieldClass}
+          value={values.cargo}
+          onChange={set("cargo")}
+          placeholder="Curador, Coordinador, Arquitecto…"
+        />
+      </Field>
+      <Field id="ciudad" label="Ciudad" error={errors.ciudad}>
+        <input
+          id="ciudad"
+          name="ciudad"
+          className={fieldClass}
+          value={values.ciudad}
+          onChange={set("ciudad")}
+          placeholder="Bucaramanga"
         />
       </Field>
       <Field id="email" label="Correo electrónico" error={errors.email}>

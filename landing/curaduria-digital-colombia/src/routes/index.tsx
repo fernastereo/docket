@@ -58,7 +58,7 @@ const diferenciadores = [
   {
     icon: Sparkles,
     title: "Inteligencia artificial en cada paso",
-    text: "Extracción de datos de escrituras, certificados y cédulas; verificación de completitud; asistente de redacción de actas y resoluciones; consulta de POT y NSR-10 en lenguaje natural.",
+    text: "Extracción de datos de escrituras, certificados y cédulas; verificación de completitud; asistente de redacción de actas y resoluciones; consulta de Normas y NSR-10 en lenguaje natural.",
   },
   {
     icon: BellRing,
@@ -76,11 +76,6 @@ const diferenciadores = [
     text: "Dónde se atascan los trámites, cuánto tarda cada área y la carga real de trabajo de su equipo.",
   },
   {
-    icon: DatabaseZap,
-    title: "Aislamiento total de datos",
-    text: "Cada curaduría opera sobre su propia base de datos independiente. No es una tabla compartida con una columna de cliente: los expedientes de una curaduría nunca conviven con los de otra.",
-  },
-  {
     icon: PenTool,
     title: "Firma electrónica del curador",
     text: "Firma desde cualquier lugar, con registro y trazabilidad legal del acto administrativo.",
@@ -96,7 +91,7 @@ const flujo = [
   {
     paso: "02",
     title: "Revisión",
-    text: "Técnica, jurídica y estructural, con control de términos.",
+    text: "Técnica, jurídica y estructural, con control de términos y Copiloto IA en cada paso.",
   },
   {
     paso: "03",
@@ -128,9 +123,6 @@ function Landing() {
 
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-10 lg:grid-cols-2 lg:pb-28 lg:pt-16">
           <div>
-            <span className="inline-block rounded-full border border-peri-500/40 bg-peri-900/50 px-3 py-1 text-xs font-medium uppercase tracking-wider text-lav-200">
-              Ley 388 de 1997 · Ley 1796 de 2016 · Decreto 1077 de 2015
-            </span>
             <h1 className="mt-6 text-4xl font-semibold leading-tight tracking-tight text-lav-50 sm:text-5xl lg:text-6xl">
               La gestión de licencias urbanísticas,{" "}
               <span className="text-gradient-accent">
@@ -138,9 +130,9 @@ function Landing() {
               </span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-lav-200 sm:text-lg">
-              CuraduriAPP es el sistema con el que una curaduría urbana o una secretaría de
-              planeación recupera el control de sus trámites: todo en línea, todo trazable, todo
-              verificable — y con inteligencia artificial acompañando cada etapa del expediente.
+              CuraduriAPP es el sistema con el que una Curaduría Urbana o una Secretaría de
+              Planeación recupera el control de sus trámites: todo en línea, todo trazable, todo
+              verificable y con inteligencia artificial acompañando cada etapa del expediente.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a
@@ -196,7 +188,7 @@ function Landing() {
             <h2 className="mt-4 text-2xl font-semibold tracking-tight text-lav-50 sm:text-3xl">
               Pensado también para Secretarías de Planeación
             </h2>
-            <p className="mt-4 max-w-3xl text-base leading-relaxed text-lav-200">
+            <p className="mt-4 text-base leading-relaxed text-lav-200">
               El sistema no se limita a lo que tramita una curaduría tradicional: contempla también
               las actuaciones propias de una secretaría de planeación municipal, incluidas las
               licencias de intervención y ocupación del espacio público, con el mismo control de
