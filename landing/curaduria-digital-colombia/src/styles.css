@@ -1,0 +1,241 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system definition.
+ *
+ * The @theme inline block maps CSS custom properties to Tailwind utility
+ * classes (e.g. --color-primary -> bg-primary, text-primary).
+ *
+ * The :root and .dark blocks define the actual color values using oklch.
+ * All colors MUST use oklch format.
+ *
+ * To add a new semantic color:
+ * 1. Add the variable to :root (light value) and .dark (dark value)
+ * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ */
+
+@theme {
+  --color-lav-50: #efeff6;
+  --color-lav-100: #dfdfec;
+  --color-lav-200: #c0beda;
+  --color-lav-300: #a09ec7;
+  --color-lav-400: #807db5;
+  --color-lav-500: #615da2;
+  --color-lav-600: #4d4a82;
+  --color-lav-700: #3a3861;
+  --color-lav-800: #272541;
+  --color-lav-900: #131320;
+  --color-lav-950: #0e0d17;
+
+  --color-turq-50: #e7fdfb;
+  --color-turq-100: #d0fbf7;
+  --color-turq-200: #a1f7ef;
+  --color-turq-300: #71f4e7;
+  --color-turq-400: #42f0de;
+  --color-turq-500: #13ecd6;
+  --color-turq-600: #0fbdab;
+  --color-turq-700: #0b8e81;
+  --color-turq-800: #085e56;
+  --color-turq-900: #042f2b;
+  --color-turq-950: #03211e;
+
+  --color-peri-50: #edeff8;
+  --color-peri-100: #dadff1;
+  --color-peri-200: #b5bfe3;
+  --color-peri-300: #909fd5;
+  --color-peri-400: #6b7fc7;
+  --color-peri-500: #465fb9;
+  --color-peri-600: #384c94;
+  --color-peri-700: #2a396f;
+  --color-peri-800: #1c264a;
+  --color-peri-900: #0e1325;
+  --color-peri-950: #0a0d1a;
+
+  --color-indigo-x-50: #eaeefa;
+  --color-indigo-x-100: #d5dcf6;
+  --color-indigo-x-200: #acbaec;
+  --color-indigo-x-300: #8297e3;
+  --color-indigo-x-400: #5975d9;
+  --color-indigo-x-500: #2f52d0;
+  --color-indigo-x-600: #2642a6;
+  --color-indigo-x-700: #1c317d;
+  --color-indigo-x-800: #132153;
+  --color-indigo-x-900: #09102a;
+  --color-indigo-x-950: #070b1d;
+
+  --font-sans: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.129 0.042 264.695);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.129 0.042 264.695);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.129 0.042 264.695);
+  --primary: oklch(0.208 0.042 265.755);
+  --primary-foreground: oklch(0.984 0.003 247.858);
+  --secondary: oklch(0.968 0.007 247.896);
+  --secondary-foreground: oklch(0.208 0.042 265.755);
+  --muted: oklch(0.968 0.007 247.896);
+  --muted-foreground: oklch(0.554 0.046 257.417);
+  --accent: oklch(0.968 0.007 247.896);
+  --accent-foreground: oklch(0.208 0.042 265.755);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(0.929 0.013 255.508);
+  --input: oklch(0.929 0.013 255.508);
+  --ring: oklch(0.704 0.04 256.788);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.984 0.003 247.858);
+  --sidebar-foreground: oklch(0.129 0.042 264.695);
+  --sidebar-primary: oklch(0.208 0.042 265.755);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.968 0.007 247.896);
+  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
+  --sidebar-border: oklch(0.929 0.013 255.508);
+  --sidebar-ring: oklch(0.704 0.04 256.788);
+}
+
+.dark {
+  --background: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.984 0.003 247.858);
+  --card: oklch(0.208 0.042 265.755);
+  --card-foreground: oklch(0.984 0.003 247.858);
+  --popover: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.984 0.003 247.858);
+  --primary: oklch(0.929 0.013 255.508);
+  --primary-foreground: oklch(0.208 0.042 265.755);
+  --secondary: oklch(0.279 0.041 260.031);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --muted: oklch(0.279 0.041 260.031);
+  --muted-foreground: oklch(0.704 0.04 256.788);
+  --accent: oklch(0.279 0.041 260.031);
+  --accent-foreground: oklch(0.984 0.003 247.858);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.551 0.027 264.364);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.208 0.042 265.755);
+  --sidebar-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.279 0.041 260.031);
+  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.551 0.027 264.364);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
+
+/* CuraduriAPP design system — institutional palette mapping */
+:root {
+  --radius: 0.5rem;
+  --background: var(--color-lav-50);
+  --foreground: var(--color-indigo-x-900);
+  --card: #ffffff;
+  --card-foreground: var(--color-indigo-x-900);
+  --popover: #ffffff;
+  --popover-foreground: var(--color-indigo-x-900);
+  --primary: var(--color-indigo-x-800);
+  --primary-foreground: var(--color-lav-50);
+  --secondary: var(--color-lav-100);
+  --secondary-foreground: var(--color-peri-800);
+  --muted: var(--color-lav-100);
+  --muted-foreground: var(--color-lav-600);
+  --accent: var(--color-turq-500);
+  --accent-foreground: var(--color-indigo-x-950);
+  --border: var(--color-lav-200);
+  --input: var(--color-lav-200);
+  --ring: var(--color-peri-500);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@utility surface-dark {
+  background:
+    radial-gradient(80rem 40rem at 15% -10%, var(--color-peri-800) 0%, transparent 60%),
+    linear-gradient(160deg, var(--color-indigo-x-900) 0%, var(--color-indigo-x-950) 100%);
+}
+
+@utility text-gradient-accent {
+  background: linear-gradient(90deg, var(--color-turq-400), var(--color-peri-300));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
