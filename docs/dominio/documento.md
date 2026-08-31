@@ -89,8 +89,10 @@ documento propio sin depender de un despliegue de código. Los tipos ya
 identificados en la práctica (semilla inicial del catálogo, no lista
 cerrada): comunicaciones a vecinos y sus aclaratorias, acta de observaciones,
 acta de radicación incompleta, acta de radicación en legal y debida forma,
-liquidación de expensas, estudio técnico, estudio jurídico, estudio
-estructural, acta de viabilidad, formato de valla, entre otros. Cada tipo
+liquidación de cargos fijos y variables de expensas, liquidación de
+impuestos municipales/distritales (gestionada fuera del sistema, solo
+documentada), Estudio Arquitectónico, Estudio Jurídico, Estudio
+Estructural, Auto de Viabilidad, formato de valla, entre otros. Cada tipo
 tiene su propia `PlantillaDocumento` y su propio `editable_post_generacion`.
 
 ## Relación con Acto Administrativo

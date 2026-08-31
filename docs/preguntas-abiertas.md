@@ -8,8 +8,10 @@ Lista viva. Al resolverse, mover la decisión a un ADR.
       que notifican.
 - [ ] Estrategia de deduplicación/colisiones de identidad (mismo documento,
       email distinto) — flujo de verificación.
-- [ ] Firma de actos administrativos: ¿firma electrónica/digital? ¿proveedor
-      colombiano (ej. certicámara, GSE)?
+- [ ] Firma de actos administrativos: patrón de integración definido en
+      `docs/adr/ADR-015-firma-electronica.md` (interfaz + proveedor
+      colombiano externo); falta elegir proveedor concreto (Certicámara,
+      GSE u otro).
 - [ ] Cumplimiento Ley 1581/2012 (datos personales): política, avisos,
       tratamiento en prompts de IA.
 
@@ -55,6 +57,22 @@ Lista viva. Al resolverse, mover la decisión a un ADR.
       durante este bloque, todos aún marcados `(?)`, ninguno confirmado
       como definitivo.
 
+## Diferenciadores de producto (ver `docs/vision-producto.md`)
+
+- [ ] ADR-012 (verificación pública): formato del código de verificación,
+      si vive en subdominio del tenant o dominio neutral.
+- [ ] ADR-013 (analítica operativa): mecanismo técnico de agregación
+      (vistas materializadas vs. tablas de resumen), catálogo completo de
+      métricas.
+- [ ] ADR-014 (plazos y alertas — **imprescindible**): umbrales exactos de
+      alerta, fuente del catálogo de festivos colombianos, si el umbral es
+      configurable por curaduría.
+- [ ] ADR-015 (firma electrónica): elegir proveedor concreto (Certicámara,
+      GSE u otro), firma simple vs. digital certificada, contingencia si el
+      proveedor no está disponible.
+- [ ] Ideas 1 (widget embebible), 5 (API/marketplace) y 6 (portal PWA) de
+      `docs/vision-producto.md` — sin desarrollar todavía, no urgentes.
+
 ## Migración del legado
 - [ ] Inventario del esquema Access actual (tablas, relaciones, rarezas).
 - [ ] Estrategia por curaduría (.mdb → PostgreSQL del tenant).
@@ -71,7 +89,8 @@ Lista viva. Al resolverse, mover la decisión a un ADR.
       Infraestructura dedicada como plan premium (ADR-009).
 - [ ] SLA y contrato tipo (backups, suspensión, entrega de datos, retención).
 - [ ] Estrategia de venta a curadurías nuevas (~50-60 curadores en el país).
-- [ ] Nombre del producto.
+- [x] Nombre del producto: **CuraduriAPP** (2026-08-31, dominio ya
+      registrado). Nombre clave del repo, distinto: Docket.
 
 ## Operativo (no urgente)
 - [ ] Tramitar verificación Meta/WhatsApp y plantillas en Brevo (toma tiempo).

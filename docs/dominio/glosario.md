@@ -62,3 +62,5 @@ un término entra aquí y al código, no se cambia.
 | Tipo de documento generado | Generated document type (?) | Catálogo configurable por curaduría (no lista fija en código). |
 | Plantilla de documento | Document template (?) | Configurable y propia de cada curaduría; contiene campos de fusión. |
 | Requisito documental | Document requirement (?) | Catálogo (pendiente) de documentos radicados esperados por tipo/modalidad de trámite. |
+| ORIP (Oficina de Registro de Instrumentos Públicos) | ORIP (se mantiene la sigla) | No traducir — catálogo precargado, código+nombre de oficina; prefijo de la matrícula inmobiliaria. |
+| Consecutivo (de matrícula inmobiliaria) | Sequence number (?) | Hasta 10 dígitos; junto con ORIP forma la llave de deduplicación de Predio. |

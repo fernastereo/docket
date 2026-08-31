@@ -46,8 +46,10 @@ el bloque de flujo del trámite.
 Todo lo demás que se produce durante el trámite es vinculante pero **no**
 acto administrativo: comunicaciones a vecinos (y sus aclaratorias), acta de
 observaciones, acta de radicación incompleta, acta de radicación en legal y
-debida forma, liquidación de expensas, estudio técnico, estudio jurídico,
-estudio estructural, acta de viabilidad, formato de valla, entre otros. Se
+debida forma, liquidación de cargos fijos y variables de expensas,
+liquidación de impuestos municipales/distritales (gestionada fuera del
+sistema, solo documentada), Estudio Arquitectónico, Estudio Jurídico,
+Estudio Estructural, Auto de Viabilidad, formato de valla, entre otros. Se
 generan en el momento que corresponda dentro del trámite. Detalle completo en
 `docs/dominio/documento.md`.
 

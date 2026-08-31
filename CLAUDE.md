@@ -51,6 +51,18 @@ expediente son críticos.
   (solo-lectura, nunca bloqueo total) / terminado (entrega dump + archivos +
   snapshot de identidades). Provisioning = un comando.
 
+- **ADR-012 — Verificación pública de actos administrativos** (borrador):
+  código/QR de verificación sin login, hash de integridad del documento.
+- **ADR-013 — Analítica operativa** (borrador): BI por curaduría sobre el
+  audit log (cuellos de botella, cumplimiento de plazos, carga por
+  encargado).
+- **ADR-014 — Gestión de plazos legales y alertas predictivas** (borrador,
+  **imprescindible**): servicio central de días hábiles colombianos con
+  suspensión/reanudación/prórroga, alertas antes de vencer un plazo.
+- **ADR-015 — Firma electrónica de actos administrativos** (borrador):
+  interfaz + proveedor colombiano externo (por elegir), firma sobre
+  documento congelado, integrada con ADR-012.
+
 - **ADR-011 — Principios de código**: Laravel idiomático + capa de dominio:
   acciones de dominio como única vía de escritura, controladores delgados
   (Form Request → Policy → Action con DTO → API Resource, cero lógica de
@@ -78,20 +90,27 @@ expediente son críticos.
 ## Estado actual
 
 Planeación. Cuestiones generales de arquitectura y principios de código
-CERRADOS (ADR-001 a 011; detalle de IA en borrador; ADR-005 con amendment
-2026-08-31 — identidad de persona jurídica). **Modelo de dominio del núcleo
-CERRADO** (2026-08-27 a 2026-08-31): Solicitante, Predio, Expediente, Tipo
-de Trámite (reemplaza a "Licencia" — incluye Otras Actuaciones), Acto
-Administrativo, Documento — ver `docs/dominio/`. Radicación quedó como
-atributos de Expediente, no como entidad propia. Nombre clave del repo:
-**Docket** (nombre de producto aún sin decidir).
+CERRADOS (ADR-001 a 011; ADR-005 con amendment 2026-08-31 — identidad de
+persona jurídica). **Modelo de dominio del núcleo CERRADO** (2026-08-27 a
+2026-08-31): Solicitante, Predio, Expediente, Tipo de Trámite (reemplaza a
+"Licencia" — incluye Otras Actuaciones), Acto Administrativo, Documento —
+ver `docs/dominio/`. Radicación quedó como atributos de Expediente, no como
+entidad propia. **Flujo del trámite / máquina de estados CERRADO**
+(2026-08-31): `docs/dominio/flujo-tramite.md`, núcleo común contrastado
+contra el listado real de estados de una curaduría, configurable por
+curaduría. Nombre de producto: **CuraduriAPP** (decidido 2026-08-31, dominio
+ya registrado). Nombre clave del repo (distinto, solo interno): **Docket**.
 
-Siguiente bloque: **flujo del trámite / máquina de estados** — catálogo de
-estados internos y su mapeo a estados públicos, plazos legales, vistos
-buenos, y la línea de tiempo de actividad por expediente (estilo
-Jira/ClickUp) ya comprometida en `docs/dominio/expediente.md`. Ver
-`docs/preguntas-abiertas.md` para el detalle completo de pendientes
-abiertos por este bloque.
+**Diferenciadores de producto en borrador** (ADR-004 ampliado, ADR-012 a
+015 — ver `docs/vision-producto.md`): IA copiloto en cada paso del flujo,
+verificación pública de actos, analítica operativa, gestión de plazos con
+alertas predictivas (imprescindible), firma electrónica.
+
+Siguiente bloque: por definir con el usuario — candidatos abiertos incluyen
+requisitos documentales por tipo de trámite, roles/RBAC completo,
+liquidación de expensas, o empezar el esqueleto técnico del repo en
+paralelo. Ver `docs/preguntas-abiertas.md` para el detalle completo de
+pendientes abiertos.
 
 **Principio de trabajo para lo que sigue**: al capturar conocimiento del
 legado, no asumir que su diseño (VB6+Access, 20 años) es el patrón a
