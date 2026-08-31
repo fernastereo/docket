@@ -49,8 +49,8 @@ export const submitLead = createServerFn({ method: "POST" })
         updateEnabled: true,
         listIds: [Number(listId)],
         attributes: {
-          NOMBRE: data.nombre,
-          CURADURIA: data.curaduria,
+          NOMBRE_CURADURIAPP: data.nombre,
+          CURADURIA_CURADURIAPP: data.curaduria,
         },
       }),
     });
