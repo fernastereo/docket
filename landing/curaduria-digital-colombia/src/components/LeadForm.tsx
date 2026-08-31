@@ -112,7 +112,7 @@ export function LeadForm() {
           />
         </Field>
       </div>
-      <Field id="curaduria" label="Curaduría o entidad" error={errors.curaduria}>
+      <Field id="curaduria" label="Entidad" error={errors.curaduria}>
         <input
           id="curaduria"
           name="curaduria"

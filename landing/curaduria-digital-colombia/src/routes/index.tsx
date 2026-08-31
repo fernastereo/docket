@@ -221,8 +221,10 @@ function Landing() {
               Sé de los primeros en conocerlo
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-lav-200">
-              Estamos construyendo CuraduriAPP junto a curadores y equipos de planeación. Déjanos
-              tus datos y te contactaremos para mostrarte el avance y escuchar tus necesidades.
+              Estamos construyendo CuraduriAPP con equipo con mas de 20 años de experiencia en el
+              sector, implementando soluciones digitales en las Curadurías Urbanas del pais. Déjanos
+              tus datos y te contactaremos para mostrarte cada avance, escuchar tus necesidades y
+              ayudarte a implementar CuraduriAPP en tu organización.
             </p>
           </div>
           <div className="mx-auto mt-10 max-w-4xl rounded-xl border border-peri-700/60 bg-indigo-x-950/40 p-6 sm:p-8">
