@@ -81,24 +81,10 @@ const diferenciadores = [
     text: "Cada curaduría opera sobre su propia base de datos independiente. No es una tabla compartida con una columna de cliente: los expedientes de una curaduría nunca conviven con los de otra.",
   },
   {
-    icon: ArrowRightLeft,
-    title: "Migración fiel del histórico",
-    text: "No se empieza de cero: se traslada el histórico completo del sistema actual.",
-  },
-  {
     icon: PenTool,
     title: "Firma electrónica del curador",
     text: "Firma desde cualquier lugar, con registro y trazabilidad legal del acto administrativo.",
   },
-];
-
-const problemas = [
-  "Software de escritorio instalado equipo por equipo, sin presencia web.",
-  "Radicación únicamente presencial y consultas de estado por teléfono.",
-  "Trazabilidad parcial: es difícil reconstruir quién hizo qué y cuándo.",
-  "Sin analítica: no hay forma de medir tiempos por área ni cuellos de botella.",
-  "Riesgo de pérdida de información y respaldos manuales.",
-  "Dependencia de una sola persona que sabe operar y sostener el sistema.",
 ];
 
 const flujo = [
@@ -181,68 +167,47 @@ function Landing() {
         </div>
       </header>
 
-      <section className="mx-auto max-w-6xl px-5 py-20">
+      <section id="solucion" className="mx-auto max-w-6xl px-5 py-20">
         <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-indigo-x-900 sm:text-4xl">
-          El sistema actual cumplió su ciclo
+          Lo que cambia con CuraduriAPP
         </h2>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-lav-600">
-          El software que hoy sostiene a la mayoría de curadurías del país hizo un trabajo enorme
-          durante dos décadas. Pero fue diseñado para una época sin internet, sin ciudadanos
-          digitales y sin exigencias modernas de trazabilidad.
+          Cada función responde a algo que hoy no se puede hacer, o que cuesta demasiado esfuerzo
+          hacer bien.
         </p>
-        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {problemas.map((p) => (
-            <li
-              key={p}
-              className="rounded-lg border border-lav-200 bg-card p-5 text-sm leading-relaxed text-lav-700"
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {diferenciadores.map(({ icon: Icon, title, text }) => (
+            <article
+              key={title}
+              className="rounded-xl border border-lav-200 bg-card p-6 transition hover:border-turq-500/40"
             >
-              {p}
-            </li>
+              <Icon className="h-6 w-6 text-turq-600" aria-hidden />
+              <h3 className="mt-4 text-base font-semibold text-indigo-x-900">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-lav-600">{text}</p>
+            </article>
           ))}
-        </ul>
+        </div>
       </section>
 
-      <section id="solucion" className="surface-dark">
+      <section className="surface-dark">
         <div className="mx-auto max-w-6xl px-5 py-20">
-          <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-lav-50 sm:text-4xl">
-            Lo que cambia con CuraduriAPP
-          </h2>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-lav-200">
-            Cada función responde a algo que hoy no se puede hacer, o que cuesta demasiado esfuerzo
-            hacer bien.
-          </p>
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {diferenciadores.map(({ icon: Icon, title, text }) => (
-              <article
-                key={title}
-                className="rounded-xl border border-peri-700/50 bg-indigo-x-900/50 p-6 transition hover:border-turq-500/40"
-              >
-                <Icon className="h-6 w-6 text-turq-400" aria-hidden />
-                <h3 className="mt-4 text-base font-semibold text-lav-50">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-lav-200">{text}</p>
-              </article>
-            ))}
+          <div className="rounded-xl border border-peri-700/50 bg-indigo-x-900/50 p-8 sm:p-10">
+            <Building2 className="h-7 w-7 text-turq-400" aria-hidden />
+            <h2 className="mt-4 text-2xl font-semibold tracking-tight text-lav-50 sm:text-3xl">
+              Pensado también para Secretarías de Planeación
+            </h2>
+            <p className="mt-4 max-w-3xl text-base leading-relaxed text-lav-200">
+              El sistema no se limita a lo que tramita una curaduría tradicional: contempla también
+              las actuaciones propias de una secretaría de planeación municipal, incluidas las
+              licencias de intervención y ocupación del espacio público, con el mismo control de
+              términos, la misma trazabilidad y la misma capacidad de expedir actos administrativos
+              verificables.
+            </p>
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-5 py-20">
-        <div className="rounded-xl border border-lav-200 bg-card p-8 sm:p-10">
-          <Building2 className="h-7 w-7 text-peri-600" aria-hidden />
-          <h2 className="mt-4 text-2xl font-semibold tracking-tight text-indigo-x-900 sm:text-3xl">
-            Pensado también para Secretarías de Planeación
-          </h2>
-          <p className="mt-4 max-w-3xl text-base leading-relaxed text-lav-600">
-            El sistema no se limita a lo que tramita una curaduría tradicional: contempla también
-            las actuaciones propias de una secretaría de planeación municipal, incluidas las
-            licencias de intervención y ocupación del espacio público, con el mismo control de
-            términos, la misma trazabilidad y la misma capacidad de expedir actos administrativos
-            verificables.
-          </p>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-5 pb-20">
         <h2 className="text-3xl font-semibold tracking-tight text-indigo-x-900 sm:text-4xl">
           El recorrido completo del expediente
         </h2>
