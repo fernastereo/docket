@@ -32,7 +32,26 @@ bloque de datos/migración):
 
 No todos aplican a todo predio (ej. barrio/comuna son urbanos; vereda/
 corregimiento son rurales) — la obligatoriedad y validación por tipo se
-define en un bloque posterior.
+define en un bloque posterior. Ninguno de estos campos se puede omitir: son
+exigidos por ley debido al formato físico existente para este trámite.
+
+### Modernización acordada sobre estos campos
+
+No se quitan ni normalizan como catálogos oficiales externos (ver "Pendiente"
+para lo que sí queda pendiente de estudiar), pero sí se estructuran mejor que
+como texto plano:
+
+- **Dirección**: se descompone en sus partes típicas de nomenclatura
+  colombiana en vez de un solo campo de texto libre: nomenclatura + calle
+  principal + complemento + calle secundaria + complemento + número. Facilita
+  búsqueda/filtrado y reduce variaciones de formato entre capturas del mismo
+  predio.
+- **Barrio, comuna, localidad, corregimiento**: se manejan como **catálogo
+  autogestionado** — no una tabla pre-cargada, sino una lista que crece
+  orgánicamente a medida que se radican expedientes: si el valor ya existe se
+  selecciona de la lista, si no existe se crea en el momento. Con el tiempo
+  converge a una lista normalizada sin necesidad de mantenimiento manual
+  previo ni depender de un catálogo oficial externo.
 
 ## Relación con Expediente
 
@@ -63,7 +82,12 @@ apoderado, etc.) es información que vive en la relación Expediente↔Solicitan
 
 - Mecanismo de deduplicación/coincidencia de predios entre expedientes (por
   matrícula inmobiliaria u otro criterio).
-- Normalización y validación de formatos por campo (rural vs. urbano,
+- Validación de formatos por campo más allá de dirección (rural vs. urbano,
   propiedad horizontal, predios sin catastro formal, etc.) — particularidades
   del legado a revisar en el bloque de datos/migración.
-- `glosario.md`: confirmar `Predio → Property` (hoy con `(?)` en el glosario).
+- Si vereda/sector/manzana deberían seguir el mismo patrón de catálogo
+  autogestionado que barrio/comuna/localidad/corregimiento, o quedarse como
+  texto libre — no se decidió explícitamente, queda para revisar.
+- `glosario.md`: confirmar `Predio → Property` (hoy con `(?)`), agregar
+  `Catálogo autogestionado → Self-managed catalog (?)`,
+  `Nomenclatura → Address numbering (?)`.

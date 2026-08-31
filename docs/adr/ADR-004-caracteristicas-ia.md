@@ -19,7 +19,16 @@ tiene casos de uso naturales para LLMs y RAG.
    y NSR-10. Arquitectura: colección compartida para normativa nacional +
    colección pgvector por tenant para normativa local (POT, circulares).
 4. **Redacción asistida** de actas de observaciones y actos administrativos con
-   plantillas legales.
+   plantillas legales. Dos funciones concretas identificadas al modelar
+   `docs/dominio/documento.md` y `docs/dominio/acto-administrativo.md`:
+   - **Fusión coherente**: al combinar el texto base de la plantilla
+     (`PlantillaDocumento`) con los datos estructurados del expediente, la IA
+     ayuda a que el resultado se lea como texto natural y coherente, no como
+     un mail-merge mecánico de espacios en blanco.
+   - **Revisión de lenguaje**: sobre el documento ya generado (editable o a
+     punto de expedirse), la IA señala posibles fallas o inconsistencias de
+     redacción (no de contenido legal) para que el usuario las identifique y
+     corrija fácilmente antes de expedir.
 5. **Cálculo asistido de expensas** y liquidaciones.
 6. **Portal ciudadano** con seguimiento de trámite y chatbot de estado del
    expediente.

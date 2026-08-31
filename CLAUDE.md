@@ -78,10 +78,25 @@ expediente son críticos.
 ## Estado actual
 
 Planeación. Cuestiones generales de arquitectura y principios de código
-CERRADOS (ADR-001 a 011; detalle de IA en borrador). Siguiente bloque:
-**modelo de dominio del núcleo**
-(expediente, radicación, solicitante, predio, licencia, actos administrativos)
-a partir del conocimiento del sistema legado.
+CERRADOS (ADR-001 a 011; detalle de IA en borrador; ADR-005 con amendment
+2026-08-31 — identidad de persona jurídica). **Modelo de dominio del núcleo
+CERRADO** (2026-08-27 a 2026-08-31): Solicitante, Predio, Expediente, Tipo
+de Trámite (reemplaza a "Licencia" — incluye Otras Actuaciones), Acto
+Administrativo, Documento — ver `docs/dominio/`. Radicación quedó como
+atributos de Expediente, no como entidad propia. Nombre clave del repo:
+**Docket** (nombre de producto aún sin decidir).
+
+Siguiente bloque: **flujo del trámite / máquina de estados** — catálogo de
+estados internos y su mapeo a estados públicos, plazos legales, vistos
+buenos, y la línea de tiempo de actividad por expediente (estilo
+Jira/ClickUp) ya comprometida en `docs/dominio/expediente.md`. Ver
+`docs/preguntas-abiertas.md` para el detalle completo de pendientes
+abiertos por este bloque.
+
+**Principio de trabajo para lo que sigue**: al capturar conocimiento del
+legado, no asumir que su diseño (VB6+Access, 20 años) es el patrón a
+replicar — extraer el hecho de negocio y proponer proactivamente el patrón
+moderno equivalente, cuestionando el legado por defecto.
 
 ## Convenciones de documentación
 

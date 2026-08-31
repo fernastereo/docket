@@ -13,16 +13,47 @@ Lista viva. Al resolverse, mover la decisión a un ADR.
 - [ ] Cumplimiento Ley 1581/2012 (datos personales): política, avisos,
       tratamiento en prompts de IA.
 
-## Dominio (capturar del conocimiento del sistema legado) — SIGUIENTE BLOQUE
-- [ ] Modelo de datos del núcleo: expediente, radicación, solicitante, predio,
-      licencia, acto administrativo, documento.
-- [ ] Flujo completo de un trámite: estados, plazos legales, vistos buenos.
-- [ ] Tipos de licencia y modalidades, y sus requisitos documentales.
+## Dominio (capturar del conocimiento del sistema legado)
+
+- [x] **Modelo de datos del núcleo** (2026-08-27 a 2026-08-31): resuelto en
+      `docs/dominio/solicitante.md`, `predio.md`, `expediente.md`,
+      `tipo-tramite.md` (reemplaza a "licencia"), `acto-administrativo.md`,
+      `documento.md`. Incluye amendment 2026-08-31 a ADR-005 (identidad de
+      persona jurídica). Radicación quedó colapsada como atributos de
+      Expediente, no como entidad propia.
+- [ ] Catálogo de clases/modalidades de trámite: **resuelto** a nivel de
+      lista (`docs/dominio/tipo-tramite.md`); **falta** el mecanismo de
+      configuración por tenant para activar/desactivar clases según tipo de
+      autoridad (curaduría vs. Secretaría de Planeación).
+- [ ] Requisitos documentales por clase/modalidad de trámite (catálogo de
+      documentos radicados esperados) — no abordado todavía.
+- [ ] Flujo completo de un trámite: catálogo de estados internos y su mapeo
+      a estados públicos, plazos legales, vistos buenos. **SIGUIENTE
+      BLOQUE.** Debe considerar el requisito de línea de tiempo de
+      actividad por expediente (estilo Jira/ClickUp) ya fijado en
+      `docs/dominio/expediente.md`.
+- [ ] Mecanismo de asociación entre un acto administrativo y los tipos de
+      trámite que cubre, cuando una curaduría expide más de uno por
+      expediente (`docs/dominio/acto-administrativo.md`).
+- [ ] Mecanismo de deduplicación/coincidencia de predios entre expedientes
+      (por matrícula inmobiliaria u otro criterio) — `docs/dominio/predio.md`.
+- [ ] Si vereda/sector/manzana deben seguir el mismo patrón de catálogo
+      autogestionado que barrio/comuna/localidad/corregimiento — `docs/
+      dominio/predio.md`.
+- [ ] Gestión del catálogo `TipoDocumentoGenerado` (quién puede crear/editar
+      tipos de documento dentro de una curaduría) — `docs/dominio/documento.md`.
+- [ ] Estudio técnico de edición de texto enriquecido para plantillas
+      (reemplazo del enfoque Word del legado) — bloque de implementación.
 - [ ] Reglas de liquidación de expensas (¿varían por municipio/tarifa?).
 - [ ] Reportes obligatorios (SNR, municipio, curaduría cero, DANE si aplica).
 - [ ] Numeración/radicación oficial: formato, consecutivos, valor legal.
-- [ ] Roles reales de una curaduría (para el RBAC del tenant).
-- [ ] Completar/confirmar el glosario español→inglés (docs/dominio/glosario.md).
+- [ ] Roles reales de una curaduría, más allá de arquitecto/ingeniero civil/
+      abogado/curador ya fijados como equipo asignado del expediente (para
+      el RBAC del tenant).
+- [ ] Completar/confirmar el glosario español→inglés
+      (`docs/dominio/glosario.md`) — se agregaron ~20 términos nuevos
+      durante este bloque, todos aún marcados `(?)`, ninguno confirmado
+      como definitivo.
 
 ## Migración del legado
 - [ ] Inventario del esquema Access actual (tablas, relaciones, rarezas).
