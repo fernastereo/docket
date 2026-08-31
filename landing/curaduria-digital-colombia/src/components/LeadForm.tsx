@@ -92,7 +92,7 @@ export function LeadForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="grid gap-5 sm:grid-cols-3">
+    <form onSubmit={handleSubmit} noValidate className="grid gap-5">
       <Field id="nombre" label="Nombre completo" error={errors.nombre}>
         <input
           id="nombre"
@@ -126,7 +126,7 @@ export function LeadForm() {
           autoComplete="email"
         />
       </Field>
-      <div className="sm:col-span-3 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-2 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-lav-300">
           Usaremos tus datos únicamente para contactarte sobre CuraduriAPP.
         </p>

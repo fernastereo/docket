@@ -233,7 +233,7 @@ function Landing() {
               tus datos y te contactaremos para mostrarte el avance y escuchar tus necesidades.
             </p>
           </div>
-          <div className="mt-10 rounded-xl border border-peri-700/60 bg-indigo-x-950/40 p-6 sm:p-8">
+          <div className="mx-auto mt-10 max-w-md rounded-xl border border-peri-700/60 bg-indigo-x-950/40 p-6 sm:p-8">
             <LeadForm />
           </div>
         </div>
@@ -242,8 +242,8 @@ function Landing() {
       <footer className="bg-indigo-x-950 py-10">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 text-sm text-lav-300 sm:flex-row sm:items-center sm:justify-between">
           <span className="font-semibold text-lav-100">CuraduriAPP</span>
-          <span>contacto@curaduriapp.co · +57 300 000 0000 · Colombia</span>
-          <span>© {year} CuraduriAPP</span>
+          <span>info@css-sas.com · +57 301 7560109 · Colombia</span>
+          <span>© {year} CSS SAS - CuraduriAPP</span>
         </div>
       </footer>
     </div>
