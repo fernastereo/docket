@@ -7,7 +7,6 @@ import {
   BellRing,
   QrCode,
   BarChart3,
-  DatabaseZap,
   ArrowRightLeft,
   PenTool,
   ArrowRight,
@@ -16,6 +15,18 @@ import {
 import { Toaster } from "@/components/ui/sonner";
 import { LeadForm } from "@/components/LeadForm";
 import heroImage from "@/assets/hero-abstract.jpg";
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "CuraduriAPP",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  description:
+    "Software para Curadurías Urbanas y Secretarías de Planeación en Colombia: radicación en línea, trazabilidad legal, inteligencia artificial y verificación pública de actos administrativos.",
+  url: "https://curaduria.app/",
+  inLanguage: "es-CO",
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -32,8 +43,12 @@ export const Route = createFileRoute("/")({
         content:
           "Radicación en línea, portal ciudadano, trazabilidad legal completa e inteligencia artificial para licencias urbanísticas en Colombia.",
       },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    scripts: [
+      {
+        attrs: { type: "application/ld+json" },
+        children: JSON.stringify(structuredData),
+      },
     ],
   }),
   component: Landing,
