@@ -65,7 +65,7 @@ const iaFeatures = [
   {
     icon: Wand2,
     title: "Copiloto de redacción",
-    text: "El equipo anota hallazgos en lenguaje suelto y la IA redacta el Acta de Observaciones, y ayuda a que cada Resolución se lea coherente — no como un mail-merge. Siempre con revisión humana antes de enviarse.",
+    text: "El equipo anota hallazgos en lenguaje natural y la IA redacta el Acta de Observaciones, y ayuda a que cada Resolución se lea coherente, no como un mail-merge. Siempre con revisión humana antes de enviarse.",
     featured: true,
   },
   {
@@ -76,12 +76,12 @@ const iaFeatures = [
   {
     icon: ClipboardCheck,
     title: "Verificación de completitud",
-    text: "Antes de que un humano revise, la IA ya avisa si falta algún documento según el tipo de trámite.",
+    text: "Antes de que un humano revise, la IA ya avisa si falta algún documento según el tipo de trámite o emite observaciones sobre el contenido de estos.",
   },
   {
     icon: BookOpenCheck,
     title: "Normativa en lenguaje natural",
-    text: "POT y NSR-10 consultables en el momento exacto de la revisión técnica, jurídica y estructural.",
+    text: "Decreto 1077, NSR-10 y otras normas vigentes consultables en el momento exacto de la revisión técnica, jurídica y estructural.",
   },
   {
     icon: MessageCircle,
@@ -94,14 +94,13 @@ const diferenciadores = [
   {
     icon: History,
     title: "Trazabilidad legal completa",
-    text: "Cada expediente tiene su línea de tiempo, al estilo de las herramientas modernas de gestión de proyectos: quién hizo qué, cuándo y sobre qué documento — auditable de principio a fin.",
+    text: "Cada expediente tiene su línea de tiempo, al estilo de las herramientas modernas de gestión de proyectos: quién hizo qué, cuándo y sobre qué documento, auditable de principio a fin.",
     featured: true,
   },
   {
     icon: BarChart3,
     title: "Analítica operativa",
-    text: "Dónde se atascan los trámites, cuánto tarda cada área y la carga real de trabajo de su equipo — algo que hoy es imposible de ver.",
-    featured: true,
+    text: "Dónde se atascan los trámites, cuánto tarda cada área y la carga real de trabajo de su equipo, algo que hoy es imposible de ver.",
   },
   {
     icon: Globe,
