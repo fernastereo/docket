@@ -1,26 +1,24 @@
-import { Sparkles, FileCheck2, Wand2, Loader2, ScanSearch } from "lucide-react";
+import {
+  LayoutDashboard,
+  FolderOpen,
+  Users,
+  BarChart3,
+  Settings,
+  Sparkles,
+  FileText,
+  Send,
+  MapPin,
+} from "lucide-react";
 
 /**
  * Segunda versión exploratoria del mockup del hero — no reemplaza a
- * DashboardPreview.tsx. En vez de un panel de gestión general, se enfoca
- * en mostrar el copiloto de IA en acción sobre un documento radicado:
- * extracción de campos + una sugerencia de observación generada.
- * Paleta más amplia (colores estándar de Tailwind), no solo la de marca.
+ * DashboardPreview.tsx. Muestra la consulta normativa en lenguaje natural
+ * (RAG): una pregunta real sobre la norma, respondida con cita de la
+ * fuente exacta, con el expediente activo visible al lado para dar
+ * contexto — no un chatbot genérico flotando sobre la nada.
  */
 
-const extractedFields = [
-  { label: "Nombre", value: "Ana Rodríguez", color: "blue" as const, top: "18%", left: "30%" },
-  { label: "Cédula", value: "1.098.XXX.XXX", color: "purple" as const, top: "34%", left: "50%" },
-  { label: "Predio", value: "Mz. 4 Lote 12", color: "emerald" as const, top: "52%", left: "28%" },
-  { label: "Área", value: "312 m²", color: "amber" as const, top: "68%", left: "48%" },
-];
-
-const dotColor: Record<(typeof extractedFields)[number]["color"], string> = {
-  blue: "border-blue-400 bg-blue-50 text-blue-700",
-  purple: "border-purple-400 bg-purple-50 text-purple-700",
-  emerald: "border-emerald-400 bg-emerald-50 text-emerald-700",
-  amber: "border-amber-400 bg-amber-50 text-amber-700",
-};
+const sidebarItems = [LayoutDashboard, FolderOpen, Users, BarChart3, Settings];
 
 export function AICopilotPreview() {
   return (
@@ -29,94 +27,108 @@ export function AICopilotPreview() {
         <span className="h-2.5 w-2.5 rounded-full bg-lav-300" aria-hidden />
         <span className="h-2.5 w-2.5 rounded-full bg-lav-300" aria-hidden />
         <span className="h-2.5 w-2.5 rounded-full bg-lav-300" aria-hidden />
-        <span className="ml-3 flex items-center gap-1.5 truncate rounded-md bg-white px-3 py-1 text-xs text-lav-500">
-          <ScanSearch className="h-3 w-3" aria-hidden />
-          curaduria.app/expedientes/2026-0341/copiloto
+        <span className="ml-3 truncate rounded-md bg-white px-3 py-1 text-xs text-lav-500">
+          curaduria.app/expedientes/2026-0341/normativa
         </span>
       </div>
 
-      <div className="grid sm:grid-cols-[1.1fr_1fr]">
-        {/* Documento radicado con extracción de campos */}
-        <div className="border-b border-lav-200 bg-lav-50 p-4 sm:border-b-0 sm:border-r sm:p-5">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-lav-500">
-            Documento radicado
-          </p>
-          <div className="relative mt-2 aspect-[3/4] w-full rounded-lg border border-lav-200 bg-white p-3 shadow-sm">
-            <div className="space-y-1.5 opacity-70">
-              <div className="h-1.5 w-3/4 rounded bg-lav-200" />
-              <div className="h-1.5 w-1/2 rounded bg-lav-200" />
-              <div className="mt-3 h-1.5 w-full rounded bg-lav-100" />
-              <div className="h-1.5 w-5/6 rounded bg-lav-100" />
-              <div className="h-1.5 w-2/3 rounded bg-lav-100" />
-              <div className="mt-3 h-1.5 w-full rounded bg-lav-100" />
-              <div className="h-1.5 w-4/6 rounded bg-lav-100" />
+      <div className="flex">
+        <div className="flex w-14 flex-col items-center gap-4 border-r border-lav-200 bg-lav-50 py-5">
+          <span
+            className="h-7 w-7 rounded-lg bg-gradient-to-br from-turq-400 to-peri-500"
+            aria-hidden
+          />
+          {sidebarItems.map((Icon, i) => (
+            <div
+              key={i}
+              className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+                i === 1 ? "bg-turq-500/15 text-turq-600" : "text-lav-400"
+              }`}
+            >
+              <Icon className="h-4.5 w-4.5" aria-hidden />
             </div>
-
-            {extractedFields.map((f) => (
-              <div
-                key={f.label}
-                className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1"
-                style={{ top: f.top, left: f.left }}
-              >
-                <span
-                  className={`whitespace-nowrap rounded-md border px-1.5 py-0.5 text-[9px] font-medium shadow-sm ${dotColor[f.color]}`}
-                >
-                  {f.label}: {f.value}
-                </span>
-              </div>
-            ))}
-          </div>
-          <p className="mt-2 flex items-center gap-1.5 text-[10px] text-lav-500">
-            <FileCheck2 className="h-3 w-3 text-emerald-500" aria-hidden />4 campos extraídos
-            automáticamente
-          </p>
+          ))}
         </div>
 
-        {/* Panel del copiloto */}
-        <div className="flex flex-col p-4 sm:p-5">
-          <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-turq-400 to-peri-500 text-white">
-              <Sparkles className="h-3.5 w-3.5" aria-hidden />
-            </span>
-            <p className="text-xs font-semibold text-indigo-x-900">Copiloto CuraduriAPP</p>
-          </div>
+        <div className="grid min-w-0 flex-1 sm:grid-cols-[1.6fr_1fr]">
+          {/* Consulta normativa */}
+          <div className="flex min-w-0 flex-col border-b border-lav-200 p-5 sm:border-b-0 sm:border-r">
+            <p className="text-sm font-semibold text-indigo-x-900">Consulta normativa</p>
+            <p className="text-xs text-lav-500">Expediente 2026-0341 · Estudio Arquitectónico</p>
 
-          <div className="mt-3 space-y-2.5">
-            <div className="flex items-center gap-1.5 text-[10px] text-lav-400">
-              <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
-              Analizando documentación del expediente…
-            </div>
+            <div className="mt-4 space-y-3">
+              <div className="flex justify-end">
+                <div className="max-w-[85%] rounded-2xl rounded-br-md bg-indigo-x-800 px-3.5 py-2.5 text-[13px] leading-relaxed text-white">
+                  ¿Cuál es el retiro lateral mínimo para una edificación de 4 pisos en zona
+                  residencial?
+                </div>
+              </div>
 
-            <div className="rounded-lg rounded-tl-sm bg-lav-100 p-3 text-[11px] leading-relaxed text-indigo-x-800">
-              Revisé los documentos radicados: falta el certificado de tradición y libertad vigente.
-              Encontré 4 campos que puedo prellenar en el expediente.
-            </div>
-
-            <div className="rounded-lg border border-turq-200 bg-turq-50 p-3">
-              <p className="flex items-center gap-1.5 text-[10px] font-semibold text-turq-800">
-                <Wand2 className="h-3 w-3" aria-hidden />
-                Sugerencia de Acta de Observaciones
-              </p>
-              <p className="mt-1.5 text-[11px] leading-relaxed text-indigo-x-800">
-                "Se requiere allegar certificado de tradición y libertad con fecha de expedición no
-                mayor a 3 meses…"
-              </p>
-              <div className="mt-2 flex gap-2">
-                <span className="rounded-md bg-turq-500 px-2.5 py-1 text-[10px] font-semibold text-indigo-x-950">
-                  Usar sugerencia
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-turq-400 to-peri-500 text-white">
+                  <Sparkles className="h-3 w-3" aria-hidden />
                 </span>
-                <span className="rounded-md border border-lav-300 px-2.5 py-1 text-[10px] font-medium text-lav-600">
-                  Editar
-                </span>
+                <div className="max-w-[90%] space-y-2">
+                  <div className="rounded-2xl rounded-tl-md border border-lav-200 bg-lav-50 px-3.5 py-2.5 text-[13px] leading-relaxed text-indigo-x-800">
+                    Para edificaciones de 4 pisos en zona residencial, el retiro lateral mínimo es
+                    de <strong>3 metros</strong>. Si el predio colinda con una edificación existente
+                    sin retiro, aplica la norma de medianería del mismo artículo.
+                  </div>
+                  <div className="rounded-lg border-l-4 border-turq-500 bg-turq-50 px-3 py-2">
+                    <p className="flex items-center gap-1.5 text-[11px] font-semibold text-turq-800">
+                      <FileText className="h-3 w-3" aria-hidden />
+                      POT · Acuerdo 011 de 2019, Art. 245
+                    </p>
+                    <p className="mt-1 text-[11px] italic leading-relaxed text-lav-600">
+                      "...las edificaciones de cuatro (4) o más pisos deberán guardar un retiro
+                      lateral no inferior a tres (3) metros, salvo lo dispuesto para predios en
+                      medianería..."
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <div className="mt-4 flex items-center gap-2 rounded-full border border-lav-200 bg-lav-50 py-2 pl-4 pr-2">
+              <span className="flex-1 truncate text-[12px] text-lav-400">
+                Preguntar sobre normativa aplicable a este expediente…
+              </span>
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-turq-500 text-indigo-x-950">
+                <Send className="h-3.5 w-3.5" aria-hidden />
+              </span>
+            </div>
           </div>
 
-          <div className="mt-auto flex gap-2 pt-4">
-            <span className="h-1.5 flex-1 rounded-full bg-blue-400" />
-            <span className="h-1.5 flex-1 rounded-full bg-purple-400" />
-            <span className="h-1.5 flex-1 rounded-full bg-emerald-400" />
-            <span className="h-1.5 flex-1 rounded-full bg-amber-400" />
+          {/* Contexto del expediente */}
+          <div className="min-w-0 bg-lav-50 p-5">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-lav-500">
+              Expediente activo
+            </p>
+            <div className="mt-2 rounded-lg border border-lav-200 bg-white p-3">
+              <p className="text-sm font-semibold text-indigo-x-900">2026-0341</p>
+              <p className="mt-0.5 text-[11px] text-lav-500">Construcción · Obra nueva</p>
+              <div className="mt-2.5 flex items-start gap-1.5 text-[11px] text-lav-600">
+                <MapPin className="mt-0.5 h-3 w-3 shrink-0 text-lav-400" aria-hidden />
+                Mz. 4 Lote 12, Bucaramanga
+              </div>
+              <span className="mt-2.5 inline-block rounded-full bg-peri-500/15 px-2 py-0.5 text-[10px] font-medium text-peri-700">
+                En estudio
+              </span>
+            </div>
+
+            <p className="mt-4 text-[11px] font-medium uppercase tracking-wide text-lav-500">
+              Fuentes consultadas
+            </p>
+            <div className="mt-2 space-y-1.5">
+              <div className="flex items-center gap-1.5 rounded-md border border-lav-200 bg-white px-2.5 py-1.5 text-[11px] text-lav-600">
+                <FileText className="h-3 w-3 shrink-0 text-turq-500" aria-hidden />
+                POT Bucaramanga — Acuerdo 011/2019
+              </div>
+              <div className="flex items-center gap-1.5 rounded-md border border-lav-200 bg-white px-2.5 py-1.5 text-[11px] text-lav-600">
+                <FileText className="h-3 w-3 shrink-0 text-peri-500" aria-hidden />
+                NSR-10 · Título K
+              </div>
+            </div>
           </div>
         </div>
       </div>
