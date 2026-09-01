@@ -239,3 +239,44 @@
   background-clip: text;
   color: transparent;
 }
+
+/* Subtle motion — kept minimal on purpose: entrance on load, slow ambient
+   drift on background glows, no scroll-triggered JS. */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float-glow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.85;
+  }
+}
+
+@utility animate-fade-in-up {
+  animation: fade-in-up 0.7s ease-out both;
+}
+
+@utility animate-float-glow {
+  animation: float-glow 9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .animate-float-glow {
+    animation: none;
+  }
+}

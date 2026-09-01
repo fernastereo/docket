@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { LeadForm } from "@/components/LeadForm";
-import heroImage from "@/assets/hero-abstract.jpg";
+import { DashboardPreview } from "@/components/DashboardPreview";
+import logo from "@/assets/logo.png";
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -155,18 +156,17 @@ function Landing() {
 
       <header className="surface-dark relative overflow-hidden">
         <div
-          className="pointer-events-none absolute -top-24 right-[-10%] h-[32rem] w-[32rem] rounded-full bg-turq-500/20 blur-3xl"
+          className="animate-float-glow pointer-events-none absolute -top-24 right-[-10%] h-[32rem] w-[32rem] rounded-full bg-turq-500/20 blur-3xl"
           aria-hidden
         />
         <div
-          className="pointer-events-none absolute bottom-[-10rem] left-[-10%] h-[28rem] w-[28rem] rounded-full bg-peri-500/20 blur-3xl"
+          className="animate-float-glow pointer-events-none absolute bottom-[-10rem] left-[-10%] h-[28rem] w-[28rem] rounded-full bg-peri-500/20 blur-3xl"
+          style={{ animationDelay: "3s" }}
           aria-hidden
         />
 
         <nav className="relative mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
-          <span className="text-lg font-semibold tracking-tight text-lav-50">
-            Curaduri<span className="text-turq-400">APP</span>
-          </span>
+          <img src={logo} alt="CuraduriAPP" className="h-9 w-auto sm:h-10" />
           <a
             href="#registro"
             className="rounded-md border border-turq-500/40 px-4 py-2 text-sm font-medium text-turq-300 transition hover:bg-turq-500/10"
@@ -177,22 +177,31 @@ function Landing() {
 
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-10 lg:grid-cols-2 lg:pb-28 lg:pt-16">
           <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-turq-500/30 bg-turq-500/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-turq-300">
+            <span className="animate-fade-in-up inline-flex items-center gap-2 rounded-full border border-turq-500/30 bg-turq-500/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-turq-300">
               <Sparkles className="h-3.5 w-3.5" aria-hidden />
               Construido por un equipo con 20+ años en el sector
             </span>
-            <h1 className="mt-6 text-4xl font-semibold leading-tight tracking-tight text-lav-50 sm:text-5xl lg:text-6xl">
+            <h1
+              className="animate-fade-in-up mt-6 text-4xl font-semibold leading-tight tracking-tight text-lav-50 sm:text-5xl lg:text-6xl"
+              style={{ animationDelay: "80ms" }}
+            >
               La gestión de licencias urbanísticas,{" "}
               <span className="text-gradient-accent">
                 por fin a la altura de su responsabilidad legal
               </span>
             </h1>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-lav-200 sm:text-lg">
+            <p
+              className="animate-fade-in-up mt-6 max-w-xl text-base leading-relaxed text-lav-200 sm:text-lg"
+              style={{ animationDelay: "160ms" }}
+            >
               CuraduriAPP es el sistema con el que una Curaduría Urbana o una Secretaría de
               Planeación recupera el control de sus trámites: todo en línea, todo trazable, todo
               verificable y con inteligencia artificial acompañando cada etapa del expediente.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div
+              className="animate-fade-in-up mt-8 flex flex-col gap-3 sm:flex-row"
+              style={{ animationDelay: "240ms" }}
+            >
               <a
                 href="#registro"
                 className="inline-flex items-center justify-center gap-2 rounded-md bg-turq-500 px-6 py-3 text-sm font-semibold text-indigo-x-950 shadow-lg shadow-turq-500/20 transition hover:bg-turq-400"
@@ -207,44 +216,73 @@ function Landing() {
               </a>
             </div>
           </div>
-          <div className="relative">
+          <div className="animate-fade-in-up relative" style={{ animationDelay: "200ms" }}>
             <div
               className="pointer-events-none absolute -inset-4 rounded-2xl bg-gradient-to-br from-turq-500/30 via-peri-500/10 to-transparent blur-2xl"
               aria-hidden
             />
-            <img
-              src={heroImage}
-              alt="Representación abstracta del recorrido digital de un expediente de licencia urbanística"
-              width={1280}
-              height={960}
-              className="relative w-full rounded-xl border border-peri-700/50 shadow-2xl"
-            />
+            <div className="relative">
+              <DashboardPreview />
+              <p className="mt-3 text-center text-xs text-lav-400">
+                Vista ilustrativa — no representa la interfaz final del sistema.
+              </p>
+            </div>
           </div>
         </div>
       </header>
 
-      <section id="ia" className="surface-dark relative overflow-hidden scroll-mt-8">
+      <section id="ia" className="relative mx-auto max-w-6xl px-5 py-20 scroll-mt-8">
+        <span className="inline-flex items-center gap-2 rounded-full border border-turq-500/30 bg-turq-500/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-turq-700">
+          <Sparkles className="h-3.5 w-3.5" aria-hidden />
+          Inteligencia artificial
+        </span>
+        <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-indigo-x-900 sm:text-4xl">
+          Un copiloto de IA en cada paso del expediente
+        </h2>
+        <p className="mt-4 max-w-2xl text-base leading-relaxed text-lav-600">
+          No es una casilla de "IA" pegada encima del sistema — acompaña el proceso real, desde que
+          se radica hasta que se responde al ciudadano.
+        </p>
+        <div className="mt-12 grid gap-5 lg:grid-cols-3">
+          {iaFeatures.map(({ icon: Icon, title, text, featured }) => (
+            <article
+              key={title}
+              className={`group relative overflow-hidden rounded-xl border border-lav-200 bg-card p-6 transition hover:-translate-y-1 hover:border-turq-500/50 hover:shadow-lg hover:shadow-turq-500/10 ${
+                featured ? "lg:col-span-2" : ""
+              }`}
+            >
+              <div
+                className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-turq-500/0 blur-2xl transition group-hover:bg-turq-500/10"
+                aria-hidden
+              />
+              <div className="relative flex h-11 w-11 items-center justify-center rounded-lg bg-turq-500/10 text-turq-600">
+                <Icon className="h-5.5 w-5.5" aria-hidden />
+              </div>
+              <h3 className="relative mt-4 text-base font-semibold text-indigo-x-900">{title}</h3>
+              <p className="relative mt-2 text-sm leading-relaxed text-lav-600">{text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="surface-dark relative overflow-hidden">
         <div
           className="pointer-events-none absolute left-1/2 top-0 h-[36rem] w-[60rem] -translate-x-1/2 rounded-full bg-turq-500/10 blur-3xl"
           aria-hidden
         />
         <div className="relative mx-auto max-w-6xl px-5 py-20">
-          <span className="inline-flex items-center gap-2 rounded-full border border-turq-500/30 bg-turq-500/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-turq-300">
-            <Sparkles className="h-3.5 w-3.5" aria-hidden />
-            Inteligencia artificial
-          </span>
-          <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-lav-50 sm:text-4xl">
-            Un copiloto de IA en cada paso del expediente
+          <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-lav-50 sm:text-4xl">
+            Lo que más cambia con CuraduriAPP
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-lav-200">
-            No es una casilla de "IA" pegada encima del sistema — acompaña el proceso real, desde
-            que se radica hasta que se responde al ciudadano.
+            Cada función responde a algo que hoy no se puede hacer, o que cuesta demasiado esfuerzo
+            hacer bien.
           </p>
-          <div className="mt-12 grid gap-5 lg:grid-cols-3">
-            {iaFeatures.map(({ icon: Icon, title, text, featured }) => (
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {diferenciadores.map(({ icon: Icon, title, text, featured }) => (
               <article
                 key={title}
-                className={`group relative overflow-hidden rounded-xl border border-peri-700/50 bg-indigo-x-900/50 p-6 transition hover:border-turq-500/50 hover:bg-indigo-x-900/80 ${
+                className={`group relative overflow-hidden rounded-xl border border-peri-700/50 bg-indigo-x-900/50 p-6 transition hover:-translate-y-1 hover:border-turq-500/40 ${
                   featured ? "lg:col-span-2" : ""
                 }`}
               >
@@ -252,9 +290,7 @@ function Landing() {
                   className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-turq-500/0 blur-2xl transition group-hover:bg-turq-500/20"
                   aria-hidden
                 />
-                <div className="relative flex h-11 w-11 items-center justify-center rounded-lg bg-turq-500/15 text-turq-300">
-                  <Icon className="h-5.5 w-5.5" aria-hidden />
-                </div>
+                <Icon className="relative h-6 w-6 text-turq-400" aria-hidden />
                 <h3 className="relative mt-4 text-base font-semibold text-lav-50">{title}</h3>
                 <p className="relative mt-2 text-sm leading-relaxed text-lav-200">{text}</p>
               </article>
@@ -263,83 +299,58 @@ function Landing() {
         </div>
       </section>
 
-      <section id="solucion" className="mx-auto max-w-6xl px-5 py-20">
-        <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-indigo-x-900 sm:text-4xl">
-          Lo que más cambia con CuraduriAPP
-        </h2>
-        <p className="mt-4 max-w-2xl text-base leading-relaxed text-lav-600">
-          Cada función responde a algo que hoy no se puede hacer, o que cuesta demasiado esfuerzo
-          hacer bien.
-        </p>
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {diferenciadores.map(({ icon: Icon, title, text, featured }) => (
-            <article
-              key={title}
-              className={`group relative overflow-hidden rounded-xl border border-lav-200 bg-card p-6 transition hover:border-turq-500/50 hover:shadow-lg hover:shadow-turq-500/5 ${
-                featured ? "lg:col-span-2" : ""
-              }`}
-            >
-              <div
-                className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-turq-500/0 blur-2xl transition group-hover:bg-turq-500/10"
-                aria-hidden
-              />
-              <Icon className="relative h-6 w-6 text-turq-600" aria-hidden />
-              <h3 className="relative mt-4 text-base font-semibold text-indigo-x-900">{title}</h3>
-              <p className="relative mt-2 text-sm leading-relaxed text-lav-600">{text}</p>
-            </article>
-          ))}
+      <section className="mx-auto max-w-6xl px-5 py-20">
+        <div className="rounded-xl border border-lav-200 bg-card p-8 sm:p-10">
+          <Building2 className="h-7 w-7 text-turq-600" aria-hidden />
+          <h2 className="mt-4 text-2xl font-semibold tracking-tight text-indigo-x-900 sm:text-3xl">
+            Pensado también para Secretarías de Planeación
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-lav-600">
+            El sistema no se limita a lo que tramita una curaduría tradicional: contempla también
+            las actuaciones propias de una secretaría de planeación municipal, incluidas las
+            licencias de intervención y ocupación del espacio público, con el mismo control de
+            términos, la misma trazabilidad y la misma capacidad de expedir actos administrativos
+            verificables.
+          </p>
         </div>
       </section>
 
       <section className="surface-dark">
         <div className="mx-auto max-w-6xl px-5 py-20">
-          <div className="rounded-xl border border-peri-700/50 bg-indigo-x-900/50 p-8 sm:p-10">
-            <Building2 className="h-7 w-7 text-turq-400" aria-hidden />
-            <h2 className="mt-4 text-2xl font-semibold tracking-tight text-lav-50 sm:text-3xl">
-              Pensado también para Secretarías de Planeación
-            </h2>
-            <p className="mt-4 text-base leading-relaxed text-lav-200">
-              El sistema no se limita a lo que tramita una curaduría tradicional: contempla también
-              las actuaciones propias de una secretaría de planeación municipal, incluidas las
-              licencias de intervención y ocupación del espacio público, con el mismo control de
-              términos, la misma trazabilidad y la misma capacidad de expedir actos administrativos
-              verificables.
-            </p>
+          <h2 className="text-3xl font-semibold tracking-tight text-lav-50 sm:text-4xl">
+            El recorrido completo del expediente
+          </h2>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {flujo.map((f) => (
+              <div
+                key={f.paso}
+                className="rounded-lg border-l-2 border-turq-500 bg-indigo-x-900/50 p-5"
+              >
+                <span className="text-xs font-semibold tracking-widest text-peri-300">
+                  {f.paso}
+                </span>
+                <h3 className="mt-2 text-base font-semibold text-lav-50">{f.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-lav-200">{f.text}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-20">
-        <h2 className="text-3xl font-semibold tracking-tight text-indigo-x-900 sm:text-4xl">
-          El recorrido completo del expediente
-        </h2>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {flujo.map((f) => (
-            <div key={f.paso} className="rounded-lg border-l-2 border-turq-500 bg-lav-100/60 p-5">
-              <span className="text-xs font-semibold tracking-widest text-peri-600">{f.paso}</span>
-              <h3 className="mt-2 text-base font-semibold text-indigo-x-900">{f.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-lav-600">{f.text}</p>
-            </div>
-          ))}
+      <section id="registro" className="mx-auto max-w-4xl scroll-mt-8 px-5 py-20">
+        <div className="text-center">
+          <h2 className="text-3xl font-semibold tracking-tight text-indigo-x-900 sm:text-4xl">
+            Sé de los primeros en conocerlo
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-lav-600">
+            Estamos construyendo CuraduriAPP con equipo con mas de 20 años de experiencia en el
+            sector, implementando soluciones digitales en las Curadurías Urbanas del pais. Déjanos
+            tus datos y te contactaremos para mostrarte cada avance, escuchar tus necesidades y
+            ayudarte a implementar CuraduriAPP en tu organización.
+          </p>
         </div>
-      </section>
-
-      <section id="registro" className="surface-dark scroll-mt-8">
-        <div className="mx-auto max-w-4xl px-5 py-20">
-          <div className="text-center">
-            <h2 className="text-3xl font-semibold tracking-tight text-lav-50 sm:text-4xl">
-              Sé de los primeros en conocerlo
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-lav-200">
-              Estamos construyendo CuraduriAPP con equipo con mas de 20 años de experiencia en el
-              sector, implementando soluciones digitales en las Curadurías Urbanas del pais. Déjanos
-              tus datos y te contactaremos para mostrarte cada avance, escuchar tus necesidades y
-              ayudarte a implementar CuraduriAPP en tu organización.
-            </p>
-          </div>
-          <div className="mx-auto mt-10 max-w-4xl rounded-xl border border-peri-700/60 bg-indigo-x-950/40 p-6 sm:p-8">
-            <LeadForm />
-          </div>
+        <div className="mx-auto mt-10 max-w-4xl rounded-xl border border-peri-700/60 bg-indigo-x-950/95 p-6 shadow-xl sm:p-8">
+          <LeadForm />
         </div>
       </section>
 
