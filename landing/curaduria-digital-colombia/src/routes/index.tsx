@@ -7,10 +7,14 @@ import {
   BellRing,
   QrCode,
   BarChart3,
-  ArrowRightLeft,
   PenTool,
   ArrowRight,
   Building2,
+  Wand2,
+  ScanText,
+  ClipboardCheck,
+  BookOpenCheck,
+  MessageCircle,
 } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { LeadForm } from "@/components/LeadForm";
@@ -31,13 +35,13 @@ const structuredData = {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CuraduriAPP | Gestión moderna de trámites urbanísticos" },
+      { title: "CuraduriAPP | IA al servicio de trámites urbanísticos" },
       {
         name: "description",
         content:
           "Software para Curadurías Urbanas y Secretarías de Planeación en Colombia: radicación en línea, trazabilidad legal, IA y verificación QR. Regístrate para acceso anticipado.",
       },
-      { property: "og:title", content: "CuraduriAPP | Gestión moderna de trámites urbanísticos" },
+      { property: "og:title", content: "CuraduriAPP | IA al servicio de trámites urbanísticos" },
       {
         property: "og:description",
         content:
@@ -54,7 +58,48 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
+const iaFeatures = [
+  {
+    icon: Wand2,
+    title: "Copiloto de redacción",
+    text: "El equipo anota hallazgos en lenguaje suelto y la IA redacta el Acta de Observaciones, y ayuda a que cada Resolución se lea coherente — no como un mail-merge. Siempre con revisión humana antes de enviarse.",
+    featured: true,
+  },
+  {
+    icon: ScanText,
+    title: "Extracción automática de documentos",
+    text: "Escrituras, cédulas y certificados se leen solos al radicar: los datos llegan pre-llenados al expediente.",
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Verificación de completitud",
+    text: "Antes de que un humano revise, la IA ya avisa si falta algún documento según el tipo de trámite.",
+  },
+  {
+    icon: BookOpenCheck,
+    title: "Normativa en lenguaje natural",
+    text: "POT y NSR-10 consultables en el momento exacto de la revisión técnica, jurídica y estructural.",
+  },
+  {
+    icon: MessageCircle,
+    title: "Seguimiento conversacional",
+    text: 'El ciudadano pregunta "¿en qué va mi trámite?" y recibe una respuesta clara, sin jerga legal.',
+  },
+];
+
 const diferenciadores = [
+  {
+    icon: History,
+    title: "Trazabilidad legal completa",
+    text: "Cada expediente tiene su línea de tiempo, al estilo de las herramientas modernas de gestión de proyectos: quién hizo qué, cuándo y sobre qué documento — auditable de principio a fin.",
+    featured: true,
+  },
+  {
+    icon: BarChart3,
+    title: "Analítica operativa",
+    text: "Dónde se atascan los trámites, cuánto tarda cada área y la carga real de trabajo de su equipo — algo que hoy es imposible de ver.",
+    featured: true,
+  },
   {
     icon: Globe,
     title: "Radicación 100% en línea",
@@ -66,16 +111,6 @@ const diferenciadores = [
     text: "El solicitante consulta el estado real de su expediente en tiempo real, sin llamar ni desplazarse.",
   },
   {
-    icon: History,
-    title: "Trazabilidad legal completa",
-    text: "Cada expediente tiene su línea de tiempo: quién hizo qué, cuándo y sobre qué documento.",
-  },
-  {
-    icon: Sparkles,
-    title: "Inteligencia artificial en cada paso",
-    text: "Extracción de datos de escrituras, certificados y cédulas; verificación de completitud; asistente de redacción de actas y resoluciones; consulta de Normas y NSR-10 en lenguaje natural.",
-  },
-  {
     icon: BellRing,
     title: "Alertas de vencimiento de términos",
     text: "Avisos antes de que se cumpla el plazo legal, no después. Menos desistimientos evitables.",
@@ -84,11 +119,6 @@ const diferenciadores = [
     icon: QrCode,
     title: "Verificación pública por código QR",
     text: "Cualquier tercero confirma la autenticidad de una resolución sin llamar a la curaduría. Antifraude real.",
-  },
-  {
-    icon: BarChart3,
-    title: "Analítica operativa",
-    text: "Dónde se atascan los trámites, cuánto tarda cada área y la carga real de trabajo de su equipo.",
   },
   {
     icon: PenTool,
@@ -120,11 +150,20 @@ function Landing() {
   const year = new Date().getFullYear();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
       <Toaster position="top-center" />
 
-      <header className="surface-dark">
-        <nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
+      <header className="surface-dark relative overflow-hidden">
+        <div
+          className="pointer-events-none absolute -top-24 right-[-10%] h-[32rem] w-[32rem] rounded-full bg-turq-500/20 blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute bottom-[-10rem] left-[-10%] h-[28rem] w-[28rem] rounded-full bg-peri-500/20 blur-3xl"
+          aria-hidden
+        />
+
+        <nav className="relative mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
           <span className="text-lg font-semibold tracking-tight text-lav-50">
             Curaduri<span className="text-turq-400">APP</span>
           </span>
@@ -136,8 +175,12 @@ function Landing() {
           </a>
         </nav>
 
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-10 lg:grid-cols-2 lg:pb-28 lg:pt-16">
+        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-10 lg:grid-cols-2 lg:pb-28 lg:pt-16">
           <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-turq-500/30 bg-turq-500/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-turq-300">
+              <Sparkles className="h-3.5 w-3.5" aria-hidden />
+              Construido por un equipo con 20+ años en el sector
+            </span>
             <h1 className="mt-6 text-4xl font-semibold leading-tight tracking-tight text-lav-50 sm:text-5xl lg:text-6xl">
               La gestión de licencias urbanísticas,{" "}
               <span className="text-gradient-accent">
@@ -152,45 +195,97 @@ function Landing() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a
                 href="#registro"
-                className="inline-flex items-center justify-center gap-2 rounded-md bg-turq-500 px-6 py-3 text-sm font-semibold text-indigo-x-950 transition hover:bg-turq-400"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-turq-500 px-6 py-3 text-sm font-semibold text-indigo-x-950 shadow-lg shadow-turq-500/20 transition hover:bg-turq-400"
               >
                 Quiero conocerlo primero <ArrowRight className="h-4 w-4" aria-hidden />
               </a>
               <a
-                href="#solucion"
+                href="#ia"
                 className="inline-flex items-center justify-center rounded-md border border-lav-400/30 px-6 py-3 text-sm font-medium text-lav-100 transition hover:bg-lav-50/5"
               >
-                Ver qué incluye
+                Ver el copiloto de IA
               </a>
             </div>
           </div>
-          <img
-            src={heroImage}
-            alt="Representación abstracta del recorrido digital de un expediente de licencia urbanística"
-            width={1280}
-            height={960}
-            className="w-full rounded-xl border border-peri-700/50 shadow-2xl"
-          />
+          <div className="relative">
+            <div
+              className="pointer-events-none absolute -inset-4 rounded-2xl bg-gradient-to-br from-turq-500/30 via-peri-500/10 to-transparent blur-2xl"
+              aria-hidden
+            />
+            <img
+              src={heroImage}
+              alt="Representación abstracta del recorrido digital de un expediente de licencia urbanística"
+              width={1280}
+              height={960}
+              className="relative w-full rounded-xl border border-peri-700/50 shadow-2xl"
+            />
+          </div>
         </div>
       </header>
 
+      <section id="ia" className="surface-dark relative overflow-hidden scroll-mt-8">
+        <div
+          className="pointer-events-none absolute left-1/2 top-0 h-[36rem] w-[60rem] -translate-x-1/2 rounded-full bg-turq-500/10 blur-3xl"
+          aria-hidden
+        />
+        <div className="relative mx-auto max-w-6xl px-5 py-20">
+          <span className="inline-flex items-center gap-2 rounded-full border border-turq-500/30 bg-turq-500/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-turq-300">
+            <Sparkles className="h-3.5 w-3.5" aria-hidden />
+            Inteligencia artificial
+          </span>
+          <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-lav-50 sm:text-4xl">
+            Un copiloto de IA en cada paso del expediente
+          </h2>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-lav-200">
+            No es una casilla de "IA" pegada encima del sistema — acompaña el proceso real, desde
+            que se radica hasta que se responde al ciudadano.
+          </p>
+          <div className="mt-12 grid gap-5 lg:grid-cols-3">
+            {iaFeatures.map(({ icon: Icon, title, text, featured }) => (
+              <article
+                key={title}
+                className={`group relative overflow-hidden rounded-xl border border-peri-700/50 bg-indigo-x-900/50 p-6 transition hover:border-turq-500/50 hover:bg-indigo-x-900/80 ${
+                  featured ? "lg:col-span-2" : ""
+                }`}
+              >
+                <div
+                  className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-turq-500/0 blur-2xl transition group-hover:bg-turq-500/20"
+                  aria-hidden
+                />
+                <div className="relative flex h-11 w-11 items-center justify-center rounded-lg bg-turq-500/15 text-turq-300">
+                  <Icon className="h-5.5 w-5.5" aria-hidden />
+                </div>
+                <h3 className="relative mt-4 text-base font-semibold text-lav-50">{title}</h3>
+                <p className="relative mt-2 text-sm leading-relaxed text-lav-200">{text}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section id="solucion" className="mx-auto max-w-6xl px-5 py-20">
         <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-indigo-x-900 sm:text-4xl">
-          Lo que cambia con CuraduriAPP
+          Lo que más cambia con CuraduriAPP
         </h2>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-lav-600">
           Cada función responde a algo que hoy no se puede hacer, o que cuesta demasiado esfuerzo
           hacer bien.
         </p>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {diferenciadores.map(({ icon: Icon, title, text }) => (
+          {diferenciadores.map(({ icon: Icon, title, text, featured }) => (
             <article
               key={title}
-              className="rounded-xl border border-lav-200 bg-card p-6 transition hover:border-turq-500/40"
+              className={`group relative overflow-hidden rounded-xl border border-lav-200 bg-card p-6 transition hover:border-turq-500/50 hover:shadow-lg hover:shadow-turq-500/5 ${
+                featured ? "lg:col-span-2" : ""
+              }`}
             >
-              <Icon className="h-6 w-6 text-turq-600" aria-hidden />
-              <h3 className="mt-4 text-base font-semibold text-indigo-x-900">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-lav-600">{text}</p>
+              <div
+                className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-turq-500/0 blur-2xl transition group-hover:bg-turq-500/10"
+                aria-hidden
+              />
+              <Icon className="relative h-6 w-6 text-turq-600" aria-hidden />
+              <h3 className="relative mt-4 text-base font-semibold text-indigo-x-900">{title}</h3>
+              <p className="relative mt-2 text-sm leading-relaxed text-lav-600">{text}</p>
             </article>
           ))}
         </div>
