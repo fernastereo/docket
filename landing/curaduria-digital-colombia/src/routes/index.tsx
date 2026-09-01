@@ -167,7 +167,7 @@ function Landing() {
         />
 
         <nav className="relative mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
-          <img src={logo} alt="CuraduriAPP" className="h-9 w-auto sm:h-10" />
+          <img src={logo} alt="CuraduriAPP" className="h-12 w-auto sm:h-14" />
           <a
             href="#registro"
             className="rounded-md border border-turq-500/40 px-4 py-2 text-sm font-medium text-turq-300 transition hover:bg-turq-500/10"
