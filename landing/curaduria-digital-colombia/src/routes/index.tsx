@@ -272,17 +272,32 @@ function Landing() {
           aria-hidden
         />
         <div className="relative mx-auto max-w-6xl px-5 py-20">
-          <div className="grid items-center gap-10 lg:grid-cols-2">
-            <Reveal>
-              <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-lav-50 sm:text-4xl">
-                Lo que más cambia con CuraduriAPP
-              </h2>
-              <p className="mt-4 max-w-2xl text-base leading-relaxed text-lav-200">
-                Cada función responde a algo que hoy no se puede hacer, o que cuesta demasiado
-                esfuerzo hacer bien.
-              </p>
-            </Reveal>
-            <Reveal delay={120} className="relative mx-auto w-full max-w-xs lg:max-w-sm">
+          <Reveal>
+            <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-lav-50 sm:text-4xl">
+              Lo que más cambia con CuraduriAPP
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-lav-200">
+              Cada función responde a algo que hoy no se puede hacer, o que cuesta demasiado
+              esfuerzo hacer bien.
+            </p>
+          </Reveal>
+          <div className="mt-12 grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:items-start">
+            <div className="grid gap-5 sm:grid-cols-2">
+              {diferenciadores.map(({ icon: Icon, title, text, featured }, i) => (
+                <Reveal key={title} delay={i * 70} className={featured ? "sm:col-span-2" : ""}>
+                  <article className="group relative h-full overflow-hidden rounded-xl border border-peri-700/50 bg-indigo-x-900/50 p-6 transition hover:-translate-y-1 hover:border-turq-500/40">
+                    <div
+                      className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-turq-500/0 blur-2xl transition group-hover:bg-turq-500/20"
+                      aria-hidden
+                    />
+                    <Icon className="relative h-6 w-6 text-turq-400" aria-hidden />
+                    <h3 className="relative mt-4 text-base font-semibold text-lav-50">{title}</h3>
+                    <p className="relative mt-2 text-sm leading-relaxed text-lav-200">{text}</p>
+                  </article>
+                </Reveal>
+              ))}
+            </div>
+            <Reveal delay={200} className="relative mx-auto w-full max-w-xs lg:sticky lg:top-24">
               <div
                 className="pointer-events-none absolute -inset-6 rounded-[2rem] bg-gradient-to-br from-turq-500/25 via-peri-500/10 to-transparent blur-2xl"
                 aria-hidden
@@ -293,21 +308,6 @@ function Landing() {
                 className="relative w-full rounded-2xl border border-peri-700/50 shadow-2xl"
               />
             </Reveal>
-          </div>
-          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {diferenciadores.map(({ icon: Icon, title, text, featured }, i) => (
-              <Reveal key={title} delay={i * 70} className={featured ? "lg:col-span-2" : ""}>
-                <article className="group relative h-full overflow-hidden rounded-xl border border-peri-700/50 bg-indigo-x-900/50 p-6 transition hover:-translate-y-1 hover:border-turq-500/40">
-                  <div
-                    className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-turq-500/0 blur-2xl transition group-hover:bg-turq-500/20"
-                    aria-hidden
-                  />
-                  <Icon className="relative h-6 w-6 text-turq-400" aria-hidden />
-                  <h3 className="relative mt-4 text-base font-semibold text-lav-50">{title}</h3>
-                  <p className="relative mt-2 text-sm leading-relaxed text-lav-200">{text}</p>
-                </article>
-              </Reveal>
-            ))}
           </div>
         </div>
       </section>
