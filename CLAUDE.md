@@ -106,11 +106,19 @@ ya registrado). Nombre clave del repo (distinto, solo interno): **Docket**.
 verificación pública de actos, analítica operativa, gestión de plazos con
 alertas predictivas (imprescindible), firma electrónica.
 
-Siguiente bloque: por definir con el usuario — candidatos abiertos incluyen
-requisitos documentales por tipo de trámite, roles/RBAC completo,
-liquidación de expensas, o empezar el esqueleto técnico del repo en
-paralelo. Ver `docs/preguntas-abiertas.md` para el detalle completo de
-pendientes abiertos.
+**Landing (`landing/curaduria-digital-colombia/`) en producción** desde
+2026-08-31: `curaduria.app`, captura de leads a Brevo funcionando, alojada
+en Cloudflare Workers (TanStack Start/Nitro).
+
+**Arrancando implementación de la plataforma real** (2026-09-01): orden
+acordado — esqueleto del repo (Laravel + stancl/tenancy + Vue/TS) → base
+central/provisioning → identidad/auth → migraciones del núcleo →
+máquina de estados del Expediente → construir pantalla por pantalla desde
+ahí (los pendientes de `docs/preguntas-abiertas.md` se resuelven sobre la
+marcha, no antes). Infraestructura concretada en el amendment 2026-09-01 de
+ADR-009 (dos droplets, dominio `curaduria.app` compartido con la landing,
+CI/CD con despliegue manual) — **pendiente de ejecutar**, ver esa ADR para
+el estado exacto y qué falta.
 
 **Principio de trabajo para lo que sigue**: al capturar conocimiento del
 legado, no asumir que su diseño (VB6+Access, 20 años) es el patrón a
