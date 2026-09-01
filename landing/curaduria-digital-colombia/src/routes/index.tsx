@@ -224,9 +224,6 @@ function Landing() {
             />
             <div className="relative">
               <DashboardPreview />
-              <p className="mt-3 text-center text-xs text-lav-400">
-                Vista ilustrativa — no representa la interfaz final del sistema.
-              </p>
             </div>
           </div>
         </div>
