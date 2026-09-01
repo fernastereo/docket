@@ -21,6 +21,7 @@ import { LeadForm } from "@/components/LeadForm";
 import { DashboardPreview } from "@/components/DashboardPreview";
 import { Reveal } from "@/components/Reveal";
 import logo from "@/assets/logo.png";
+import tabletPreview from "@/assets/tablet-preview.jpg";
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -271,16 +272,29 @@ function Landing() {
           aria-hidden
         />
         <div className="relative mx-auto max-w-6xl px-5 py-20">
-          <Reveal>
-            <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-lav-50 sm:text-4xl">
-              Lo que más cambia con CuraduriAPP
-            </h2>
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-lav-200">
-              Cada función responde a algo que hoy no se puede hacer, o que cuesta demasiado
-              esfuerzo hacer bien.
-            </p>
-          </Reveal>
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid items-center gap-10 lg:grid-cols-2">
+            <Reveal>
+              <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-lav-50 sm:text-4xl">
+                Lo que más cambia con CuraduriAPP
+              </h2>
+              <p className="mt-4 max-w-2xl text-base leading-relaxed text-lav-200">
+                Cada función responde a algo que hoy no se puede hacer, o que cuesta demasiado
+                esfuerzo hacer bien.
+              </p>
+            </Reveal>
+            <Reveal delay={120} className="relative mx-auto w-full max-w-xs lg:max-w-sm">
+              <div
+                className="pointer-events-none absolute -inset-6 rounded-[2rem] bg-gradient-to-br from-turq-500/25 via-peri-500/10 to-transparent blur-2xl"
+                aria-hidden
+              />
+              <img
+                src={tabletPreview}
+                alt="Vista de referencia de CuraduriAPP en una tablet"
+                className="relative w-full rounded-2xl border border-peri-700/50 shadow-2xl"
+              />
+            </Reveal>
+          </div>
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {diferenciadores.map(({ icon: Icon, title, text, featured }, i) => (
               <Reveal key={title} delay={i * 70} className={featured ? "lg:col-span-2" : ""}>
                 <article className="group relative h-full overflow-hidden rounded-xl border border-peri-700/50 bg-indigo-x-900/50 p-6 transition hover:-translate-y-1 hover:border-turq-500/40">
