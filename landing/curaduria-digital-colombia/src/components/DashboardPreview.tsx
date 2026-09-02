@@ -111,7 +111,7 @@ export function DashboardPreview() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <h4 className="text-base font-semibold text-indigo-x-900">Panel de expedientes</h4>
-              <p className="text-xs text-lav-500">Curaduría Urbana No. 2 · Bucaramanga</p>
+              <p className="text-xs text-lav-500">Curaduría Urbana No. 2 de Barranquilla</p>
             </div>
             <div className="hidden items-center gap-2 sm:flex">
               <Bell className="h-4 w-4 text-lav-400" aria-hidden />

@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { LeadForm } from "@/components/LeadForm";
-import { DashboardPreview } from "@/components/DashboardPreview";
+import { DashboardPreviewAnimated } from "@/components/DashboardPreviewAnimated";
 import { Reveal } from "@/components/Reveal";
 import logo from "@/assets/logo.png";
 import tabletPreview from "@/assets/tablet-preview.jpg";
@@ -223,7 +223,7 @@ function Landing() {
               aria-hidden
             />
             <div className="relative">
-              <DashboardPreview />
+              <DashboardPreviewAnimated />
             </div>
           </div>
         </div>
