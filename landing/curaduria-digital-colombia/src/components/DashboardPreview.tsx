@@ -33,7 +33,7 @@ const stats = [
 ] as const;
 
 const barData = [
-  { label: "Expedida", value: 42, tone: "bg-turq-500" },
+  { label: "Expedidas", value: 42, tone: "bg-turq-500" },
   { label: "En estudio", value: 34, tone: "bg-peri-500" },
   { label: "Radicado", value: 18, tone: "bg-lav-400" },
   { label: "Con observaciones", value: 9, tone: "bg-indigo-x-500" },
@@ -84,7 +84,7 @@ export function DashboardPreview() {
         <span className="h-2.5 w-2.5 rounded-full bg-lav-300" aria-hidden />
         <span className="h-2.5 w-2.5 rounded-full bg-lav-300" aria-hidden />
         <span className="h-2.5 w-2.5 rounded-full bg-lav-300" aria-hidden />
-        <span className="ml-3 truncate rounded-md bg-white px-3 py-1 text-xs text-lav-500">
+        <span className="ml-3 min-w-0 flex-1 truncate rounded-md bg-white px-3 py-1 text-xs text-lav-500">
           curaduria.app/expedientes
         </span>
       </div>
@@ -124,7 +124,7 @@ export function DashboardPreview() {
 
           <div className="mt-4 flex items-center gap-2 rounded-md border border-lav-200 bg-lav-50 px-3 py-2">
             <Search className="h-3.5 w-3.5 shrink-0 text-lav-400" aria-hidden />
-            <span className="truncate text-xs text-lav-400">
+            <span className="min-w-0 flex-1 truncate text-xs text-lav-400">
               Buscar por radicado, solicitante o predio…
             </span>
             <span className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-md bg-turq-500 px-2.5 py-1 text-[11px] font-semibold text-indigo-x-950">
@@ -137,7 +137,10 @@ export function DashboardPreview() {
             {stats.map((s) => {
               const t = toneStyles[s.tone];
               return (
-                <div key={s.label} className="rounded-lg border border-lav-200 bg-lav-50 p-3">
+                <div
+                  key={s.label}
+                  className="min-w-0 rounded-lg border border-lav-200 bg-lav-50 p-3"
+                >
                   <div
                     className={`inline-flex h-6 w-6 items-center justify-center rounded-md ${t.icon}`}
                   >
@@ -171,7 +174,7 @@ export function DashboardPreview() {
           </div>
 
           <div className="mt-4 overflow-hidden rounded-lg border border-lav-200">
-            <div className="grid grid-cols-[1fr_1.4fr_1fr] gap-2 bg-lav-50 px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-lav-500">
+            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1fr)] gap-2 bg-lav-50 px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-lav-500">
               <span>Radicado</span>
               <span>Solicitante</span>
               <span>Estado</span>
@@ -181,9 +184,9 @@ export function DashboardPreview() {
               return (
                 <div
                   key={e.radicado}
-                  className="grid grid-cols-[1fr_1.4fr_1fr] items-center gap-2 border-t border-lav-200 px-3 py-2"
+                  className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1fr)] items-center gap-2 border-t border-lav-200 px-3 py-2"
                 >
-                  <span className="truncate text-[11px] text-lav-600">{e.radicado}</span>
+                  <span className="min-w-0 truncate text-[11px] text-lav-600">{e.radicado}</span>
                   <span className="flex min-w-0 items-center gap-1.5">
                     <span
                       className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-semibold ${t.avatar}`}
@@ -193,7 +196,7 @@ export function DashboardPreview() {
                     <span className="truncate text-[11px] text-indigo-x-900">{e.solicitante}</span>
                   </span>
                   <span
-                    className={`w-fit truncate rounded-full px-2 py-0.5 text-[10px] font-medium ${t.pill}`}
+                    className={`min-w-0 truncate rounded-full px-2 py-0.5 text-[10px] font-medium ${t.pill}`}
                   >
                     {e.estado}
                   </span>

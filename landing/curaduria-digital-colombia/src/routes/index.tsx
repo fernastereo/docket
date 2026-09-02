@@ -167,7 +167,7 @@ function Landing() {
         />
 
         <nav className="relative mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
-          <img src={logo} alt="CuraduriAPP" className="h-12 w-auto sm:h-14" />
+          <img src={logo} alt="CuraduriAPP" className="h-12 w-auto sm:h-14 rounded-full" />
           <a
             href="#registro"
             className="rounded-md border border-turq-500/40 px-4 py-2 text-sm font-medium text-turq-300 transition hover:bg-turq-500/10"
@@ -176,17 +176,17 @@ function Landing() {
           </a>
         </nav>
 
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-10 lg:grid-cols-2 lg:pb-28 lg:pt-16">
-          <div>
-            <span className="animate-fade-in-up inline-flex items-center gap-2 rounded-full border border-turq-500/30 bg-turq-500/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-turq-300">
-              <Sparkles className="h-3.5 w-3.5" aria-hidden />
-              Construido por un equipo con 20+ años en el sector
+        <div className="relative mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-5 pb-20 pt-6 lg:grid-cols-2 lg:pb-28 lg:pt-6">
+          <div className="min-w-0">
+            <span className="animate-fade-in-up flex w-fit max-w-full items-start gap-2 rounded-full border border-turq-500/30 bg-turq-500/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-turq-300">
+              <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+              <span className="min-w-0">Construido por un equipo con 20+ años en el sector</span>
             </span>
             <h1
               className="animate-fade-in-up mt-6 text-4xl font-semibold leading-tight tracking-tight text-lav-50 sm:text-5xl lg:text-6xl"
               style={{ animationDelay: "80ms" }}
             >
-              La gestión de licencias urbanísticas,{" "}
+              La gestión de licencias urbanísticas{" "}
               <span className="text-gradient-accent">
                 por fin a la altura de su responsabilidad legal
               </span>
@@ -217,7 +217,7 @@ function Landing() {
               </a>
             </div>
           </div>
-          <div className="animate-fade-in-up relative" style={{ animationDelay: "200ms" }}>
+          <div className="animate-fade-in-up relative min-w-0" style={{ animationDelay: "200ms" }}>
             <div
               className="pointer-events-none absolute -inset-4 rounded-2xl bg-gradient-to-br from-turq-500/30 via-peri-500/10 to-transparent blur-2xl"
               aria-hidden
@@ -239,8 +239,8 @@ function Landing() {
             Un copiloto de IA en cada paso del expediente
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-lav-600">
-            No es una casilla de "IA" pegada encima del sistema — acompaña el proceso real, desde
-            que se radica hasta que se responde al ciudadano.
+            No es una casilla de "IA" pegada encima del sistema, acompaña el proceso real, desde que
+            se radica hasta que se responde al ciudadano.
           </p>
         </Reveal>
         <div className="mt-12 grid gap-5 lg:grid-cols-3">

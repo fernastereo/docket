@@ -15,7 +15,7 @@ type Phase = "closed" | "button" | "question" | "thinking" | "answer" | "closing
 
 const QUESTION = "¿Qué documentación aún falta en el expediente 2026-0341?";
 const ANSWER =
-  "Para el expediente 2026-0341 aún falta la copia del Certificado de Tradición y Libertad con no más de 30 días de expedida y la fotografía de la valla instalada. Valdría la pena enviar un recordatorio al solicitante. Quieres que redacte un email y lo envíe al solicitante?";
+  "Para el expediente 2026-0341 aún falta la copia del Certificado de Tradición y Libertad con no más de 30 días de expedida y la fotografía de la valla instalada. Valdría la pena enviar un recordatorio al solicitante. Quieres que redacte un email y se lo envíe?";
 
 // Duración de cada fase, en ms.
 const TYPE_SPEED = 32;
@@ -95,7 +95,7 @@ export function DashboardPreviewAnimated() {
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-turq-400 to-peri-500 text-white">
             <Sparkles className="h-3 w-3" aria-hidden />
           </span>
-          <p className="truncate text-[11px] font-semibold text-indigo-x-900">
+          <p className="min-w-0 flex-1 truncate text-[11px] font-semibold text-indigo-x-900">
             Copiloto · Expediente 2026-0341
           </p>
         </div>
