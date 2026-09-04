@@ -56,6 +56,13 @@ cada término es definitiva.
    - **Query scopes** para filtros reutilizables.
    - **Query classes dedicadas** para consultas genuinamente complejas
      (dashboards, reportes SNR, búsquedas multi-criterio).
+9. **Campos personalizados por tenant** (ADR-016): catálogo tenant-local de
+   definiciones/ubicaciones + valores en columna `custom_fields jsonb` sobre
+   las entidades extensibles. **No contradice** este ADR: los metatipos
+   (`entity_type`, `data_type`, `surface`, `mode`) son enums PHP (punto 7),
+   el esquema físico es idéntico en todos los tenants (nada de DDL en runtime),
+   la escritura pasa por acciones de dominio (punto 1) y cada cambio emite
+   evento → audit (punto 6). Nunca se usa `ALTER TABLE` por tenant para esto.
 
 ### SOLID pragmático
 

@@ -11,7 +11,9 @@ o varias **clases** de trámite a la vez (`docs/dominio/expediente.md`), cada
 una con sus propias **modalidades**. Cubre tanto licencias urbanísticas
 propiamente dichas como "Otras Actuaciones" — trámites vinculados al
 desarrollo de proyectos urbanísticos/arquitectónicos que no son licencias en
-sí. Estructura alineada con el Decreto 1077/2015.
+sí. Estructura alineada con el Decreto 1077/2015 — las definiciones de clases
+y modalidades provienen de los arts. 2.2.6.1.1.1 y ss. (rango 2.2.6.1.1.1 a
+2.2.6.6.9.2, ver `docs/dominio/flujo-tramite.md`).
 
 ## Catálogo (Clase → Modalidades)
 

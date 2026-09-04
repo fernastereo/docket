@@ -105,6 +105,15 @@ congelamiento al expedirse. Se mantiene como entidad aparte por su peso legal
 propio y sus relaciones específicas (con Expediente y con Tipo de Trámite),
 no se fusiona con Documento.
 
+## Campos personalizados
+
+Cada curaduría puede definir **campos personalizados** sobre Documento
+(`docs/adr/ADR-016-campos-personalizados-tenant.md`), incluidos campos de
+fusión (`surface = documento.merge_fields`) que quedan disponibles en la
+`PlantillaDocumento` de los documentos generados vinculantes. Es un mecanismo
+transversal, hermano —no sustituto— de `PlantillaDocumento` y del catálogo
+configurable `TipoDocumentoGenerado`.
+
 ## Pendiente
 
 - Catálogo de requisitos documentales por tipo de trámite/modalidad (qué

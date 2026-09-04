@@ -32,8 +32,8 @@ donde un humano hoy redacta, busca normativa o resume información a mano.
      un mail-merge mecánico de espacios en blanco.
    - **Revisión de lenguaje**: sobre el documento ya generado (editable o a
      punto de expedirse), la IA señala posibles fallas o inconsistencias de
-     redacción (no de contenido legal) para que el usuario las identifique y
-     corrija fácilmente antes de expedir.
+     redacción (y si es posible tambien de contenido legal) para que el usuario 
+     las identifique y corrija fácilmente antes de expedir.
 5. **Cálculo asistido de expensas** y liquidaciones.
 6. **Portal ciudadano** con seguimiento de trámite y chatbot de estado del
    expediente — de cara al ciudadano, responde en lenguaje natural sobre el

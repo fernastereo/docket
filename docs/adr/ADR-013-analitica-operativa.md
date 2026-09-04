@@ -54,6 +54,11 @@ pendiente en `docs/preguntas-abiertas.md`).
   implementación.
 - Definir el catálogo completo de métricas más allá de las 4 listadas
   arriba (a medida que se use el sistema real saldrán más).
+- **Campos personalizados en la analítica** (ADR-016): las definiciones
+  marcadas `reportable` se proyectan a columnas tipadas dentro de esa misma
+  capa de lectura agregada (vistas materializadas / tablas de resumen), para
+  que una curaduría pueda reportar/segmentar por sus variables propias sin
+  acoplar el esquema transaccional. Nunca vía columnas reales por tenant.
 - Si esta analítica se ofrece también agregada a nivel de toda la
   plataforma (benchmarks entre curadurías, de forma anónima) — decisión de
   producto/negocio, no solo técnica; requiere cuidado por el principio de

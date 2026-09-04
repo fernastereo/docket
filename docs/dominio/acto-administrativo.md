@@ -77,6 +77,14 @@ generan en el momento que corresponda dentro del trámite. Detalle completo en
   componente se abordan en el bloque de IA/implementación, no en este
   documento de dominio.
 
+## Campos personalizados
+
+Cada curaduría puede definir **campos personalizados** sobre el Acto
+Administrativo (`docs/adr/ADR-016-campos-personalizados-tenant.md`). Los que se
+marquen como campo de fusión (`surface = acto.merge_fields`) quedan disponibles
+en la `PlantillaDocumento` del acto (`{{ cf.<key> }}`), sin código — la vía
+para que una curaduría lleve un dato propio suyo al texto de la resolución.
+
 ## Pendiente
 
 - Precisar, en el bloque de flujo del trámite, el mecanismo de asociación

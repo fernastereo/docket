@@ -23,13 +23,18 @@ Se adopta **database-per-tenant**:
 - Una sola aplicación desplegada (código único, versión única).
 - Una **base de datos central** que contiene únicamente el catálogo de tenants:
   curadurías registradas, configuración (municipio, POT aplicable, tarifas de
-  expensas, branding), mapeo dominio→tenant y autenticación global si aplica.
-  **Ningún dato de negocio** (expedientes, licencias, documentos) reside aquí.
+  expensas, branding), mapeo dominio→tenant e identidades de acceso de
+  solicitantes y de plataforma (ADR-005). **Ningún dato de negocio**
+  (expedientes, licencias, documentos) reside aquí.
 - Una **base PostgreSQL por curaduría** con el esquema completo del negocio,
-  idéntico entre tenants.
-- Resolución del tenant por **subdominio** (ej. curaduria1bquilla.plataforma.com),
-  resuelta en un listener temprano del request que configura la conexión Doctrine
-  antes de ejecutar lógica de negocio.
+  idéntico entre tenants. La personalización por curaduría (campos
+  personalizados, ADR-016; catálogos configurables) vive en **datos** —filas de
+  catálogo tenant-local y valores JSONB—, **nunca** en variaciones de esquema:
+  el DDL sigue siendo una sola secuencia de migraciones para todos los tenants.
+- Resolución del tenant por **subdominio** (ej. barranquilla1.curaduria.app),
+  resuelta temprano en el ciclo del request (middleware de stancl/tenancy,
+  ADR-003) que conmuta la conexión de base de datos del tenant antes de
+  ejecutar lógica de negocio.
 
 ## Consecuencias
 
@@ -43,12 +48,12 @@ Positivas:
   de documentos aislados.
 
 Costos / obligaciones:
-- **Migraciones de esquema**: comando propio que itera el catálogo de tenants y
-  ejecuta doctrine:migrations contra cada base, con manejo de fallos parciales.
-  Debe existir en el pipeline desde el inicio.
+- **Migraciones de esquema**: `tenants:migrate` (stancl/tenancy) itera el
+  catálogo de tenants y aplica las migraciones contra cada base, con manejo de
+  fallos parciales. Debe existir en el pipeline desde el inicio.
 - **Provisioning**: alta de curaduría = un comando (crear BD + migrar + seed +
-  subdominio).
+  subdominio + disco de archivos).
 - **Conexiones**: con decenas de tenants, introducir PgBouncer.
-- En Symfony: múltiples conexiones/entity managers o bundle de multi-tenancy
-  (evaluar hakam/multi-tenancy-bundle vs implementación propia con
-  ConnectionWrapper). → pendiente en preguntas abiertas.
+- **Plomería multi-tenant**: la resuelve stancl/tenancy (ADR-003) —
+  conmutación de conexión por tenant, jobs tenant-aware y disco de archivos por
+  tenant (ADR-007). No se implementa a mano.

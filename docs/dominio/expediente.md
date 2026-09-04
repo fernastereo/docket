@@ -161,6 +161,16 @@ usuario interno de la curaduría. Detalle completo en
   modificación/revalidación **con acto anterior de la propia curaduría**) —
   ver "Expedientes relacionados" arriba para el caso de acto anterior externo.
 
+## Campos personalizados
+
+Además de los atributos modelados aquí, cada curaduría puede definir **campos
+personalizados** sobre el Expediente (y sobre sus relaciones con Solicitante,
+Empleado y Predio) — tipo de dato y pantallas donde aparecen configurables por
+tenant, sin cambio de esquema. Mecanismo transversal definido en
+`docs/adr/ADR-016-campos-personalizados-tenant.md`. Un campo personalizado
+puede marcarse obligatorio para una transición de estado (ver
+`docs/dominio/flujo-tramite.md`).
+
 ## Pendiente
 
 - Catálogo de estados internos y su mapeo a estados públicos (bloque futuro).

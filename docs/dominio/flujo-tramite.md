@@ -11,6 +11,12 @@ radicación hasta el cierre. Camino principal descrito abajo; la **negación**
 puede ocurrir en más de un punto (ver sección propia) y siempre desvía
 directo a redacción de Resolución.
 
+**Base legal**: el proceso de estudio y expedición de licencias está reglado
+en el Decreto 1077/2015, arts. **2.2.6.1.1.1 a 2.2.6.6.9.2** (definiciones,
+procedimiento de estudio/expedición y cálculo de expensas). Los estados y
+plazos de abajo son la lectura operativa de ese procedimiento; las
+particularidades por curaduría se marcan como configurables.
+
 ## Máquina de estados configurable por curaduría
 
 **No es una máquina de estados única y fija para todas las curadurías.**
@@ -25,6 +31,15 @@ adicionales propios sin que eso rompa el modelo.
 Un valor como `SIN ESTADO` (IDESTADO 0) del legado es un **placeholder
 técnico** (registro sin clasificar), no un estado de negocio — no se
 replica.
+
+**Campos personalizados como requisito de transición**: una curaduría puede
+exigir que uno o más campos personalizados del expediente
+(`docs/adr/ADR-016-campos-personalizados-tenant.md`,
+`surface = workflow.transition_requirement`) estén diligenciados para permitir
+una transición concreta. Se evalúa como invariante de dominio en el guard de
+la transición (ADR-011); si falta el valor, la transición se rechaza
+(`MissingRequiredCustomFieldException` → 422). El requisito puede condicionarse
+(ej. solo si la clase es Construcción).
 
 ## Estados internos y transiciones (núcleo común)
 

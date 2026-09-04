@@ -42,9 +42,16 @@ un término entra aquí y al código, no se cambia.
 | Calidad en que actúa | Acting capacity (?) | Propietario, apoderado, representante legal... |
 | Tercero | Party (?) | Reservado — concepto futuro, distinto de Solicitante; no usar todavía. |
 | Representante legal | Legal representative (?) | Persona natural (Solicitante) que representa a una jurídica; relación con vigencia. |
-| Empresa (persona jurídica) | Company (?) | Tipo de identidad central desde el amendment 2026-08-31 a ADR-005; ver `docs/dominio/solicitante.md`. |
+| Empresa (persona jurídica) | Company (?) | Tipo de identidad central desde el amendment 2026-08-27 a ADR-005; ver `docs/dominio/solicitante.md`. |
+| Identidad central | Central identity | Cuenta única en la base central. Solo solicitantes y usuarios de plataforma (ADR-005 amendment 2026-09-02). |
+| Cuenta de empleado | Employee account | Credencial + rol(es) + vigencia + estado, **local a la base del tenant**, gobernada por la curaduría. Absorbe la membresía (ADR-005 amendment 2026-09-02). |
+| Membresía | Membership | Vínculo persona↔curaduría con rol y vigencia. Para empleados va dentro de la cuenta de empleado; para ciudadanos referencia la identidad central. |
 | Nomenclatura (dirección) | Address numbering (?) | Componente de la dirección de un predio. |
 | Catálogo autogestionado | Self-managed catalog (?) | Patrón para barrio/comuna/localidad/corregimiento en Predio: se selecciona si existe, se crea si no. |
+| Campo personalizado | Custom field | Campo definido por un tenant sobre una entidad del núcleo, con tipo y ubicaciones configurables, sin cambio de esquema (ADR-016). |
+| Definición de campo | Field definition | Metadato de un campo personalizado: `key`, tipo de dato, validación, etc. (`custom_field_definitions`). |
+| Ubicación (de campo) | Placement | Dónde se muestra un campo personalizado: surface + sección + modo + reglas (`custom_field_placements`). |
+| Superficie | Surface | Punto de extensión que la app expone para ubicar campos personalizados (formulario, detalle, campo de fusión, listado, reporte, portal, transición). |
 | Equipo asignado | Assigned team (?) | Relación Expediente↔Empleado con rol y vigencia (arquitecto, ingeniero civil, abogado); curador aparte, aprueba al final. |
 | Estado interno | Internal status (?) | Estado detallado del expediente, uso operativo de la curaduría. |
 | Estado público | Public status (?) | Estado simplificado, derivado del interno, de cara al ciudadano. |

@@ -108,6 +108,14 @@ radicado en el expediente. Quién actúa respecto a un predio (como propietario,
 apoderado, etc.) es información que vive en la relación Expediente↔Solicitante
 (ver `docs/dominio/solicitante.md`), no en el Predio.
 
+## Campos personalizados
+
+Cada curaduría puede definir **campos personalizados** sobre Predio (tipo de
+dato y pantallas configurables por tenant, sin cambio de esquema) — mecanismo
+transversal en `docs/adr/ADR-016-campos-personalizados-tenant.md`. Es la vía
+para variables particulares de un predio que no forman parte del núcleo
+modelado arriba, sin volver texto libre lo que hoy está estructurado.
+
 ## Pendiente
 
 - Flujo de UX de la deduplicación: si al coincidir `(orip, consecutivo)` con

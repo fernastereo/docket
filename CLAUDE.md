@@ -13,7 +13,7 @@ dominio es profundo y debe capturarse en docs/dominio/ a medida que se defina.
 Las Curadurías Urbanas son oficinas privadas que ejercen función pública:
 estudian, tramitan y expiden licencias urbanísticas (urbanización, construcción,
 parcelación, subdivisión, etc.). Marco legal: Ley 388/1997, Ley 1796/2016,
-Decreto 1077/2015. Vigiladas por la Superintendencia de Notariado y Registro.
+Decreto 1077/2015 (principal) más concretamente del artículo 2.2.6.1.1.1 hasta el artículo 2.2.6.6.9.2, dónde se dan las principales definiciones y se detalla el proceso de estudio y expedición de licencias, tambien el procedimiento para el cálculo de expensas. Vigiladas por la Superintendencia de Notariado y Registro.
 Las licencias son actos administrativos: trazabilidad y valor legal del
 expediente son críticos.
 
@@ -28,11 +28,16 @@ expediente son críticos.
   **stancl/tenancy**.
 - **ADR-004 — IA** (borrador): extracción documental OCR+LLM, verificación de
   completitud, RAG normativo (nacional compartido + local por tenant en
-  pgvector), redacción asistida de actos.
+  pgvector), redacción asistida de actos, consultas contextualizadas por expediente, 
+  asistencia en generacion de listados con caracteristicas especiales, 
+  acompañamiento en cada etapa del expediente.
 - **ADR-005 — Identidad y membresías**: identidad única en la central (UUID,
-  documento de identidad como llave natural; ciudadanos y empleados);
-  membresía + RBAC en la base de cada tenant. La central nunca revela en qué
-  curadurías tiene trámites una persona.
+  documento como llave natural) **solo para solicitantes y usuarios de
+  plataforma**; las cuentas de empleado son locales al tenant, las gobierna
+  cada curaduría y absorben la membresía (rol + vigencia + estado); RBAC en la
+  base de cada tenant. La central nunca revela en qué curadurías tiene trámites
+  o empleo una persona. Amendments: 2026-08-27 (persona jurídica), 2026-09-02
+  (empleado local al tenant, sin vista nacional, conflicto de interés).
 - **ADR-006 — Enrolamiento**: radicación en línea desde el MVP; todo
   solicitante es usuario; radicación por ventanilla crea cuenta pendiente de
   activación con token de un solo uso (email / SMS-WhatsApp / código impreso).
@@ -62,6 +67,12 @@ expediente son críticos.
 - **ADR-015 — Firma electrónica de actos administrativos** (borrador):
   interfaz + proveedor colombiano externo (por elegir), firma sobre
   documento congelado, integrada con ADR-012.
+- **ADR-016 — Campos personalizados por tenant** (modelo cerrado, implementación
+  por fases): catálogo tenant-local de definiciones + ubicaciones + valores en
+  columna `custom_fields jsonb`; sin EAV, sin DDL en runtime, esquema idéntico
+  entre tenants. Cubre formularios, detalle, campos de fusión, listados/filtros,
+  analítica y portal ciudadano; puede exigir campos para una transición de
+  estado. Resuelve el problema del legado (una versión por curaduría).
 
 - **ADR-011 — Principios de código**: Laravel idiomático + capa de dominio:
   acciones de dominio como única vía de escritura, controladores delgados
@@ -77,7 +88,9 @@ expediente son críticos.
 ## Principios del proyecto
 
 1. Aislamiento de datos de negocio por curaduría es innegociable; la central
-   solo contiene catálogo de tenants e identidades de acceso.
+   solo contiene catálogo de tenants e identidades de acceso de solicitantes y
+   de plataforma (las cuentas de empleado viven en la base de cada tenant —
+   ADR-005 amendment 2026-09-02).
 2. Trazabilidad legal: audit log completo desde el día uno.
 3. Provisioning y migraciones multi-tenant automatizados (stancl/tenancy:
    `tenants:migrate`), con manejo de fallos parciales.
@@ -90,8 +103,13 @@ expediente son críticos.
 ## Estado actual
 
 Planeación. Cuestiones generales de arquitectura y principios de código
-CERRADOS (ADR-001 a 011; ADR-005 con amendment 2026-08-31 — identidad de
-persona jurídica). **Modelo de dominio del núcleo CERRADO** (2026-08-27 a
+CERRADOS (ADR-001 a 011; ADR-005 con amendments 2026-08-27 — identidad de
+persona jurídica — y 2026-09-02 — cuentas de empleado locales al tenant,
+fusionadas con la membresía; sin vista nacional para solicitantes; conflicto
+de interés). **Campos personalizados por tenant** (ADR-016, 2026-09-02):
+modelo cerrado, implementación por fases — catálogo + JSONB, sin DDL por
+tenant; elimina el problema del legado de una versión por curaduría.
+**Modelo de dominio del núcleo CERRADO** (2026-08-27 a
 2026-08-31): Solicitante, Predio, Expediente, Tipo de Trámite (reemplaza a
 "Licencia" — incluye Otras Actuaciones), Acto Administrativo, Documento —
 ver `docs/dominio/`. Radicación quedó como atributos de Expediente, no como

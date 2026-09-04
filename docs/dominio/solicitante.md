@@ -100,6 +100,14 @@ conceptualmente al `RepresentanteLegal` vigente en la fecha del acto.
   representante como un Solicitante natural más, vinculado vía
   `RepresentanteLegal`.
 
+## Campos personalizados
+
+Cada curaduría puede definir **campos personalizados** sobre Solicitante
+(`docs/adr/ADR-016-campos-personalizados-tenant.md`). Viven en la **copia
+tenant-local** del Solicitante (los atributos cacheados de arriba), **no** en
+la identidad central — coherente con ADR-005 (central mínima, amendment
+2026-09-02). También aplican a la relación `Expediente ↔ Solicitante`.
+
 ## Consecuencias / pendientes
 
 - ADR-005 fue enmendado (2026-08-27) para admitir identidad de persona
