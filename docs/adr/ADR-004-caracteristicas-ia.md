@@ -74,4 +74,8 @@ donde un humano hoy redacta, busca normativa o resume información a mano.
 
 - Priorización (¿cuál es el MVP de IA?).
 - Proveedor de LLM y costos por trámite.
-- Manejo de datos personales en prompts (Ley 1581 de 2012).
+- Manejo de datos personales en prompts (Ley 1581 de 2012): gobernado por
+  ADR-017 — minimización/redacción antes del prompt, DPA + garantía de
+  no-entrenamiento con el proveedor, y documentar qué dato sale del tenant.
+- La ruta que descarga documentos para OCR/LLM valida URLs y bloquea rangos
+  privados/metadata (control anti-SSRF de ADR-017, capa 3).

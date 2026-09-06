@@ -41,3 +41,8 @@ avanza normalmente.
   deduplicación por documento.
 - Todo solicitante, venga de donde venga, puede terminar consultando su
   expediente en línea (mejora de servicio vendible).
+- El enrolamiento es el punto donde se capturan el **aviso de privacidad y la
+  autorización de tratamiento** de datos personales — anclaje del cumplimiento
+  Ley 1581/2012 de ADR-017 (registro RNBD, derechos del titular, política de
+  tratamiento). Los tokens de activación firmados/un-solo-uso/TTL son además un
+  control de seguridad de ADR-017 (capa 4).

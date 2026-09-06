@@ -73,6 +73,14 @@ expediente son críticos.
   entre tenants. Cubre formularios, detalle, campos de fusión, listados/filtros,
   analítica y portal ciudadano; puede exigir campos para una transición de
   estado. Resuelve el problema del legado (una versión por curaduría).
+- **ADR-017 — Seguridad de la plataforma** (postura fijada, implementación por
+  fases): defensa en profundidad por capas. Borde Cloudflare Pro (DDoS + WAF +
+  rate limiting + bots), origin lock, DO VPC, malla VPN sin SSH público,
+  hardening CIS de host/Docker, cabeceras + CORS + rate limiting en la app,
+  Argon2id + MFA (opcional-incentivada para empleados, obligatoria para
+  plataforma), ClamAV en subidas, credencial de BD por tenant, scanners de
+  seguridad en CI, backups inmutables, plan de respuesta a incidentes. Baseline
+  Ley 1581 + alineación OWASP ASVS / CIS. Políticas en `docs/seguridad/`.
 
 - **ADR-011 — Principios de código**: Laravel idiomático + capa de dominio:
   acciones de dominio como única vía de escritura, controladores delgados
@@ -99,6 +107,8 @@ expediente son críticos.
 5. La IA asiste, no decide: todo acto administrativo pasa por revisión humana.
 6. Migración del legado 1:1 — cada curaduría tiene su propio .mdb → su
    PostgreSQL.
+7. Seguridad por defecto / defensa en profundidad (ADR-017); la disponibilidad
+   es riesgo legal (hay plazos en días hábiles corriendo).
 
 ## Estado actual
 
@@ -109,6 +119,10 @@ fusionadas con la membresía; sin vista nacional para solicitantes; conflicto
 de interés). **Campos personalizados por tenant** (ADR-016, 2026-09-02):
 modelo cerrado, implementación por fases — catálogo + JSONB, sin DDL por
 tenant; elimina el problema del legado de una versión por curaduría.
+**Postura de seguridad CERRADA** (ADR-017, 2026-09-06): defensa en profundidad
+por capas, Cloudflare Pro, malla VPN, baseline Ley 1581 + OWASP/CIS; controles
+de infra en el amendment 2026-09-06 de ADR-009; políticas por redactar en
+`docs/seguridad/`.
 **Modelo de dominio del núcleo CERRADO** (2026-08-27 a
 2026-08-31): Solicitante, Predio, Expediente, Tipo de Trámite (reemplaza a
 "Licencia" — incluye Otras Actuaciones), Acto Administrativo, Documento —

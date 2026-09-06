@@ -71,3 +71,9 @@ un término entra aquí y al código, no se cambia.
 | Requisito documental | Document requirement (?) | Catálogo (pendiente) de documentos radicados esperados por tipo/modalidad de trámite. |
 | ORIP (Oficina de Registro de Instrumentos Públicos) | ORIP (se mantiene la sigla) | No traducir — catálogo precargado, código+nombre de oficina; prefijo de la matrícula inmobiliaria. |
 | Consecutivo (de matrícula inmobiliaria) | Sequence number (?) | Hasta 10 dígitos; junto con ORIP forma la llave de deduplicación de Predio. |
+| Defensa en profundidad | Defense in depth | Modelo de seguridad por capas de ADR-017. |
+| WAF | WAF | Web Application Firewall; en el borde vía Cloudflare Pro (ADR-017). |
+| Origin lock | Origin lock | Firewall del origen que solo acepta tráfico web desde las IPs de Cloudflare (ADR-017). |
+| MFA / segundo factor | MFA / 2FA | TOTP; opcional para empleados, obligatoria para plataforma (ADR-017). |
+| Blind index | Blind index | Índice sobre hash con clave que permite buscar un campo cifrado sin exponerlo en claro (ADR-017). |
+| RNBD | RNBD | Registro Nacional de Bases de Datos de la SIC; obligación Ley 1581 (ADR-017). |

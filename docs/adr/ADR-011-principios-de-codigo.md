@@ -85,7 +85,14 @@ cada término es definitiva.
 - Cobertura pragmática, pero **tests obligatorios** para lo que tiene
   consecuencias legales o de dinero: transiciones de estado, liquidación de
   expensas, numeración de radicados, y **aislamiento de tenants** (tests que
-  verifican que el tenant A jamás ve datos del B).
+  verifican que el tenant A jamás ve datos del B). Un test de aislamiento en
+  rojo **bloquea el deploy** (ADR-017).
+- **Scanners de seguridad en CI** (ADR-017, capa 7): `composer audit`,
+  `npm audit --audit-level=high`, secret scanning (gitleaks), SAST (CodeQL o
+  Semgrep) y Trivy sobre la imagen. Un fallo bloquea el merge/deploy.
+- **Seguro por defecto**: cabeceras de seguridad, CORS estricto, rate limiting
+  y `APP_DEBUG=false` en prod son parte del esqueleto, no un añadido posterior
+  (detalle en ADR-017).
 
 ### Frontend
 

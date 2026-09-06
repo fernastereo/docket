@@ -54,6 +54,24 @@ Separar **identidad** de **membresía**:
   las credenciales de la cuenta de la empresa (quién dentro de la empresa las
   conoce/usa) es responsabilidad de la empresa, no del sistema.
 
+## Seguridad de credenciales
+
+Controles de autenticación (detalle y capas en `docs/adr/ADR-017-seguridad-plataforma.md`):
+
+- Contraseñas con **Argon2id** + chequeo contra brechas (HIBP k-anonymity), sin
+  rotación forzada.
+- **MFA (TOTP)** disponible para todas las cuentas. Empleados de curaduría:
+  opcional pero incentivada (riesgo residual documentado en ADR-017 — se
+  recomienda hacerla obligatoria para curador y admin de tenant antes del
+  go-live). Soporte/superadmin de plataforma: **obligatoria**.
+- Login con rate limit + backoff + bloqueo; sesiones/tokens de corta duración,
+  con timeout por inactividad y absoluto, rotación al cambiar privilegio o
+  contraseña, y revocación server-side.
+- Tokens de enrolamiento (ADR-006): firmados, un solo uso, con TTL.
+- El **documento** como llave natural puede requerir hash con clave / blind
+  index en vez de texto plano donde el modelo de amenaza lo justifique — se
+  decide al modelar.
+
 ## Reglas de privacidad entre tenants
 
 - Al buscar por cédula desde ventanilla, la central responde únicamente si la

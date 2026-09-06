@@ -3,7 +3,9 @@
 Lista viva. Al resolverse, mover la decisión a un ADR.
 
 ## Arquitectura / plataforma
-- [ ] Escaneo antivirus y límites (tamaño/tipos) de documentos subidos.
+- [x] Escaneo antivirus y límites (tamaño/tipos) de documentos subidos —
+      resuelto en ADR-017 (ClamAV async, allowlist MIME+extensión, tope de
+      tamaño, cuarentena) y reflejado en ADR-007.
 - [ ] Preferencias de canal de notificación por usuario y catálogo de eventos
       que notifican.
 - [ ] Estrategia de deduplicación/colisiones de identidad de **solicitante**
@@ -18,13 +20,22 @@ Lista viva. Al resolverse, mover la decisión a un ADR.
       `docs/adr/ADR-015-firma-electronica.md` (interfaz + proveedor
       colombiano externo); falta elegir proveedor concreto (Certicámara,
       GSE u otro).
-- [ ] Cumplimiento Ley 1581/2012 (datos personales): política, avisos,
-      tratamiento en prompts de IA.
+- [ ] Cumplimiento Ley 1581/2012: marco fijado en ADR-017 (baseline + RNBD +
+      aviso/autorización en enrolamiento + derechos del titular + notificación
+      de incidentes). Falta ejecutar: **registro RNBD ante la SIC** (antes del
+      primer tenant real con datos de ciudadanos) y redactar la política de
+      tratamiento publicada.
 - [ ] Campos personalizados por tenant (ADR-016): **modelo cerrado**, quedan
       detalles — roles que pueden gestionar definiciones (engancha con RBAC del
       tenant), semántica al borrar una definición con valores (huérfanos /
       purgar / bloquear), alcance final de la gramática de `visibility`, y set
       definitivo de `data_type` (si entran `computed` / `file_reference`).
+- [ ] Seguridad (ADR-017): **postura cerrada**, quedan decisiones puntuales —
+      proveedor de pentest; go/no-go de MFA obligatoria para roles privilegiados
+      (curador, admin de tenant) antes del lanzamiento; herramienta de secretos
+      final (SOPS+age vs Doppler vs otro); umbral (tenants/volumen) para revisar
+      un SIEM dedicado; ciberseguro (negocio); redacción del set de políticas en
+      `docs/seguridad/politicas.md`.
 
 ## Dominio (capturar del conocimiento del sistema legado)
 
@@ -110,3 +121,5 @@ Lista viva. Al resolverse, mover la decisión a un ADR.
 - [ ] Tramitar verificación Meta/WhatsApp y plantillas en Brevo (toma tiempo).
 - [ ] SPF/DKIM del dominio.
 - [ ] Observabilidad: logs etiquetados por tenant, monitoreo del cluster.
+      Enganchado con ADR-017 capa 8 (alertas de señal de seguridad, monitor de
+      uptime externo, Sentry con PII depurada).

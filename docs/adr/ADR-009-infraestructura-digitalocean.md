@@ -5,6 +5,8 @@
 **Amendment 2026-09-01**: concreta dominio, ambientes y CI/CD — ver sección
 Amendments al final. Todavía sin ejecutar (nada de esto está aprovisionado
 todavía) — es el plan acordado para el arranque de la implementación.
+**Amendment 2026-09-06**: controles de seguridad de infraestructura (borde,
+red, host, backups) — ver sección Amendments. Derivan de ADR-017.
 
 ## Contexto
 
@@ -97,3 +99,57 @@ droplets y el cluster `docket-prod-db` siguiendo estos parámetros y reporte
 IPs/credenciales; en paralelo se prepara del lado del repo: Dockerfiles,
 `docker-compose.prod.yml` / `docker-compose.dev.yml`, config de Nginx, y
 los workflows de GitHub Actions — nada de esto se ha escrito todavía.
+
+### 2026-09-06 — Controles de seguridad de infraestructura
+
+**Motivo**: ADR-017 fija la postura de seguridad de la plataforma; esta
+sección concreta lo que cae en la capa de infraestructura y modifica el
+aprovisionamiento descrito arriba.
+
+**Borde (Cloudflare Pro en la zona `curaduria.app`)**:
+- Se sube el plan de la zona a **Pro**. WAF (OWASP Core + Cloudflare Managed
+  Ruleset), rate limiting en endpoints sensibles (login, recuperación,
+  activación/enrolamiento, envío de radicación, verificación pública, tokens de
+  API), Bot Fight Mode, "Under Attack" mode como palanca de runbook.
+- **Origin lock**: el firewall del droplet acepta 80/443 **solo** desde los
+  rangos de IP publicados por Cloudflare (job que los mantiene al día). El
+  resto del tráfico entrante público se descarta.
+- TLS: se mantiene Origin CA + Full (Strict) del amendment anterior; se añade
+  **HSTS con preload** y mínimo TLS 1.2 (preferente 1.3).
+
+**Red**:
+- Los dos droplets y el `docket-prod-db` van en una **DO VPC**. La app se
+  conecta al Managed PostgreSQL solo por **IP privada**; "trusted sources" del
+  cluster = únicamente el droplet `docket-prod`. El cluster **no** queda
+  accesible desde internet.
+- `docket-dev` con su Postgres en contenedor: ese contenedor no publica puerto
+  al host más allá de la red interna de Docker.
+
+**Acceso de operación**:
+- **Sin puerto SSH expuesto a internet.** SSH, administración de BD, deploy
+  manual y debugging entran por una **malla Tailscale/WireGuard**. ACLs de la
+  malla; MFA obligatoria en el proveedor de identidad de la malla.
+- Host: `unattended-upgrades` de seguridad, sin login root, solo llaves,
+  `fail2ban`, `auditd`, paquetes mínimos (hardening CIS Ubuntu).
+- Docker (hardening CIS): contenedores non-root, sin `--privileged`, drop de
+  capabilities, rootfs de solo lectura donde se pueda, **límites de recursos
+  por contenedor**, imágenes base pinneadas.
+
+**Backups** (sobre lo ya decidido: `pg_dump` por tenant hacia Spaces):
+- Cifrados, en un bucket de Spaces con **versionado/objeto inmutable +
+  retención** (resiliencia ante ransomware), IAM restringido.
+- **Prueba de restore trimestral** documentada.
+
+**CI/CD**:
+- El workflow de lint/tests suma scanners de seguridad: `composer audit`,
+  `npm audit --audit-level=high`, gitleaks, SAST (CodeQL o Semgrep), Trivy
+  sobre la imagen. Un fallo bloquea el merge/deploy (ver ADR-011).
+- El deploy manual usa **GitHub OIDC → DigitalOcean**, sin llaves cloud de
+  larga vida; secrets de Actions separados por ambiente.
+- Secretos de runtime en el host vía **SOPS + age** (cifrados en el repo) o
+  equivalente — decisión final en `docs/preguntas-abiertas.md`.
+
+**Impacto en el aprovisionamiento**: la lista de "un comando" de provisioning
+y el trabajo del lado repo ahora incluyen VPC, reglas de firewall con origin
+lock, alta en la malla VPN, y el hardening de host/Docker además de los
+Dockerfiles / compose / Nginx / workflows ya listados.

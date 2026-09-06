@@ -24,5 +24,10 @@ El aislamiento por tenant aplica también a archivos.
 
 - Aplicación stateless respecto a archivos → escala horizontal sin fricción.
 - La elección de proveedor es reversible (abstracción Flysystem).
-- Definir en implementación: límites de tamaño, tipos permitidos, escaneo
-  antivirus de documentos subidos por ciudadanos.
+- **Manejo de subidas** (decidido en ADR-017, capa 3): escaneo **ClamAV**
+  asíncrono antes de que el archivo sea descargable; **allowlist** de MIME +
+  extensión; tope de tamaño; claves de objeto aleatorias; **cuarentena** ante
+  positivo. El almacenamiento en Spaces ya deja los archivos fuera del webroot
+  y no ejecutables.
+- Backups de archivos: bucket con versionado/objeto inmutable + retención e IAM
+  restringido (ADR-009 amendment 2026-09-06).

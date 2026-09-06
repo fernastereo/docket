@@ -51,7 +51,9 @@ como no verificable.
 ## Pendiente
 
 - Definir el algoritmo/formato exacto del código de verificación y su
-  resistencia a fuerza bruta (longitud, alfabeto).
+  resistencia a fuerza bruta (longitud, alfabeto). El endpoint público es
+  superficie no autenticada: lleva rate limiting en el borde y en la app, y no
+  expone PII — controles de ADR-017 (capas 1 y 3).
 - Decidir si la página de verificación vive en el subdominio del tenant o en
   un dominio neutral compartido de la plataforma.
 - Confirmar con criterio legal qué tan público puede ser un acto
