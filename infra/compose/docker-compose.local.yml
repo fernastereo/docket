@@ -1,0 +1,113 @@
+# CuraduriAPP · stack LOCAL (tu Mac o cualquier PC)
+#
+# Para programar día a día. Código bind-mounted (se edita con tu editor de
+# siempre, sin conectarte a ningún servidor). No se usa el droplet para nada
+# de esto — el droplet solo recibe deploys del pipeline de CI/CD.
+#
+# Uso:
+#   cp infra/env/local.env.example infra/env/local.env   # completar
+#   echo "127.0.0.1 docket.test central.docket.test tenant1.docket.test" | sudo tee -a /etc/hosts
+#   cd infra/compose
+#   docker compose -f docker-compose.local.yml --env-file ../env/local.env up -d --build
+#
+# La primera vez, para que el navegador confíe en el cert local sin warning:
+#   docker compose -f docker-compose.local.yml exec caddy caddy trust
+
+name: docket-local
+
+x-app-build: &app-build
+  context: ../..
+  dockerfile: infra/docker/app.Dockerfile
+  target: dev
+
+services:
+  caddy:
+    build:
+      context: ../..
+      dockerfile: infra/docker/caddy.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../docker/Caddyfile.local:/etc/caddy/Caddyfile:ro
+      - ../../docket:/var/www/html:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+  app:
+    build: *app-build
+    restart: unless-stopped
+    env_file: ../env/local.env
+    environment:
+      APP_ROLE: fpm
+    volumes:
+      - ../../docket:/var/www/html
+      - ../docker/php/opcache.dev.ini:/usr/local/etc/php/conf.d/zzz-opcache-dev.ini:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "php-fpm-healthcheck"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+
+  worker:
+    build: *app-build
+    restart: unless-stopped
+    env_file: ../env/local.env
+    environment:
+      APP_ROLE: worker
+      QUEUE_NAMES: default
+    volumes:
+      - ../../docket:/var/www/html
+    depends_on:
+      app:
+        condition: service_healthy
+
+  sched:
+    build: *app-build
+    restart: unless-stopped
+    env_file: ../env/local.env
+    environment:
+      APP_ROLE: scheduler
+    volumes:
+      - ../../docket:/var/www/html
+    depends_on:
+      app:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+  db:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-docket}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in infra/env/local.env}
+      POSTGRES_DB: ${DB_DATABASE:-docket_central}
+    ports:
+      - "127.0.0.1:5432:5432"   # inspección local con un cliente de BD, sin exponer nada afuera
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-docket} -d ${DB_DATABASE:-docket_central}"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  caddy_data:
+  caddy_config:
+  redis_data:
+  db_data:
