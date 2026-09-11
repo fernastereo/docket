@@ -1,24 +1,34 @@
 # Infraestructura — CuraduriAPP (repo "Docket")
 
 Todo lo de despliegue. Decisiones: `docs/adr/ADR-009` (infra) y `docs/adr/ADR-017`
-(seguridad). Servidor web: **Caddy** (amendment a ADR-009 — gestiona el cert
-wildcard de dev por DNS-01 y el Origin CA de prod como archivo).
+(seguridad). Servidor web: **Caddy** (amendment a ADR-009 — gestiona certs
+wildcard por DNS-01 en dev/local y el Origin CA de prod como archivo).
+
+**Flujo general**: se programa **local** (tu Mac o cualquier PC, código propio,
+sin conectarte a ningún servidor) → `git push` → PR contra `dev` → CI corre
+automático (lint, tests, scanners de ADR-017) → merge → un **workflow de deploy
+manual** (`workflow_dispatch`) construye la imagen, la publica en **ghcr.io** y
+la despliega en el droplet correspondiente por Tailscale. **Ningún droplet se
+usa para programar** — solo corren la imagen que el pipeline les manda.
 
 ```
 infra/
 ├── docker/
-│   ├── app.Dockerfile        PHP-FPM 8.4 · targets: dev | prod
+│   ├── app.Dockerfile        PHP-FPM 8.4 · targets: dev (bind-mount, Xdebug) | prod (autocontenida)
 │   ├── caddy.Dockerfile      Caddy + módulo DNS de Cloudflare
 │   ├── entrypoint.sh         APP_ROLE = fpm | worker | scheduler
+│   ├── Caddyfile.local       *.docket.test · CA interna de Caddy (sin ACME)
 │   ├── Caddyfile.dev         *.staging.curaduria.app · Let's Encrypt DNS-01
 │   ├── Caddyfile.prod        *.curaduria.app · Origin CA + trusted_proxies Cloudflare
 │   └── php/                  php.ini · opcache · www.conf · healthcheck
 ├── compose/
-│   ├── docker-compose.dev.yml
-│   └── docker-compose.prod.yml
+│   ├── docker-compose.local.yml   TU MÁQUINA — programar día a día
+│   ├── docker-compose.dev.yml     droplet docket-dev — staging compartido (deploy target)
+│   └── docker-compose.prod.yml    droplet docket-prod (deploy target)
 ├── env/
-│   ├── dev.env.example       → copiar a dev.env (gitignoreado)
-│   └── prod.env.example      → copiar a prod.env (gitignoreado, SOPS en el host)
+│   ├── local.env.example     → copiar a local.env (tu máquina, gitignoreado)
+│   ├── dev.env.example       → vive en docket-dev, cifrado SOPS en el host
+│   └── prod.env.example      → vive en docket-prod, cifrado SOPS en el host
 ├── scripts/
 │   ├── provision.sh          alta de droplet (Tailscale, hardening, ufw, fail2ban)
 │   ├── cloudflare-ips.sh     origin lock: 80/443 solo desde Cloudflare (PROD)
@@ -28,40 +38,56 @@ infra/
 
 ---
 
-## DEV — estado actual (aprovisionado)
+## Programar local (tu Mac o cualquier PC)
+
+```bash
+# una vez
+cp infra/env/local.env.example infra/env/local.env   # completar (ver infra/dev-guide.md)
+echo "127.0.0.1 docket.test central.docket.test tenant1.docket.test" | sudo tee -a /etc/hosts
+
+cd infra/compose
+docker compose -f docker-compose.local.yml --env-file ../env/local.env up -d --build
+docker compose -f docker-compose.local.yml exec caddy caddy trust   # confía el cert local, una vez
+
+docker compose -f docker-compose.local.yml exec app php artisan key:generate
+docker compose -f docker-compose.local.yml exec app php artisan migrate --force
+```
+
+Editás con tu editor de siempre (el código real vive en `docket/` del repo,
+montado dentro del contenedor). Guardaste → recargás `https://docket.test`.
+Nada de esto toca los droplets.
+
+---
+
+## `docket-dev` — staging compartido (aprovisionado)
+
+Lo actualiza el **pipeline de deploy** después de cada merge a `dev` — nadie
+entra a editar código ahí. Sirve para ver "qué hay desplegado ahora mismo".
 
 | Recurso | Valor |
 |---|---|
 | Droplet `docket-dev` | `143.198.12.146` · NYC3 · VPC `docket-vpc` |
-| Firewall `docket-fw` | SSH ← IP de casa · 80/443 abiertos |
+| Firewall `docket-fw` | SSH ← IP de casa (temporal) · 80/443 abiertos |
 | Spaces | `docket-dev-files` @ `nyc3.digitaloceanspaces.com` |
 | DNS (Cloudflare) | `*.staging` y `staging` → `143.198.12.146` (DNS only) |
 | Tailscale | tag `tag:docket` · tailnet `tail133784.ts.net` |
 
-### Levantar dev
+Primer alta del droplet (una vez):
 
 ```bash
-# 1. en el droplet, como root (por Tailscale SSH):
+# por Tailscale SSH, como root:
 ENV=dev HOSTNAME_TS=docket-dev TS_AUTHKEY=tskey-auth-xxx bash infra/scripts/provision.sh
-
-# 2. traer el repo y el env
-git clone <repo> /opt/docket/src && cd /opt/docket/src
-cp infra/env/dev.env.example infra/env/dev.env   # y completar secretos
-
-# 3. build + up
-cd infra/compose
-docker compose -f docker-compose.dev.yml --env-file ../env/dev.env up -d --build
-
-# 4. inicializar la app (una vez)
-docker compose -f docker-compose.dev.yml exec app php artisan key:generate
-docker compose -f docker-compose.dev.yml exec app php artisan migrate --force
+mkdir -p /opt/docket && cd /opt/docket
+# infra/env/dev.env se coloca ahí (cifrado con SOPS, ver ADR-017), NO se clona el repo completo
 ```
 
-Verificar: `https://staging.curaduria.app` responde y el cert es de Let's Encrypt.
+A partir de ahí, todos los despliegues los hace el workflow de deploy
+(`docker compose -f docker-compose.dev.yml pull && up -d`) — ver
+`.github/workflows/`.
 
 ---
 
-## PROD — runbook de go-live (NADA de esto está aprovisionado)
+## `docket-prod` — runbook de go-live (NADA de esto está aprovisionado)
 
 Se ejecuta cuando se decida ir a producción. Orden:
 
@@ -80,17 +106,25 @@ Se ejecuta cuando se decida ir a producción. Orden:
    - **Origin CA cert** para `*.curaduria.app`, `curaduria.app` → `cert.pem` + `key.pem` en `/opt/docket/origin/`.
    - WAF → Managed + OWASP Core Ruleset. Rate limiting en `/login`, `/verificar/*`. Bot Fight Mode ON.
 7. **Provision**: `ENV=prod HOSTNAME_TS=docket-prod TS_AUTHKEY=... bash infra/scripts/provision.sh`.
-8. **Secretos**: `infra/env/prod.env` cifrado con SOPS+age en el host.
-9. **Deploy** (workflow manual, ver `.github/workflows/`): pull de imágenes → `migrate --force` → `tenants:migrate --force` → `up -d`.
-10. **Cron** de backups: `backup-tenants.sh` diario + prueba de restore trimestral.
+8. **Registro de imágenes**: `ghcr.io` (namespace del repo/org) — gratis, autenticación nativa desde GitHub Actions. Crear un token de solo-lectura para que el droplet pueda hacer `docker login ghcr.io`.
+9. **Secretos**: `infra/env/prod.env` cifrado con SOPS+age en el host.
+10. **Deploy** (workflow manual, ver `.github/workflows/`): build+push de imágenes → pull en el droplet → `migrate --force` → `tenants:migrate --force` → `up -d`.
+11. **Cron** de backups: `backup-tenants.sh` diario + prueba de restore trimestral.
 
-### Diferencias dev → prod (para no llevarse sorpresas)
+### Diferencias entre los tres ambientes (para no llevarse sorpresas)
 
-| | dev | prod |
-|---|---|---|
-| Web | Caddy + Let's Encrypt DNS-01 | Caddy + Origin CA, tras Cloudflare proxy |
-| PostgreSQL | contenedor `pgvector/pgvector:pg17` | DO Managed PG, SSL `require`, IP privada |
-| Imagen app | target `dev`, código bind-mounted | target `prod`, autocontenida (CI) |
-| 80/443 | abiertos | solo rangos de Cloudflare |
-| SSH público | permitido (red de seguridad) | denegado (solo Tailscale) |
-| Secretos | `dev.env` local | `prod.env` cifrado SOPS+age |
+| | **local** (tu máquina) | **dev** (droplet, staging) | **prod** (droplet) |
+|---|---|---|---|
+| Quién edita código ahí | vos, con tu editor | nadie — solo el pipeline | nadie — solo el pipeline |
+| Imagen app | build local, target `dev`, bind-mount | pull de ghcr.io, target `prod` | pull de ghcr.io, target `prod` |
+| Dominio | `*.docket.test` | `*.staging.curaduria.app` | `*.curaduria.app` |
+| TLS | CA interna de Caddy | Let's Encrypt DNS-01 (Cloudflare) | Origin CA de Cloudflare |
+| PostgreSQL | contenedor local | contenedor en el droplet | DO Managed PG, SSL `require`, IP privada |
+| 80/443 | tu máquina, localhost | abiertos | solo rangos de Cloudflare |
+| SSH público | n/a | permitido (temporal, se cierra con Tailscale) | denegado (solo Tailscale) |
+| Secretos | `local.env`, tuyo | `dev.env`, cifrado SOPS en el host | `prod.env`, cifrado SOPS en el host |
+
+La única diferencia real entre **dev** y **prod** es la base de datos (contenedor
+vs. Managed PG) y el origen del certificado — todo lo demás (imagen, topología
+de contenedores, config) es idéntico. Eso es lo que hace que "anda en dev" sea
+una señal confiable de "va a andar en prod".

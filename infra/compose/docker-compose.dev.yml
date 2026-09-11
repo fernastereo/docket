@@ -1,27 +1,22 @@
-# CuraduriAPP · stack DEV (droplet docket-dev)
+# CuraduriAPP · stack en el droplet docket-dev — ambiente de STAGING COMPARTIDO
 #
-#   caddy  -> TLS wildcard (DNS-01 Cloudflare) + reverse proxy
-#   app    -> PHP-FPM (código bind-mounted para edición en vivo)
-#   worker -> queue worker tenant-aware
-#   sched  -> scheduler de Laravel
-#   redis  -> colas / caché / sesiones
-#   db     -> PostgreSQL 17 + pgvector (en dev va en contenedor; prod usa Managed PG)
+# Esto NO es para programar. Nadie edita código acá: lo corre el pipeline de
+# deploy después de cada merge a `dev` (workflow_dispatch, manual — ver
+# .github/workflows/). Para programar día a día, ver docker-compose.local.yml.
 #
-# Uso:  cd infra/compose && docker compose -f docker-compose.dev.yml --env-file ../env/dev.env up -d
-# Build context = raíz del repo.
+# Igual topología que prod (imagen ya construida, sin bind-mount), con dos
+# diferencias reales: Postgres en contenedor (en vez de DO Managed PG) y TLS
+# por Let's Encrypt DNS-01 (en vez de Origin CA de Cloudflare) — la única
+# diferencia que amerita "ambiente de prueba", el resto es idéntico a prod.
 
 name: docket-dev
 
-x-app-build: &app-build
-  context: ../..
-  dockerfile: infra/docker/app.Dockerfile
-  target: dev
+x-app-image: &app-image
+  image: ${APP_IMAGE:?set APP_IMAGE}:${IMAGE_TAG:-latest}
 
 services:
   caddy:
-    build:
-      context: ../..
-      dockerfile: infra/docker/caddy.Dockerfile
+    image: ${CADDY_IMAGE:?set CADDY_IMAGE}:${IMAGE_TAG:-latest}
     restart: unless-stopped
     ports:
       - "80:80"
@@ -31,7 +26,7 @@ services:
       CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:?set CLOUDFLARE_API_TOKEN in infra/env/dev.env}
     volumes:
       - ../docker/Caddyfile.dev:/etc/caddy/Caddyfile:ro
-      - ../../docket:/var/www/html:ro
+      - app_public:/var/www/html/public:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
@@ -39,14 +34,13 @@ services:
         condition: service_healthy
 
   app:
-    build: *app-build
+    <<: *app-image
     restart: unless-stopped
     env_file: ../env/dev.env
     environment:
       APP_ROLE: fpm
     volumes:
-      - ../../docket:/var/www/html
-      - ../docker/php/opcache.dev.ini:/usr/local/etc/php/conf.d/zzz-opcache-dev.ini:ro
+      - app_public:/var/www/html/public
     depends_on:
       db:
         condition: service_healthy
@@ -59,26 +53,22 @@ services:
       retries: 5
 
   worker:
-    build: *app-build
+    <<: *app-image
     restart: unless-stopped
     env_file: ../env/dev.env
     environment:
       APP_ROLE: worker
       QUEUE_NAMES: default
-    volumes:
-      - ../../docket:/var/www/html
     depends_on:
       app:
         condition: service_healthy
 
   sched:
-    build: *app-build
+    <<: *app-image
     restart: unless-stopped
     env_file: ../env/dev.env
     environment:
       APP_ROLE: scheduler
-    volumes:
-      - ../../docket:/var/www/html
     depends_on:
       app:
         condition: service_healthy
@@ -104,22 +94,13 @@ services:
       interval: 10s
       timeout: 3s
       retries: 10
-    # Solo expuesto al host para inspección local; en el droplet dejalo cerrado.
-    # ports:
-    #   - "127.0.0.1:5432:5432"
-
-  # --- Vite HMR (opcional) -------------------------------------------------
-  # Descomentar + descomentar el bloque @vite del Caddyfile.dev para hot-reload.
-  # vite:
-  #   image: node:22-alpine
-  #   working_dir: /app
-  #   command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
-  #   env_file: ../env/dev.env
-  #   volumes:
-  #     - ../../docket:/app
-  # ----------------------------------------------------------------------
 
 volumes:
+  # app_public: la imagen de app trae public/build horneado; al montarse un
+  # volumen nombrado vacío sobre esa ruta, Docker lo inicializa con ese
+  # contenido — Caddy lo sirve desde ahí sin duplicar la imagen (mismo patrón
+  # que docker-compose.prod.yml).
+  app_public:
   caddy_data:
   caddy_config:
   redis_data:

@@ -1,0 +1,35 @@
+# Caddy · entorno LOCAL (tu Mac o cualquier PC, docker-compose.local.yml)
+#
+# *.docket.test no es un dominio público resoluble, así que Caddy emite certs
+# con su propia CA interna automáticamente (sin ACME, sin token de Cloudflare).
+# El navegador va a marcar el cert como no confiable la primera vez — normal en
+# local; instrucciones para confiar en la CA en infra/README.md.
+#
+# Requiere entradas en /etc/hosts, ej.:
+#   127.0.0.1  docket.test central.docket.test tenant1.docket.test
+
+{
+	admin off
+}
+
+*.docket.test, docket.test {
+	tls internal
+
+	root * /var/www/html/public
+	encode zstd gzip
+	trusted_proxies static private_ranges
+
+	header {
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	php_fastcgi app:9000
+	file_server
+
+	log {
+		output stdout
+		format json
+	}
+}

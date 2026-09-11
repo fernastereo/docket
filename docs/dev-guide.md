@@ -59,10 +59,12 @@ todos los productos). Todo dentro de una misma red privada.
 · VPC `docket-vpc` · SSH key · Monitoring on.
 - IP pública: `143.198.12.146`.
 - **Qué es**: un servidor virtual Linux con Docker preinstalado.
-- **Para qué**: corre el entorno de **desarrollo/staging** completo (app +
-  workers + Redis + PostgreSQL en contenedor + Caddy) vía `docker compose`.
-  Mismo stack que prod para no llevarse sorpresas al desplegar. Se prueba cada
-  feature acá antes de prod.
+- **Para qué**: es el ambiente de **staging compartido** — corre la imagen que
+  publica el pipeline de CI/CD después de cada merge a `dev` (app + workers +
+  Redis + PostgreSQL en contenedor + Caddy vía `docker compose`). **Nadie
+  programa ahí**: el código se escribe local (`docker-compose.local.yml`) y se
+  prueba antes de pushear; `docket-dev` es donde se ve "qué hay desplegado
+  ahora mismo", con la misma topología que prod para no llevarse sorpresas.
 - El droplet `docket-prod` es idéntico pero se crea recién en el go-live (para
   no incurrir en el gasto antes de tiempo). Runbook en `infra/README.md`.
 
@@ -294,7 +296,7 @@ environment correspondiente.
 | **Proveedor LLM** (por elegir) | API de modelo de lenguaje | Extracción de datos de documentos (OCR+LLM), RAG normativo, redacción asistida de actas/actos, chatbot de estado. Datos personales en prompts se rigen por ADR-017 (redacción + DPA + no-entrenamiento). | ADR-004 |
 | **Proveedor de firma** (Certicámara / GSE / otro) | Firma electrónica/digital certificada colombiana | Firma del curador sobre el acto administrativo congelado, con trazabilidad legal. | ADR-015 |
 | **Sentry** | Captura y agregación de errores de aplicación | Observabilidad en runtime, con PII depurada. | ADR-017 |
-| **Registro de imágenes** | ghcr.io o DO Container Registry | Guardar las imágenes Docker que CI construye para que prod haga `pull`. | ADR-009 |
+| **GitHub Container Registry (ghcr.io)** | Registro de imágenes Docker, gratis, integrado a GitHub Actions | El pipeline construye la imagen una vez y la publica ahí; `docket-dev`/`docket-prod` solo hacen `pull` — nunca reconstruyen en el servidor. | ADR-009 |
 
 ---
 
@@ -306,4 +308,5 @@ environment correspondiente.
 4. [ ] Acceso a la **zona de Cloudflare** `curaduria.app` (rol DNS).
 5. [ ] Recibir el archivo de **secretos de dev** (`infra/env/dev.env`) por canal seguro, o las claves para descifrarlo con SOPS.
 6. [ ] Leer `docs/adr/` (al menos ADR-002, 003, 005, 009, 011, 017), `docs/estructura-repo.md` e `infra/README.md`.
-7. [ ] Levantar el entorno dev siguiendo `infra/README.md`.
+7. [ ] Levantar el entorno **local** (`docker-compose.local.yml`) siguiendo
+       `infra/README.md` — es donde se programa, no en los droplets.
