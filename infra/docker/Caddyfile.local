@@ -10,6 +10,21 @@
 
 {
 	admin off
+	# Docker mapea 8080/8443 (host) -> 80/443 (contenedor, donde Caddy sigue
+	# escuchando de verdad — eso no cambia). `http_port`/`https_port` NO sirve
+	# acá: en esta versión de Caddy mueve el bind real, y entonces deja de
+	# coincidir con el mapeo de Docker. En su lugar: apagamos el redirect
+	# automático (que asume puertos estándar y genera "https://docket.test/"
+	# sin :8443 — nada escucha ahí desde afuera) y escribimos uno explícito
+	# con el puerto externo correcto.
+	auto_https disable_redirects
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+http://*.docket.test, http://docket.test {
+	redir https://{host}:8443{uri} 308
 }
 
 *.docket.test, docket.test {
@@ -17,7 +32,6 @@
 
 	root * /var/www/html/public
 	encode zstd gzip
-	trusted_proxies static private_ranges
 
 	header {
 		X-Content-Type-Options "nosniff"

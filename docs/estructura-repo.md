@@ -33,15 +33,20 @@ docket/
 │   │   ├── CustomFields/     ADR-016
 │   │   └── Plazos/           TermCalculator / PlazoLegal (ADR-014)
 │   ├── Platform/             base central: catálogo de tenants, provisioning,
-│   │                         ciclo de vida (ADR-002, ADR-010) — NO es dominio de curaduría
+│   │                         ciclo de vida (ADR-002, ADR-010) — NO es dominio de curaduría.
+│   │                         `Models/Tenant.php` (extiende el Tenant base de
+│   │                         stancl/tenancy con HasDatabase + HasDomains)
 │   ├── Http/                 Controllers/ (delgados) · Requests/ · Resources/ · Middleware/
+│   │                         (incl. SecurityHeaders — ADR-017 capa 3)
 │   ├── Policies/             RBAC por tenant
 │   ├── Support/              fronteras con interfaz + impl + fake: LlmClient, DocumentSigner,
 │   │                         SnrGateway, Messaging, Pdf (ADR-011)
 │   └── Console/
 ├── routes/
 │   ├── api.php               lo que consume la SPA (y terceros, con token, a futuro)
-│   ├── web.php               sirve la SPA + verificación pública /verificar/{codigo} (ADR-012)
+│   ├── web.php               sirve el shell de la SPA en los dominios CENTRALES
+│   ├── tenant.php            sirve el shell de la SPA por subdominio de tenant +
+│   │                         verificación pública /verificar/{codigo} (ADR-012, pendiente)
 │   └── console.php
 ├── database/
 │   ├── migrations/           base CENTRAL (catálogo de tenants, identidades)
@@ -63,8 +68,15 @@ docket/
 - **Interfaces solo en `Support/`** (fronteras). El resto, concreción directa.
 - **Dos juegos de migraciones** — `migrations/` central vs `migrations/tenant/`.
   `tenants:migrate` corre solo las de `tenant/`.
-- **SPA mismo origen** — `web.php` sirve el shell y la verificación pública;
-  `api.php` es la API tipada.
+- **SPA mismo origen** — `web.php`/`tenant.php` sirven el shell; `api.php` es
+  la API tipada. Los catch-all (`{any?}`) excluyen `api/`, `sanctum/`,
+  `storage/`, `tenancy/`, `up` con un negative lookahead en el `where()` —
+  sin eso, el catch-all central se traga también `/api/*` (el router de
+  Laravel prioriza por orden de registro, no por especificidad). Detalle:
+  amendment 2026-09-11 de ADR-003.
+- **`asset_helper_tenancy = false`** en `config/tenancy.php` — los assets de
+  Vite son código compartido, no datos de un tenant; no pasan por el
+  mecanismo de disco local por-tenant de stancl/tenancy.
 - **Infra fuera de `docket/`** — `infra/`; workflows en `.github/`. Cero
   secretos en el repo.
 - **Si se parte en servicios** (worker aparte, API del widget) → `apps/docket/`,
