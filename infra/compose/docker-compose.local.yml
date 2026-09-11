@@ -27,8 +27,11 @@ services:
       dockerfile: infra/docker/caddy.Dockerfile
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      # 80/443 del host quedan libres a propósito (pueden estar en uso por
+      # otro proyecto); Caddy adentro del contenedor sigue escuchando 80/443
+      # normalmente, solo cambia el mapeo externo.
+      - "8080:80"
+      - "8443:443"
     volumes:
       - ../docker/Caddyfile.local:/etc/caddy/Caddyfile:ro
       - ../../docket:/var/www/html:ro
@@ -97,7 +100,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in infra/env/local.env}
       POSTGRES_DB: ${DB_DATABASE:-docket_central}
     ports:
-      - "127.0.0.1:5432:5432"   # inspección local con un cliente de BD, sin exponer nada afuera
+      - "127.0.0.1:15432:5432"   # inspección local con un cliente de BD; 5432 se dejó libre por si hay un Postgres nativo en el host
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:

@@ -309,4 +309,7 @@ environment correspondiente.
 5. [ ] Recibir el archivo de **secretos de dev** (`infra/env/dev.env`) por canal seguro, o las claves para descifrarlo con SOPS.
 6. [ ] Leer `docs/adr/` (al menos ADR-002, 003, 005, 009, 011, 017), `docs/estructura-repo.md` e `infra/README.md`.
 7. [ ] Levantar el entorno **local** (`docker-compose.local.yml`) siguiendo
-       `infra/README.md` — es donde se programa, no en los droplets.
+       `infra/README.md` — es donde se programa, no en los droplets. Si algo
+       "no carga", ver primero la sección "Troubleshooting local" de ese
+       archivo (URL con `:8443` siempre, choque de puertos con otro proyecto
+       Docker, certificado no confiable).

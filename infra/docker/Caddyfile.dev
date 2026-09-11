@@ -7,6 +7,10 @@
 {
 	email {$ACME_EMAIL}
 	admin off
+	servers {
+		# app <-> caddy por la red interna de Docker
+		trusted_proxies static private_ranges
+	}
 }
 
 *.staging.curaduria.app, staging.curaduria.app {
@@ -17,9 +21,6 @@
 
 	root * /var/www/html/public
 	encode zstd gzip
-
-	# app <-> caddy por la red interna de Docker
-	trusted_proxies static private_ranges
 
 	# Cabeceras de seguridad base (ADR-017 capa 3). La CSP la fija la app por ruta.
 	header {

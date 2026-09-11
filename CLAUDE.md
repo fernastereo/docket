@@ -25,7 +25,8 @@ expediente son críticos.
   identidades; resolución de tenant por subdominio.
 - **ADR-003 — Stack**: **Laravel** (API) + **Vue.js** (SPA, Sanctum) +
   **PostgreSQL** (+pgvector) + Redis + Docker. Multi-tenancy con
-  **stancl/tenancy**.
+  **stancl/tenancy**. Amendment 2026-09-11: SPA de mismo origen que la API
+  (no una app aparte) — cookie de sesión scopeada por subdominio de tenant.
 - **ADR-004 — IA** (borrador): extracción documental OCR+LLM, verificación de
   completitud, RAG normativo (nacional compartido + local por tenant en
   pgvector), redacción asistida de actos, consultas contextualizadas por expediente, 
@@ -147,10 +148,23 @@ acordado — esqueleto del repo (Laravel + stancl/tenancy + Vue/TS) → base
 central/provisioning → identidad/auth → migraciones del núcleo →
 máquina de estados del Expediente → construir pantalla por pantalla desde
 ahí (los pendientes de `docs/preguntas-abiertas.md` se resuelven sobre la
-marcha, no antes). Infraestructura concretada en el amendment 2026-09-01 de
-ADR-009 (dos droplets, dominio `curaduria.app` compartido con la landing,
-CI/CD con despliegue manual) — **pendiente de ejecutar**, ver esa ADR para
-el estado exacto y qué falta.
+marcha, no antes).
+
+**Infra de dev aprovisionada y esqueleto CERRADO y verificado localmente**
+(2026-09-11): droplet `docket-dev`, DNS, Tailscale, Spaces ya creados (ver
+`docs/dev-guide.md` para el detalle por servicio); `infra/` con Docker/Caddy
+para los tres ambientes (local/dev/prod — ver `infra/README.md`, incluye
+troubleshooting de lo que ya se depuró). `docket/` = Laravel 13 +
+stancl/tenancy + Sanctum SPA + Vue 3/TS/Pinia, probado de punta a punta en
+local (dominio central + subdominio de tenant, Pint/Larastan/Pest en verde).
+Amendment 2026-09-11 a ADR-003: modelo de servido del frontend (SPA mismo
+origen, sin login server-rendered). Infraestructura de prod (`docket-prod`)
+concretada en el amendment 2026-09-01 de ADR-009 — **pendiente de ejecutar**
+(runbook completo en `infra/README.md`), se hace recién en el go-live.
+
+**Siguiente paso**: base central/provisioning (ADR-002/ADR-010) — hoy solo
+existe el esqueleto de `Tenant`/`Domain`, falta el flujo real de alta de
+curaduría.
 
 **Principio de trabajo para lo que sigue**: al capturar conocimiento del
 legado, no asumir que su diseño (VB6+Access, 20 años) es el patrón a

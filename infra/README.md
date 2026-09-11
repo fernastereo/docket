@@ -47,15 +47,55 @@ echo "127.0.0.1 docket.test central.docket.test tenant1.docket.test" | sudo tee 
 
 cd infra/compose
 docker compose -f docker-compose.local.yml --env-file ../env/local.env up -d --build
-docker compose -f docker-compose.local.yml exec caddy caddy trust   # confía el cert local, una vez
 
 docker compose -f docker-compose.local.yml exec app php artisan key:generate
 docker compose -f docker-compose.local.yml exec app php artisan migrate --force
 ```
 
+**Confiar el certificado local en tu Mac** (evita la advertencia del
+navegador; opcional — si no lo hacés, el navegador va a mostrar "conexión no
+segura" y hay que aceptar manualmente cada vez). `caddy trust` corrido
+*dentro* del contenedor solo confía la CA para llamadas hechas desde ahí
+adentro — no alcanza al navegador del host. Hay que sacar el root cert del
+volumen y agregarlo al keychain del Mac:
+
+```bash
+docker run --rm -v docket-local_caddy_data:/data alpine \
+  cat /data/caddy/pki/authorities/local/root.crt > /tmp/caddy-local-root.crt
+
+sudo security add-trusted-cert -d -r trustRoot \
+  -k /Library/Keychains/System.keychain /tmp/caddy-local-root.crt
+```
+
 Editás con tu editor de siempre (el código real vive en `docket/` del repo,
-montado dentro del contenedor). Guardaste → recargás `https://docket.test`.
-Nada de esto toca los droplets.
+montado dentro del contenedor). Guardaste → recargás
+`https://docket.test:8443`. Puertos **8080/8443** en vez de 80/443 a
+propósito (para no chocar con otros proyectos/servicios locales usando esos
+puertos) — Caddy adentro del contenedor sigue en 80/443 normalmente. Nada de
+esto toca los droplets.
+
+### Troubleshooting local (lo que ya nos mordió una vez)
+
+- **Siempre con `:8443` en la URL.** `http://docket.test/` o `docket.test`
+  sin puerto van al 80/443 del *host* — que puede estar ocupado por **otro
+  proyecto Docker tuyo** corriendo al mismo tiempo (nos pasó: otro proyecto
+  con Caddy propio ya tenía el 80/443). Ese otro servidor no conoce
+  `docket.test` y responde igual (200) pero con contenido irrelevante — se ve
+  "en blanco", no es que nuestro stack se haya caído. `docker ps` para
+  confirmar qué contenedor tiene cada puerto.
+- **El redirect HTTP→HTTPS automático de Caddy no sirve acá.** Con Docker
+  remapeando 8080/8443→80/443, el redirect automático de Caddy genera
+  `Location: https://docket.test/` (puerto 443 implícito) — nada escucha ahí
+  desde afuera. `Caddyfile.local` lo resuelve con `auto_https
+  disable_redirects` + un `redir` explícito al puerto real. (Probamos primero
+  `http_port`/`https_port`, la opción "oficial" de Caddy para este caso —
+  en esta versión termina moviendo el bind real y rompe el mapeo de Docker;
+  no usar.)
+- **Advertencia de certificado no confiable**: normal la primera vez (ver
+  arriba, "Confiar el certificado"). Si ya confiaste la CA y sigue avisando,
+  reiniciá el navegador — Chrome/Safari cachean el estado de confianza.
+- **El cert interno de Caddy dura ~12 h** y se renueva solo. No hay que hacer
+  nada.
 
 ---
 

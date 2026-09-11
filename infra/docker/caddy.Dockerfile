@@ -5,9 +5,13 @@
 # origen usa el certificado Origin CA como archivo estático — el módulo no
 # estorba.
 
-FROM caddy:2.8-builder-alpine AS builder
+# Tag de línea principal (no fijado a un patch) a propósito: el módulo
+# caddy-dns/cloudflare sigue el Caddy core más reciente, y fijar un patch
+# viejo del builder puede romper el build por desalineación de dependencias
+# transitivas (p. ej. la API de go.uber.org/zap).
+FROM caddy:2-builder-alpine AS builder
 RUN xcaddy build \
     --with github.com/caddy-dns/cloudflare
 
-FROM caddy:2.8-alpine
+FROM caddy:2-alpine
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
