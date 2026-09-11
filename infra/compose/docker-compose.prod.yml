@@ -1,0 +1,81 @@
+# CuraduriAPP · stack PROD (droplet docket-prod)
+#
+# Diferencias con dev:
+#   - imagen autocontenida (target prod): vendor + assets Vite horneados, sin bind-mount
+#   - sin servicio `db`: usa DO Managed PostgreSQL (ADR-009), conexión por IP privada + SSL
+#   - Caddy sirve el certificado Origin CA de Cloudflare (montado), no Let's Encrypt
+#
+# La imagen se construye en CI y se publica; el droplet hace `docker compose pull && up -d`
+# (deploy manual por Tailscale, ADR-009). IMAGE_TAG lo inyecta el workflow de deploy.
+
+name: docket-prod
+
+x-app-image: &app-image
+  image: ${APP_IMAGE:?set APP_IMAGE}:${IMAGE_TAG:-latest}
+
+services:
+  caddy:
+    image: ${CADDY_IMAGE:?set CADDY_IMAGE}:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../docker/Caddyfile.prod:/etc/caddy/Caddyfile:ro
+      - ${ORIGIN_CERT_DIR:?set ORIGIN_CERT_DIR}:/etc/caddy/origin:ro
+      - app_public:/var/www/html/public:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+  app:
+    <<: *app-image
+    restart: unless-stopped
+    env_file: ../env/prod.env
+    environment:
+      APP_ROLE: fpm
+    volumes:
+      - app_public:/var/www/html/public
+    healthcheck:
+      test: ["CMD", "php-fpm-healthcheck"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+
+  worker:
+    <<: *app-image
+    restart: unless-stopped
+    env_file: ../env/prod.env
+    environment:
+      APP_ROLE: worker
+      QUEUE_NAMES: default
+    depends_on:
+      app:
+        condition: service_healthy
+
+  sched:
+    <<: *app-image
+    restart: unless-stopped
+    env_file: ../env/prod.env
+    environment:
+      APP_ROLE: scheduler
+    depends_on:
+      app:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "384mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis_data:/data
+
+volumes:
+  # app_public: el contenedor de app publica aquí sus assets (public/build) para
+  # que Caddy los sirva como estáticos sin duplicar la imagen.
+  app_public:
+  caddy_data:
+  caddy_config:
+  redis_data:

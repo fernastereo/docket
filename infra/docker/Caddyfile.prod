@@ -1,0 +1,44 @@
+# Caddy · entorno PROD (droplet docket-prod)
+#
+# El TLS público lo termina Cloudflare (modo Full (strict), ADR-009). El origen
+# presenta el certificado Origin CA (15 años) montado en /etc/caddy/origin/.
+# El firewall del droplet ya solo deja pasar 80/443 desde rangos de Cloudflare
+# (origin lock, ADR-017); esta lista de trusted_proxies es la segunda capa para
+# X-Forwarded-For.
+
+{
+	admin off
+}
+
+*.curaduria.app, curaduria.app {
+	tls /etc/caddy/origin/cert.pem /etc/caddy/origin/key.pem
+
+	root * /var/www/html/public
+	encode zstd gzip
+
+	# Rangos publicados de Cloudflare (cloudflare.com/ips). Mantener en sync con
+	# infra/scripts/cloudflare-ips.sh cuando cambien (poco frecuente).
+	trusted_proxies static \
+		173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 \
+		141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 \
+		197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 \
+		104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 \
+		2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 \
+		2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32
+
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		-Server
+	}
+
+	php_fastcgi app:9000
+	file_server
+
+	log {
+		output stdout
+		format json
+	}
+}

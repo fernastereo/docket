@@ -152,4 +152,16 @@ aprovisionamiento descrito arriba.
 **Impacto en el aprovisionamiento**: la lista de "un comando" de provisioning
 y el trabajo del lado repo ahora incluyen VPC, reglas de firewall con origin
 lock, alta en la malla VPN, y el hardening de host/Docker además de los
-Dockerfiles / compose / Nginx / workflows ya listados.
+Dockerfiles / compose / workflows ya listados.
+
+### 2026-09-07 — Servidor web: Caddy en vez de Nginx
+
+Donde los amendments anteriores dicen "Nginx", léase **Caddy**. Motivo: en dev
+se necesita un certificado **wildcard** para `*.staging.curaduria.app` (que va
+DNS-only, sin proxy de Cloudflare), y Caddy lo emite y renueva solo vía reto
+**DNS-01** con el token de Cloudflare — sin cron de renovación ni volúmenes de
+certbot. En prod, Caddy sirve el certificado **Origin CA** de Cloudflare como
+archivo estático, igual de simple, con `trusted_proxies` apuntando a los rangos
+de Cloudflare. Un solo servidor web para ambos ambientes, "seguro por defecto"
+(cabeceras, HTTP→HTTPS, HSTS). Implementación: `infra/docker/Caddyfile.{dev,prod}`
+y `infra/docker/caddy.Dockerfile` (Caddy + módulo `caddy-dns/cloudflare`).

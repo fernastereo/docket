@@ -1,0 +1,47 @@
+# Caddy · entorno DEV (droplet docket-dev)
+#
+# TLS: certificado wildcard de Let's Encrypt vía reto DNS-01 con Cloudflare
+# (necesario porque *.staging.curaduria.app va DNS-only, sin proxy). El token
+# está en CLOUDFLARE_API_TOKEN dentro del contenedor.
+
+{
+	email {$ACME_EMAIL}
+	admin off
+}
+
+*.staging.curaduria.app, staging.curaduria.app {
+	tls {
+		dns cloudflare {$CLOUDFLARE_API_TOKEN}
+		resolvers 1.1.1.1
+	}
+
+	root * /var/www/html/public
+	encode zstd gzip
+
+	# app <-> caddy por la red interna de Docker
+	trusted_proxies static private_ranges
+
+	# Cabeceras de seguridad base (ADR-017 capa 3). La CSP la fija la app por ruta.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		-Server
+	}
+
+	# --- HMR de Vite (opcional) --------------------------------------------
+	# Descomentar junto con el servicio `vite` en docker-compose.dev.yml para
+	# tener hot-reload del frontend. Por defecto dev usa assets ya compilados.
+	# @vite path /@vite/* /@id/* /@fs/* /resources/* /node_modules/* /__vite_ping
+	# reverse_proxy @vite vite:5173
+	# --------------------------------------------------------------------
+
+	php_fastcgi app:9000
+	file_server
+
+	log {
+		output stdout
+		format json
+	}
+}

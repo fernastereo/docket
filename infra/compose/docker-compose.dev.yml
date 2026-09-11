@@ -1,0 +1,126 @@
+# CuraduriAPP · stack DEV (droplet docket-dev)
+#
+#   caddy  -> TLS wildcard (DNS-01 Cloudflare) + reverse proxy
+#   app    -> PHP-FPM (código bind-mounted para edición en vivo)
+#   worker -> queue worker tenant-aware
+#   sched  -> scheduler de Laravel
+#   redis  -> colas / caché / sesiones
+#   db     -> PostgreSQL 17 + pgvector (en dev va en contenedor; prod usa Managed PG)
+#
+# Uso:  cd infra/compose && docker compose -f docker-compose.dev.yml --env-file ../env/dev.env up -d
+# Build context = raíz del repo.
+
+name: docket-dev
+
+x-app-build: &app-build
+  context: ../..
+  dockerfile: infra/docker/app.Dockerfile
+  target: dev
+
+services:
+  caddy:
+    build:
+      context: ../..
+      dockerfile: infra/docker/caddy.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in infra/env/dev.env}
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:?set CLOUDFLARE_API_TOKEN in infra/env/dev.env}
+    volumes:
+      - ../docker/Caddyfile.dev:/etc/caddy/Caddyfile:ro
+      - ../../docket:/var/www/html:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+  app:
+    build: *app-build
+    restart: unless-stopped
+    env_file: ../env/dev.env
+    environment:
+      APP_ROLE: fpm
+    volumes:
+      - ../../docket:/var/www/html
+      - ../docker/php/opcache.dev.ini:/usr/local/etc/php/conf.d/zzz-opcache-dev.ini:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "php-fpm-healthcheck"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+
+  worker:
+    build: *app-build
+    restart: unless-stopped
+    env_file: ../env/dev.env
+    environment:
+      APP_ROLE: worker
+      QUEUE_NAMES: default
+    volumes:
+      - ../../docket:/var/www/html
+    depends_on:
+      app:
+        condition: service_healthy
+
+  sched:
+    build: *app-build
+    restart: unless-stopped
+    env_file: ../env/dev.env
+    environment:
+      APP_ROLE: scheduler
+    volumes:
+      - ../../docket:/var/www/html
+    depends_on:
+      app:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis_data:/data
+
+  db:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-docket}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in infra/env/dev.env}
+      POSTGRES_DB: ${DB_DATABASE:-docket_central}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-docket} -d ${DB_DATABASE:-docket_central}"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    # Solo expuesto al host para inspección local; en el droplet dejalo cerrado.
+    # ports:
+    #   - "127.0.0.1:5432:5432"
+
+  # --- Vite HMR (opcional) -------------------------------------------------
+  # Descomentar + descomentar el bloque @vite del Caddyfile.dev para hot-reload.
+  # vite:
+  #   image: node:22-alpine
+  #   working_dir: /app
+  #   command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+  #   env_file: ../env/dev.env
+  #   volumes:
+  #     - ../../docket:/app
+  # ----------------------------------------------------------------------
+
+volumes:
+  caddy_data:
+  caddy_config:
+  redis_data:
+  db_data:

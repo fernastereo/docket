@@ -1,1 +1,18 @@
-.zip
+# Archivos varios
+*.zip
+.DS_Store
+
+# Secretos de infraestructura — el .env real nunca se commitea.
+# En el host se gestiona cifrado con SOPS+age (ADR-017).
+infra/env/*.env
+!infra/env/*.env.example
+
+# Certificados / claves que puedan quedar sueltos localmente
+*.pem
+*.key
+!**/tests/**/*.pem
+
+# Editor / SO
+.idea/
+.vscode/
+*.swp
