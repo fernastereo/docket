@@ -161,5 +161,8 @@ moderno equivalente, cuestionando el legado por defecto.
 
 - Decisiones: docs/adr/ADR-NNN-titulo.md (Contexto, Decisión, Consecuencias,
   Estado). Dominio: docs/dominio/. Pendientes: docs/preguntas-abiertas.md.
+  Seguridad: docs/seguridad/. Estructura del repo: docs/estructura-repo.md.
+  Onboarding y servicios externos: docs/dev-guide.md. Infra operativa:
+  infra/README.md.
 - Al tomar una decisión nueva: crear/actualizar el ADR y reflejarla aquí si es
   estructural. Idioma: español.

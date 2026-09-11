@@ -1,0 +1,35 @@
+// Política de Tailscale para CuraduriAPP (ADR-017).
+//
+// Pegar en la consola web de Tailscale: https://login.tailscale.com/admin/acls/file
+// Sustituye la política por defecto (allow-all) por esta, más cerrada.
+//
+// - tag:docket  = droplets docket-dev / docket-prod (los enrola provision.sh)
+// - autogroup:admin = dueños/admins del tailnet (vos)
+{
+  "tagOwners": {
+    "tag:docket": ["autogroup:admin"]
+  },
+
+  // Nadie llega a nada salvo lo declarado.
+  "acls": [
+    // Los admins pueden alcanzar los droplets SOLO por SSH.
+    {
+      "action": "accept",
+      "src":    ["autogroup:admin"],
+      "dst":    ["tag:docket:22"]
+    }
+    // (El deploy desde GitHub Actions usa un OAuth client efímero con
+    //  tag:ci; se agrega su regla cuando se cablee el workflow.)
+  ],
+
+  // Tailscale SSH: los admins entran como root o usuario no-root, con
+  // verificación (check) — sesión atada a la identidad del IdP.
+  "ssh": [
+    {
+      "action": "check",
+      "src":    ["autogroup:admin"],
+      "dst":    ["tag:docket"],
+      "users":  ["autogroup:nonroot", "root"]
+    }
+  ]
+}
