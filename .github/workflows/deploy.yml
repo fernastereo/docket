@@ -1,0 +1,122 @@
+name: Deploy
+
+# Deploy MANUAL (ADR-009: no automático en cada merge). Construye las
+# imágenes, las publica en ghcr.io, y por Tailscale (nodo efímero tag:ci —
+# ADR-017) copia el compose del ambiente al droplet, hace pull, migra y
+# levanta. Requiere, por ambiente (GitHub → Settings → Environments):
+#   Secrets: TS_OAUTH_CLIENT_ID, TS_OAUTH_SECRET, DEPLOY_SSH_KEY
+#   Variables: DROPLET_TS_HOSTNAME (ej. "docket-dev")
+# Ver infra/README.md para el detalle y cómo generarlos.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Ambiente a desplegar
+        type: choice
+        options: [dev, prod]
+        default: dev
+
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.value }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: tag
+        run: echo "value=${{ inputs.environment }}-${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build + push imagen de la app (target prod)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/docker/app.Dockerfile
+          target: prod
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}-app:${{ steps.tag.outputs.value }}
+            ghcr.io/${{ github.repository }}-app:${{ inputs.environment }}-latest
+
+      - name: Build + push imagen de Caddy
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/docker/caddy.Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}-caddy:${{ steps.tag.outputs.value }}
+            ghcr.io/${{ github.repository }}-caddy:${{ inputs.environment }}-latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Conectar al tailnet (nodo efímero, tag:ci)
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Preparar llave SSH de deploy
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+      - name: Copiar compose + Caddyfile del ambiente al droplet
+        run: |
+          HOST="${{ vars.DROPLET_TS_HOSTNAME }}"
+          SSH="ssh -o StrictHostKeyChecking=accept-new -i ~/.ssh/id_ed25519"
+          $SSH root@"$HOST" 'mkdir -p /opt/docket/compose /opt/docket/docker'
+          scp -o StrictHostKeyChecking=accept-new -i ~/.ssh/id_ed25519 \
+            infra/compose/docker-compose.${{ inputs.environment }}.yml \
+            root@"$HOST":/opt/docket/compose/docker-compose.${{ inputs.environment }}.yml
+          scp -o StrictHostKeyChecking=accept-new -i ~/.ssh/id_ed25519 \
+            infra/docker/Caddyfile.${{ inputs.environment }} \
+            root@"$HOST":/opt/docket/docker/Caddyfile.${{ inputs.environment }}
+
+      - name: Pull + migrar + levantar
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          HOST="${{ vars.DROPLET_TS_HOSTNAME }}"
+          APP_IMAGE="ghcr.io/${{ github.repository }}-app"
+          CADDY_IMAGE="ghcr.io/${{ github.repository }}-caddy"
+          TAG="${{ needs.build-and-push.outputs.tag }}"
+          COMPOSE_FILE="docker-compose.${{ inputs.environment }}.yml"
+          ENV_FILE="../env/${{ inputs.environment }}.env"
+
+          ssh -o StrictHostKeyChecking=accept-new -i ~/.ssh/id_ed25519 root@"$HOST" bash -s <<EOF
+            set -euo pipefail
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+            cd /opt/docket/compose
+            export APP_IMAGE="$APP_IMAGE"
+            export CADDY_IMAGE="$CADDY_IMAGE"
+            export IMAGE_TAG="$TAG"
+            docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" pull
+            docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" run --rm app php artisan migrate --force
+            docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" run --rm app php artisan tenants:migrate --force
+            docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d
+          EOF

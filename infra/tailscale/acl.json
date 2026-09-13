@@ -3,11 +3,17 @@
 // Pegar en la consola web de Tailscale: https://login.tailscale.com/admin/acls/file
 // Sustituye la política por defecto (allow-all) por esta, más cerrada.
 //
-// - tag:docket  = droplets docket-dev / docket-prod (los enrola provision.sh)
+// - tag:docket = droplets docket-dev / docket-prod (los enrola provision.sh)
+// - tag:ci     = runner de GitHub Actions, nodo efímero por corrida
+//                (.github/workflows/deploy.yml, vía OAuth client)
 // - autogroup:admin = dueños/admins del tailnet (vos)
 {
   "tagOwners": {
-    "tag:docket": ["autogroup:admin"]
+    "tag:docket": ["autogroup:admin"],
+    // Sin dueño explícito: cualquier Owner/Admin del tailnet puede aplicar
+    // este tag al crear el OAuth client (es el patrón recomendado por
+    // Tailscale para identidades de servicio/CI).
+    "tag:ci": []
   },
 
   // Nadie llega a nada salvo lo declarado.
@@ -17,19 +23,34 @@
       "action": "accept",
       "src":    ["autogroup:admin"],
       "dst":    ["tag:docket:22"]
+    },
+    // El runner de CI (efímero) también, solo para el deploy.
+    {
+      "action": "accept",
+      "src":    ["tag:ci"],
+      "dst":    ["tag:docket:22"]
     }
-    // (El deploy desde GitHub Actions usa un OAuth client efímero con
-    //  tag:ci; se agrega su regla cuando se cablee el workflow.)
   ],
 
-  // Tailscale SSH: los admins entran como root o usuario no-root, con
-  // verificación (check) — sesión atada a la identidad del IdP.
+  // Tailscale SSH.
   "ssh": [
+    // Admins: entran como root o usuario no-root, con verificación (check)
+    // — sesión atada a la identidad del IdP humano.
     {
       "action": "check",
       "src":    ["autogroup:admin"],
       "dst":    ["tag:docket"],
       "users":  ["autogroup:nonroot", "root"]
+    },
+    // CI: "accept" sin check — es una identidad de máquina de vida corta
+    // (nace y muere con el job), no hay humano al que reverificar contra el
+    // IdP. La llave de deploy (DEPLOY_SSH_KEY) es propia, distinta de la de
+    // los admins — mínimo privilegio si se filtra una de las dos.
+    {
+      "action": "accept",
+      "src":    ["tag:ci"],
+      "dst":    ["tag:docket"],
+      "users":  ["root"]
     }
   ]
 }

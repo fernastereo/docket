@@ -125,6 +125,32 @@ A partir de ahí, todos los despliegues los hace el workflow de deploy
 (`docker compose -f docker-compose.dev.yml pull && up -d`) — ver
 `.github/workflows/`.
 
+### Configurar el deploy manual (`.github/workflows/deploy.yml`)
+
+Por cada ambiente (`dev`, `prod`), crear un **GitHub Environment**
+(`Settings → Environments`) con:
+
+**Secrets:**
+| Nombre | Qué es | Cómo se genera |
+|---|---|---|
+| `TS_OAUTH_CLIENT_ID` / `TS_OAUTH_SECRET` | credencial del runner de CI para unirse al tailnet como nodo efímero `tag:ci` | `login.tailscale.com/admin/settings/oauth` → crear cliente OAuth con scope `auth_keys` y tag `tag:ci` |
+| `DEPLOY_SSH_KEY` | llave privada **propia de CI** (no la de un admin humano) autorizada en `authorized_keys` del droplet | generar un par ed25519 dedicado (`ssh-keygen`), agregar la pública al droplet, guardar la privada como este secret |
+
+**Variables** (no sensibles, `Settings → Environments → <env> → Variables`):
+| Nombre | Valor |
+|---|---|
+| `DROPLET_TS_HOSTNAME` | `docket-dev` (o `docket-prod`) — nombre MagicDNS del droplet en el tailnet |
+
+No hace falta un token de ghcr.io persistido en el droplet: el workflow usa
+el `GITHUB_TOKEN` efímero de la propia corrida (válido solo mientras dura el
+run) tanto para publicar las imágenes como para que el droplet haga
+`docker login` al momento de hacer `pull` — sin credencial cloud de larga
+vida en el host (ADR-017 capa 5).
+
+El ACL de Tailscale (`infra/tailscale/acl.json`) ya tiene la regla para
+`tag:ci` — aplicarlo en `login.tailscale.com/admin/acls/file` si todavía no
+se hizo (ver `docs/dev-guide.md` §3).
+
 ---
 
 ## `docket-prod` — runbook de go-live (NADA de esto está aprovisionado)
@@ -146,9 +172,9 @@ Se ejecuta cuando se decida ir a producción. Orden:
    - **Origin CA cert** para `*.curaduria.app`, `curaduria.app` → `cert.pem` + `key.pem` en `/opt/docket/origin/`.
    - WAF → Managed + OWASP Core Ruleset. Rate limiting en `/login`, `/verificar/*`. Bot Fight Mode ON.
 7. **Provision**: `ENV=prod HOSTNAME_TS=docket-prod TS_AUTHKEY=... bash infra/scripts/provision.sh`.
-8. **Registro de imágenes**: `ghcr.io` (namespace del repo/org) — gratis, autenticación nativa desde GitHub Actions. Crear un token de solo-lectura para que el droplet pueda hacer `docker login ghcr.io`.
-9. **Secretos**: `infra/env/prod.env` cifrado con SOPS+age en el host.
-10. **Deploy** (workflow manual, ver `.github/workflows/`): build+push de imágenes → pull en el droplet → `migrate --force` → `tenants:migrate --force` → `up -d`.
+8. **Registro de imágenes**: `ghcr.io` (namespace del repo/org) — gratis, autenticación nativa desde GitHub Actions. No hace falta token persistido en el droplet: `deploy.yml` usa el `GITHUB_TOKEN` efímero de cada corrida para el `docker login` remoto.
+9. **Secretos**: `infra/env/prod.env` cifrado con SOPS+age en el host. Además, crear el GitHub Environment `prod` con sus propios `TS_OAUTH_CLIENT_ID`/`TS_OAUTH_SECRET`/`DEPLOY_SSH_KEY` y variable `DROPLET_TS_HOSTNAME=docket-prod` (ver "Configurar el deploy manual" arriba — mismo mecanismo que dev, credenciales propias de prod).
+10. **Deploy** (workflow manual, `.github/workflows/deploy.yml`, elegir `prod`): build+push de imágenes → pull en el droplet por Tailscale → `migrate --force` → `tenants:migrate --force` → `up -d`.
 11. **Cron** de backups: `backup-tenants.sh` diario + prueba de restore trimestral.
 
 ### Diferencias entre los tres ambientes (para no llevarse sorpresas)
