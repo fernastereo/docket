@@ -36,6 +36,55 @@ Lista viva. Al resolverse, mover la decisión a un ADR.
       final (SOPS+age vs Doppler vs otro); umbral (tenants/volumen) para revisar
       un SIEM dedicado; ciberseguro (negocio); redacción del set de políticas en
       `docs/seguridad/politicas.md`.
+- [ ] Hallazgos de auditoría de `docket-dev` post-provisioning (2026-09-13,
+      revisión en vivo del droplet tras aplicar `provision.sh` + ACL de
+      Tailscale):
+      1. `ufw` permite `22/tcp` desde "Anywhere" (sin restricción de origen) —
+         toda la restricción real de SSH público hoy vive **solo** en la regla
+         "IP de casa" del Cloud Firewall `docket-fw`, sin una segunda capa de
+         respaldo a nivel de host. Punto único de falla si esa regla se borra
+         o desconfigura.
+      2. Esa regla de Cloud Firewall depende de una IP residencial, que puede
+         cambiar sola (reasignación del ISP) y dejar la regla desactualizada
+         sin aviso.
+      3. `authorized_keys` de `root` en `docket-dev` tiene dos llaves de origen
+         distinto (la RSA original de creación del droplet +
+         `fernando@docket-dev` importada vía `ssh-import-id gh:fernastereo`)
+         sin ningún inventario ni proceso de rotación/revocación documentado.
+      4. El uso de `ssh-import-id gh:<usuario>` como mecanismo de enrolamiento
+         ata el acceso root del droplet a lo que sea que esté público en esa
+         cuenta de GitHub en el futuro, no solo a la llave agregada hoy — vale
+         la pena decidir un mecanismo más explícito antes de repetirlo en
+         `docket-prod`.
+      5. Todo el acceso SSH es directo como `root` (`PermitRootLogin
+         without-password`, sin usuario no-root + sudo) — sin separación de
+         privilegios ni atribución por nombre de usuario a nivel de SO; con un
+         segundo dev en el equipo esto se vuelve más relevante (conecta con la
+         nota de `group:ops` más abajo).
+      6. Confirmar si el auth key de Tailscale usado para enrolar `docket-dev`
+         (reusable, no-efímero) ya se rotó según lo previsto en
+         `docs/dev-guide.md`.
+      Lo que sí verificó estar bien: `fail2ban` activo monitoreando `sshd` de
+      verdad (logs limpios), `sshd` correctamente endurecido, `unattended-
+      upgrades` y `auditd` activos, sin IPv6 pública expuesta, y el tailnet
+      con solo los 2 dispositivos esperados.
+- [ ] Tailscale ACL: cuando se sume un segundo desarrollador, cambiar el
+      `src` del bloque `ssh` en `infra/tailscale/acl.json` de
+      `autogroup:admin` a un `group:ops` explícito (para no forzar que todo
+      dev con acceso SSH a los droplets sea también Admin del tailnet, un rol
+      mucho más amplio que solo "puede entrar por SSH").
+- [ ] Seguridad de acceso a la aplicación (Capa 4 de ADR-017, `docs/seguridad/
+      politicas.md` §2): la **postura ya está decidida** (Argon2id, MFA TOTP,
+      rate limit + lockout, ciclo de vida de sesión, RBAC deny-by-default) pero
+      **nada de esto está implementado en código todavía** — el esqueleto de
+      `docket/` solo trae Sanctum por defecto, sin controlador de login, sin
+      reglas de contraseña, sin rate limiting, sin MFA. Corresponde
+      implementarlo en el bloque de identidad/auth (ver orden en `CLAUDE.md`).
+      Detalles concretos aún sin fijar (alineados a OWASP ASVS L2 / NIST
+      800-63B): longitud mínima exacta de contraseña, umbral exacto de
+      intentos fallidos antes de bloqueo/challenge, duración exacta de sesión
+      (idle + absoluta), si el JWT/cookie de Sanctum lleva claims de tenant, y
+      diseño de recovery codes de MFA.
 
 ## Dominio (capturar del conocimiento del sistema legado)
 
