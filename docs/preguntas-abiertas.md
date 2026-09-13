@@ -30,12 +30,14 @@ Lista viva. Al resolverse, mover la decisión a un ADR.
       tenant), semántica al borrar una definición con valores (huérfanos /
       purgar / bloquear), alcance final de la gramática de `visibility`, y set
       definitivo de `data_type` (si entran `computed` / `file_reference`).
+- [x] Go/no-go de MFA obligatoria para roles privilegiados — resuelto en el
+      amendment 2026-09-13 de ADR-017: obligatoria para curador y admin de
+      tenant (ya no "opcional incentivada"). Política completa en
+      `docs/seguridad/politicas.md` §2.
 - [ ] Seguridad (ADR-017): **postura cerrada**, quedan decisiones puntuales —
-      proveedor de pentest; go/no-go de MFA obligatoria para roles privilegiados
-      (curador, admin de tenant) antes del lanzamiento; herramienta de secretos
-      final (SOPS+age vs Doppler vs otro); umbral (tenants/volumen) para revisar
-      un SIEM dedicado; ciberseguro (negocio); redacción del set de políticas en
-      `docs/seguridad/politicas.md`.
+      proveedor de pentest; herramienta de secretos final (SOPS+age vs Doppler
+      vs otro); umbral (tenants/volumen) para revisar un SIEM dedicado;
+      ciberseguro (negocio); runbook puntual de break-glass.
 - [ ] Hallazgos de auditoría de `docket-dev` post-provisioning (2026-09-13,
       revisión en vivo del droplet tras aplicar `provision.sh` + ACL de
       Tailscale):
@@ -73,18 +75,16 @@ Lista viva. Al resolverse, mover la decisión a un ADR.
       `autogroup:admin` a un `group:ops` explícito (para no forzar que todo
       dev con acceso SSH a los droplets sea también Admin del tailnet, un rol
       mucho más amplio que solo "puede entrar por SSH").
-- [ ] Seguridad de acceso a la aplicación (Capa 4 de ADR-017, `docs/seguridad/
-      politicas.md` §2): la **postura ya está decidida** (Argon2id, MFA TOTP,
-      rate limit + lockout, ciclo de vida de sesión, RBAC deny-by-default) pero
-      **nada de esto está implementado en código todavía** — el esqueleto de
-      `docket/` solo trae Sanctum por defecto, sin controlador de login, sin
-      reglas de contraseña, sin rate limiting, sin MFA. Corresponde
-      implementarlo en el bloque de identidad/auth (ver orden en `CLAUDE.md`).
-      Detalles concretos aún sin fijar (alineados a OWASP ASVS L2 / NIST
-      800-63B): longitud mínima exacta de contraseña, umbral exacto de
-      intentos fallidos antes de bloqueo/challenge, duración exacta de sesión
-      (idle + absoluta), si el JWT/cookie de Sanctum lleva claims de tenant, y
-      diseño de recovery codes de MFA.
+- [ ] Seguridad de acceso a la aplicación (Capa 4 de ADR-017, amendment
+      2026-09-13, `docs/seguridad/politicas.md` §2): **todos los números ya
+      están fijados** (longitud de contraseña por dominio, MFA obligatoria
+      para curador/admin de tenant, timeouts de sesión, rate limiting de
+      login, recovery codes) pero **nada está implementado en código
+      todavía** — el esqueleto de `docket/` solo trae Sanctum por defecto,
+      sin controlador de login, sin reglas de contraseña, sin rate limiting,
+      sin MFA, y las sesiones no están respaldadas en Redis todavía.
+      Corresponde implementarlo en el bloque de identidad/auth (ver orden en
+      `CLAUDE.md`).
 
 ## Dominio (capturar del conocimiento del sistema legado)
 

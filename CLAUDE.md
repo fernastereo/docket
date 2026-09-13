@@ -82,6 +82,10 @@ expediente son críticos.
   plataforma), ClamAV en subidas, credencial de BD por tenant, scanners de
   seguridad en CI, backups inmutables, plan de respuesta a incidentes. Baseline
   Ley 1581 + alineación OWASP ASVS / CIS. Políticas en `docs/seguridad/`.
+  Amendment 2026-09-13: cierre de capa 4 (identidad y acceso) — MFA pasa a
+  **obligatoria** para curador y admin de tenant (ya no opcional); números
+  concretos de contraseña/sesión/rate-limiting por dominio de identidad, ver
+  `docs/seguridad/politicas.md` §2.
 
 - **ADR-011 — Principios de código**: Laravel idiomático + capa de dominio:
   acciones de dominio como única vía de escritura, controladores delgados

@@ -17,10 +17,65 @@ principios del proyecto (`CLAUDE.md`).
 
 ## 2. Control de acceso
 
-_Pendiente de redactar._ Basado en ADR-005 (identidad), ADR-017 capa 4.
-Contraseñas (Argon2id, chequeo de brechas), MFA (alcance y roles obligatorios),
-ciclo de vida de sesión, RBAC por tenant, acceso privilegiado y break-glass,
-acceso de operación por malla VPN.
+Basado en ADR-005 (identidad) y ADR-017 capa 4 (amendment 2026-09-13, que fija
+los números concretos). Tres dominios de identidad con política propia,
+porque el riesgo por cuenta comprometida es muy distinto entre ellos.
+
+**Contraseñas** (Argon2id en los tres dominios; sin rotación forzada ni
+reglas de composición — NIST 800-63B):
+| Dominio | Longitud mínima |
+|---|---|
+| Solicitantes | 8 |
+| Empleados de curaduría (todos los roles) | 12 |
+| Superadmin/soporte de plataforma | 12 |
+
+Chequeo contra brechas conocidas (HIBP k-anonymity) al crear/cambiar
+contraseña, en los tres dominios. Soportar hasta 64+ caracteres, sin truncar.
+
+**MFA (TOTP, RFC 6238)**:
+- Superadmin/soporte de plataforma: **obligatoria**.
+- Curador y admin de tenant: **obligatoria** (cierra el riesgo de mayor
+  impacto: expedir/alterar actos administrativos).
+- Resto de roles de empleado (arquitecto, ingeniero, abogado): opcional,
+  incentivada.
+- Solicitantes: opcional.
+- Recovery codes: 8 de un solo uso por activación, regenerables, hasheados
+  en reposo.
+
+**Ciclo de vida de sesión** (Sanctum SPA, cookie httpOnly+Secure+SameSite;
+sesión respaldada en **Redis**, prefijo por tenant — sin esto no hay
+revocación real):
+| Dominio | Timeout inactividad | Sesión absoluta |
+|---|---|---|
+| Solicitantes | sin timeout agresivo ("recordarme") | reautenticación obligatoria antes de acción sensible (radicar/retirar/firmar) |
+| Empleados de curaduría | 30 min | 12 h |
+| Superadmin/soporte de plataforma | 15 min | 8 h |
+
+Rotación de sesión al cambiar contraseña o privilegio. "Cerrar sesión en
+todos los dispositivos" disponible en los tres dominios (revocación
+server-side vía Redis).
+
+**Rate limiting de login**: bloqueo temporal de cuenta tras 5 intentos
+fallidos en 15 minutos, con backoff progresivo antes de llegar al umbral —
+en capa de app (`throttle` de Laravel), además del de Cloudflare (Capa 1).
+
+**RBAC**: por tenant, deny-by-default, en Policies (ADR-011). Acciones
+privilegiadas (expedir acto, cambiar tarifas, gestionar usuarios, gestionar
+definiciones de campos personalizados) siempre auditadas.
+
+**Acceso privilegiado y break-glass**: plano admin del proveedor
+(superadmin/soporte) separado del de tenant; procedimiento break-glass
+documentado — _pendiente de redactar el runbook puntual_.
+
+**Acceso de operación** (SSH, admin de BD, deploy, debugging): exclusivamente
+por malla Tailscale, sin puerto SSH expuesto a internet como camino real;
+MFA obligatoria en el proveedor de identidad de la VPN. Detalle en
+`docs/dev-guide.md` §3 e `infra/README.md`.
+
+**Estado de implementación**: todo lo anterior está **decidido, no
+implementado** — `docket/` aún no tiene controlador de login, reglas de
+contraseña, rate limiting ni MFA (pendiente en `docs/preguntas-abiertas.md`,
+bloque de identidad/auth).
 
 ## 3. Clasificación y manejo de datos
 

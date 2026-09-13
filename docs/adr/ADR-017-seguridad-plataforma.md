@@ -260,8 +260,80 @@ constancia de que:
 - Selección de proveedor de pentest.
 - Momento del registro RNBD ante la SIC (antes del primer tenant real con
   datos de ciudadanos).
-- Go/no-go de MFA obligatoria para roles privilegiados antes del lanzamiento.
 - Elección final de herramienta de secretos (SOPS+age vs Doppler vs otro).
 - Umbral (tenants / volumen) a partir del cual se revisa un SIEM dedicado.
 - Ciberseguro (decisión de negocio).
-- Redacción del set de políticas (`docs/seguridad/politicas.md`).
+- Implementar en código el bloque de identidad/auth con los parámetros del
+  amendment 2026-09-13 (todavía no existe controlador de login, reglas de
+  contraseña, rate limiting ni MFA en `docket/`).
+
+## Amendments
+
+### 2026-09-13 — Cierre de Capa 4: MFA obligatoria para roles privilegiados y números concretos de identidad/acceso
+
+**Motivo**: la Capa 4 dejaba "MFA obligatoria para roles privilegiados" como
+riesgo residual sin resolver, y varios parámetros (longitud de contraseña,
+timeouts de sesión, mecanismo de revocación de sesión) sin fijar — bloqueaba
+redactar `docs/seguridad/politicas.md` §2 y arrancar la implementación del
+bloque de identidad/auth. Se definieron alineados a NIST SP 800-63B (política
+de contraseñas y autenticación) y OWASP ASVS nivel 2 (verificable, estándar de
+facto para apps que manejan PII o tienen valor legal — ambos aplican acá).
+
+**Cambio**:
+
+1. **MFA obligatoria para curador y admin de tenant**, deja de ser opcional.
+   Cierra el riesgo residual señalado en la sección original: un curador
+   comprometido puede expedir o alterar actos administrativos — el
+   account-takeover de mayor impacto del sistema. Sigue siendo TOTP
+   (RFC 6238), el mismo mecanismo que el resto de roles — no agrega
+   infraestructura nueva. El resto de roles de empleado (arquitecto,
+   ingeniero, abogado) mantiene MFA opcional pero incentivada, sin cambio.
+   MFA de soporte/superadmin de plataforma sigue obligatoria, sin cambios (ya
+   lo era).
+
+2. **Política de contraseña por dominio de identidad** (Argon2id en todos,
+   sin rotación forzada — NIST 800-63B):
+   - Solicitantes: longitud mínima 8.
+   - Empleados de curaduría (todos los roles): longitud mínima 12.
+   - Superadmin/soporte de plataforma: longitud mínima 12.
+   Sin regla de composición (mayúscula+símbolo+número obligatorios) en ningún
+   caso — no aporta seguridad real medible y frustra al usuario (NIST
+   800-63B). Soportar contraseñas de hasta 64+ caracteres, sin truncar.
+
+3. **Ciclo de vida de sesión, por dominio** (ASVS L2):
+   - Solicitantes: sesión persistente ("recordarme"), sin timeout de
+     inactividad agresivo — es un portal de baja frecuencia de uso. Cualquier
+     acción sensible (radicar, retirar, firmar) exige reautenticación
+     (confirmación de contraseña) sin importar la antigüedad de la sesión.
+   - Empleados de curaduría: timeout por inactividad 30 minutos, sesión
+     absoluta máxima 12 horas.
+   - Superadmin/soporte de plataforma: timeout por inactividad 15 minutos,
+     sesión absoluta máxima 8 horas — más estricto por el radio de impacto
+     (todos los tenants a la vez).
+   En los tres casos: rotación de sesión al cambiar contraseña o privilegio;
+   revocación server-side disponible ("cerrar sesión en todos los
+   dispositivos").
+
+4. **Mecanismo de revocación**: las sesiones de Sanctum (SPA, cookie) se
+   respaldan en **Redis**, no en el driver de sesión por archivo/BD por
+   defecto de Laravel, con el prefijo por tenant que ya fija la Capa 6 de
+   este ADR. Sin esto, "cerrar sesión en todos los dispositivos" no es
+   implementable de forma confiable ni escalable.
+
+5. **Rate limiting de login** (a nivel app, además del de Cloudflare de la
+   Capa 1): bloqueo temporal de la cuenta tras 5 intentos fallidos en 15
+   minutos, con backoff progresivo antes de llegar a ese umbral.
+
+6. **Recovery codes de MFA**: 8 códigos de un solo uso generados al activar
+   TOTP, regenerables bajo demanda, almacenados hasheados (no en texto
+   plano).
+
+**Alternativa evaluada y descartada**: exigir WebAuthn/llave de hardware en
+vez de TOTP para el rol de superadmin/soporte de plataforma. Se descarta por
+ahora — fricción operativa (logística de llaves físicas) sin que el volumen
+de personas con ese rol lo justifique todavía; TOTP obligatorio ya cierra la
+brecha principal de ese rol. Revisar si el equipo de soporte de plataforma
+crece.
+
+**No cambia**: el resto de la Capa 4 (RBAC deny-by-default, plano admin
+separado con break-glass, tokens de enrolamiento de ADR-006) queda igual.
