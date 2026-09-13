@@ -16,3 +16,4 @@ infra/env/*.env
 .idea/
 .vscode/
 *.swp
+errors-log.txt
