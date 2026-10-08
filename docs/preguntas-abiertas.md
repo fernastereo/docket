@@ -3,6 +3,14 @@
 Lista viva. Al resolverse, mover la decisión a un ADR.
 
 ## Arquitectura / plataforma
+- [ ] Configurar Dependabot (`.github/dependabot.yml`) para Composer, npm y
+      GitHub Actions — resuelve ADR-017 capa 7 ("Renovate/Dependabot para
+      actualizaciones de dependencias"), todavía no implementado. Motivo
+      concreto (2026-10-08): `composer audit`/`npm audit` en CI bloquearon un
+      deploy a mitad de camino por advisories nuevos (`league/commonmark`,
+      `shell-quote`, `source-map-js`) publicados después del último push —
+      con Dependabot esos bumps llegan como PRs propios, antes de que
+      bloqueen otra cosa.
 - [x] Escaneo antivirus y límites (tamaño/tipos) de documentos subidos —
       resuelto en ADR-017 (ClamAV async, allowlist MIME+extensión, tope de
       tamaño, cuarentena) y reflejado en ADR-007.
