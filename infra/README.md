@@ -125,6 +125,28 @@ A partir de ahí, todos los despliegues los hace el workflow de deploy
 (`docker compose -f docker-compose.dev.yml pull && up -d`) — ver
 `.github/workflows/`.
 
+### Conectarse a Postgres desde un cliente local (DBeaver, TablePlus, etc.)
+
+Postgres solo está expuesto a `127.0.0.1` del propio droplet (`ports:` del
+servicio `db`) — nunca a internet. El único camino de entrada es un túnel
+SSH por Tailscale. Un solo túnel alcanza para la central **y** todas las
+bases de tenant que existan (ADR-009: un Postgres, N bases, no un servidor
+por tenant).
+
+En el cliente (DBeaver soporta esto nativo en la pestaña **SSH** de la
+conexión, sin necesidad de abrir un túnel manual aparte):
+- **SSH**: host `docket-dev` (requiere Tailscale conectado), puerto `22`,
+  usuario `root`, autenticación por llave privada (`~/.ssh/id_ed25519_docket`
+  o la que uses para entrar al droplet).
+- **Postgres**: host `localhost` (relativo al túnel, no tu máquina), puerto
+  `5432`, usuario y contraseña = `DB_USERNAME`/`DB_PASSWORD` de
+  `infra/env/dev.env`, base inicial `docket_central` (las bases de tenant
+  aparecen listadas ahí mismo una vez creadas).
+
+El cambio al `docker-compose.dev.yml` requiere un deploy nuevo para que el
+contenedor de `db` tome el puerto expuesto (se recrea solo con el próximo
+`up -d`).
+
 ### Configurar el deploy manual (`.github/workflows/deploy.yml`)
 
 Por cada ambiente (`dev`, `prod`), crear un **GitHub Environment**

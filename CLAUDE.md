@@ -166,6 +166,23 @@ origen, sin login server-rendered). Infraestructura de prod (`docket-prod`)
 concretada en el amendment 2026-09-01 de ADR-009 — **pendiente de ejecutar**
 (runbook completo en `infra/README.md`), se hace recién en el go-live.
 
+**Deploy real a `docket-dev` CERRADO y verificado end-to-end** (2026-10-08):
+CI (`.github/workflows/ci.yml` — Pint/Larastan/Pest + composer/npm audit +
+gitleaks + Semgrep + Trivy) y deploy manual
+(`.github/workflows/deploy.yml` — build+push a ghcr.io, conexión por
+Tailscale con nodo efímero `tag:ci`, migrate + tenants:migrate + up) ambos
+verificados en verde contra `docket-dev` real — `https://staging.curaduria.app`
+responde `200` desde el droplet, con los 6 servicios (`app`/`caddy`/`db`/
+`redis`/`sched`/`worker`) corriendo. Bugs reales encontrados y corregidos en
+el camino (detalle en `infra/README.md` troubleshooting): `entrypoint.sh`
+ignoraba el comando pasado a `docker compose run` (siempre arrancaba
+`php-fpm` por `APP_ROLE`); el heredoc de SSH del deploy perdía los comandos
+posteriores a `migrate` porque `docker compose run` sin `-T </dev/null`
+consumía el resto del heredoc como stdin; `APP_ENV` mal copiado en
+`dev.env.example`. Pendiente, no bloqueante: Dependabot
+(`docs/preguntas-abiertas.md`) para que bumps de seguridad no vuelvan a
+aparecer a mitad de un deploy.
+
 **Siguiente paso**: base central/provisioning (ADR-002/ADR-010) — hoy solo
 existe el esqueleto de `Tenant`/`Domain`, falta el flujo real de alta de
 curaduría.
