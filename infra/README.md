@@ -133,7 +133,7 @@ Por cada ambiente (`dev`, `prod`), crear un **GitHub Environment**
 **Secrets:**
 | Nombre | Qué es | Cómo se genera |
 |---|---|---|
-| `TS_OAUTH_CLIENT_ID` / `TS_OAUTH_SECRET` | credencial del runner de CI para unirse al tailnet como nodo efímero `tag:ci` | `login.tailscale.com/admin/settings/oauth` → crear cliente OAuth con scope `auth_keys` y tag `tag:ci` |
+| `TS_OAUTH_CLIENT_ID` / `TS_OAUTH_SECRET` | credencial del runner de CI para unirse al tailnet como nodo efímero `tag:ci` | `login.tailscale.com/admin/settings/trust-credentials` → "Credential" → "OAuth" → paso Scopes, sección **Keys** → marcar "Auth Keys: Write" |
 | `DEPLOY_SSH_KEY` | llave privada **propia de CI** (no la de un admin humano) autorizada en `authorized_keys` del droplet | generar un par ed25519 dedicado (`ssh-keygen`), agregar la pública al droplet, guardar la privada como este secret |
 
 **Variables** (no sensibles, `Settings → Environments → <env> → Variables`):
@@ -146,6 +146,26 @@ el `GITHUB_TOKEN` efímero de la propia corrida (válido solo mientras dura el
 run) tanto para publicar las imágenes como para que el droplet haga
 `docker login` al momento de hacer `pull` — sin credencial cloud de larga
 vida en el host (ADR-017 capa 5).
+
+**Gotcha del OAuth client de Tailscale**: al marcar "Auth Keys: Write" en el
+paso Scopes aparece un campo nuevo, fácil de pasar por alto, **"Tags
+(required for write scope)"** — sin seleccionar ahí `tag:ci` explícitamente,
+el botón "Generate credential" queda deshabilitado, pero si se fuerza o se
+genera sin fijarse, el client queda sin permiso de otorgar ningún tag y
+`tailscale up` falla en el deploy con `403 calling actor does not have
+enough permissions`. Hay que seleccionar `tag:ci` ahí antes de generar — no
+alcanza con que el ACL (`infra/tailscale/acl.json`) ya lo permita en
+general, el client mismo necesita el permiso. **No** agregar `tag:docket`
+acá — ese tag lo aplican los droplets vía `provision.sh`, no el pipeline de
+CI (mínimo privilegio: el client de CI solo necesita poder ser `tag:ci`, no
+poder re-taggear droplets).
+
+**Nota sobre el secreto**: tanto el Client ID/Secret de Tailscale como los
+secrets de GitHub se muestran **una sola vez** al crearlos — ninguno de los
+dos se puede volver a ver después. No hace falta guardarlos en otro lado
+"por si acaso": si se pierden o hay que rotarlos, el procedimiento es
+siempre generar un client nuevo y reemplazar el secret en GitHub, nunca
+recuperar el valor viejo.
 
 El ACL de Tailscale (`infra/tailscale/acl.json`) ya tiene la regla para
 `tag:ci` — aplicarlo en `login.tailscale.com/admin/acls/file` si todavía no

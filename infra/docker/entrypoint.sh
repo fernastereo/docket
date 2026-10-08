@@ -24,6 +24,14 @@ if [ "${APP_ENV:-production}" != "local" ]; then
     php artisan event:cache   >/dev/null
 fi
 
+# Un comando explícito (p. ej. `docker compose run --rm app php artisan
+# migrate --force`) siempre gana sobre APP_ROLE — si no, un `run` de un
+# comando puntual terminaría arrancando php-fpm igual (APP_ROLE del
+# servicio) e ignorando el comando para siempre.
+if [ "$#" -gt 0 ]; then
+    exec "$@"
+fi
+
 role="${APP_ROLE:-fpm}"
 case "$role" in
     fpm)
@@ -38,6 +46,7 @@ case "$role" in
         exec php artisan schedule:work
         ;;
     *)
-        exec "$@"
+        echo "APP_ROLE desconocido: $role" >&2
+        exit 1
         ;;
 esac

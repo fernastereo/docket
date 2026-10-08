@@ -55,8 +55,11 @@ WORKDIR /var/www/html
 # necesitan correr como root (apk add, chown) antes de bajar a www-data al
 # final de cada uno — agregar USER en este stage base rompería esas
 # instalaciones. Ninguna imagen final se construye desde "runtime" solo.
+#
+# Sin CMD a propósito: sin argumentos, entrypoint decide el proceso por
+# APP_ROLE (fpm/worker/scheduler); un comando explícito (docker compose run
+# ... php artisan migrate) lo reemplaza — ver infra/docker/entrypoint.sh.
 ENTRYPOINT ["entrypoint"] # nosemgrep: dockerfile.security.missing-user-entrypoint.missing-user-entrypoint
-CMD ["php-fpm"] # nosemgrep: dockerfile.security.missing-user.missing-user
 
 # ------------------------------------------------------------------ dev
 FROM runtime AS dev
