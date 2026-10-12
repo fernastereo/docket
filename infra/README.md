@@ -41,7 +41,8 @@ infra/
 ## Programar local (tu Mac o cualquier PC)
 
 **Atajo: `make help`** (Makefile en la raíz del repo) lista los comandos de
-este entorno: `make up`, `make test`, `make check` (Pint + Larastan + Pest, lo
+este entorno: `make up` (o `make up-build` si cambió un Dockerfile o las
+dependencias), `make test`, `make check` (Pint + Larastan + Pest, lo
 mismo que corre el CI), `make tenant NAME="…" SUB=…`, `make tenants`, etc. Cada
 target ya lleva el `--env-file` y el contenedor correctos. Los bloques de abajo
 muestran los comandos crudos (con el alias `dc`) para entender qué hay detrás.
@@ -58,7 +59,7 @@ cd infra/compose
 # él falla con "required variable DB_PASSWORD is missing a value".
 alias dc='docker compose -f docker-compose.local.yml --env-file ../env/local.env'
 
-dc up -d --build
+dc up -d --build                              # = make up-build (primer arranque, o si cambió un Dockerfile)
 dc exec app php artisan key:generate
 dc exec app php artisan migrate --force       # base central (catálogo de tenants)
 
