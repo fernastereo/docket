@@ -40,17 +40,45 @@ infra/
 
 ## Programar local (tu Mac o cualquier PC)
 
+**Atajo: `make help`** (Makefile en la raíz del repo) lista los comandos de
+este entorno: `make up`, `make test`, `make check` (Pint + Larastan + Pest, lo
+mismo que corre el CI), `make tenant NAME="…" SUB=…`, `make tenants`, etc. Cada
+target ya lleva el `--env-file` y el contenedor correctos. Los bloques de abajo
+muestran los comandos crudos (con el alias `dc`) para entender qué hay detrás.
+Al agregar un comando que se repita, súmalo al Makefile con su `## descripción`.
+
 ```bash
 # una vez
 cp infra/env/local.env.example infra/env/local.env   # completar (ver infra/dev-guide.md)
 echo "127.0.0.1 docket.test central.docket.test tenant1.docket.test" | sudo tee -a /etc/hosts
 
 cd infra/compose
-docker compose -f docker-compose.local.yml --env-file ../env/local.env up -d --build
+# Alias para esta sesión de terminal. --env-file va en CADA comando de compose
+# (no solo en `up`): el yml interpola ${DB_PASSWORD} cada vez que lo lee, y sin
+# él falla con "required variable DB_PASSWORD is missing a value".
+alias dc='docker compose -f docker-compose.local.yml --env-file ../env/local.env'
 
-docker compose -f docker-compose.local.yml exec app php artisan key:generate
-docker compose -f docker-compose.local.yml exec app php artisan migrate --force
+dc up -d --build
+dc exec app php artisan key:generate
+dc exec app php artisan migrate --force       # base central (catálogo de tenants)
+
+# Base exclusiva de tests — una sola vez (el volumen la conserva):
+docker exec docket-local-db-1 psql -U docket -d docket_central -c "CREATE DATABASE docket_test"
 ```
+
+**Dar de alta una curaduría de prueba** (ADR-010, un comando):
+
+```bash
+dc exec app php artisan tenants:provision "Curaduría de Prueba" cuprueba   # [--active]
+echo "127.0.0.1 cuprueba.docket.test" | sudo tee -a /etc/hosts   # /etc/hosts no admite comodines
+```
+
+Crea el tenant en el catálogo, su dominio `cuprueba.docket.test`, la base
+`tenant<uuid>` y corre sus migraciones. `migrate --force` y `tenants:migrate`
+NO se corren a mano en dev/prod: los hace el workflow de deploy. Para borrar
+una curaduría de prueba **usa Eloquent**, no SQL (el evento borra también la
+base física; un `DELETE` desde un cliente la dejaría huérfana):
+`dc exec app php artisan tinker --execute='App\Platform\Models\Tenant::find("<id>")->delete();'`.
 
 **Confiar el certificado local en tu Mac** (evita la advertencia del
 navegador; opcional — si no lo hacés, el navegador va a mostrar "conexión no
@@ -74,7 +102,60 @@ propósito (para no chocar con otros proyectos/servicios locales usando esos
 puertos) — Caddy adentro del contenedor sigue en 80/443 normalmente. Nada de
 esto toca los droplets.
 
+### Correr los tests
+
+Siempre contra PostgreSQL real y la base `docket_test` (ADR-011, amendment
+2026-10-12), desde el contenedor `app`:
+
+```bash
+dc exec app vendor/bin/pest
+dc exec app vendor/bin/pint --test
+dc exec app vendor/bin/phpstan analyse --memory-limit=1G
+```
+
+Si falla con "database docket_test does not exist", falta el `CREATE DATABASE`
+de arriba. Los tests que dan de alta curadurías crean bases físicas con prefijo
+**`tenanttest_`** (las de desarrollo son `tenant<uuid>`) y las borran al
+terminar. Si interrumpes una corrida (Ctrl+C) pueden quedar huérfanas:
+`make test-clean` borra solo las `tenanttest_*` y vacía el catálogo de
+`docket_test`; nunca toca las de tus curadurías de desarrollo.
+
+### Conectar DBeaver (u otro cliente) a la base local
+
+| Campo | Valor |
+|---|---|
+| Host | `127.0.0.1` |
+| Puerto | **`15432`** (el 5432 se dejó libre por si hay un Postgres nativo) |
+| Base | `docket_central` |
+| Usuario | `docket` |
+| Contraseña | `DB_PASSWORD` de `infra/env/local.env` (solo lo anterior a un `#`) |
+
+Cada curaduría vive en su **propia base** (`tenant<uuid>`): en la conexión,
+pestaña *PostgreSQL* → **Show all databases** para verlas junto a
+`docket_central` y `docket_test`. Para saber qué base es de cuál:
+
+```sql
+select t.name, t.status, 'tenant' || t.id as database_name, d.domain
+from tenants t left join domains d on d.tenant_id = t.id;
+```
+
+Postgres toma `POSTGRES_PASSWORD` solo al inicializar el volumen: si cambiaste
+`local.env` después y falla la autenticación, la base sigue con la anterior.
+
 ### Troubleshooting local (lo que ya nos mordió una vez)
+
+- **`required variable DB_PASSWORD is missing a value` al correr `exec`/`run`/
+  `ps`.** Faltó `--env-file ../env/local.env`: va en todos los comandos de
+  compose, no solo en `up`. Usa el alias `dc` de arriba.
+- **Los tests NUNCA deben tocar `docket_central`.** El contenedor `app` trae
+  `DB_DATABASE=docket_central` como variable de entorno real, y esas ganan
+  sobre `phpunit.xml`; además Laravel lee primero de `$_SERVER`, que `<env>`
+  de PHPUnit no pisa. Por eso `phpunit.xml` fuerza la base de pruebas en
+  `<env>` y en `<server>` con `force="true"`, y `tests/TestCase.php` aborta si
+  la base no termina en `_test`. Sin ambas, `DatabaseMigrations` hace
+  `migrate:fresh` sobre la central y borra el catálogo de tenants (pasó el
+  2026-10-12; la base física de las curadurías queda huérfana). Si aun así
+  pasa: `dc exec app php artisan migrate --force` y volver a dar de alta.
 
 - **Siempre con `:8443` en la URL.** `http://docket.test/` o `docket.test`
   sin puerto van al 80/443 del *host* — que puede estar ocupado por **otro

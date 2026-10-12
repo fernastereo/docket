@@ -34,14 +34,17 @@ docket/
 │   │   └── Plazos/           TermCalculator / PlazoLegal (ADR-014)
 │   ├── Platform/             base central: catálogo de tenants, provisioning,
 │   │                         ciclo de vida (ADR-002, ADR-010) — NO es dominio de curaduría.
-│   │                         `Models/Tenant.php` (extiende el Tenant base de
-│   │                         stancl/tenancy con HasDatabase + HasDomains)
+│   │                         Models/Tenant.php (extiende el de stancl; declara sus columnas
+│   │                         en getCustomColumns) · Enums/TenantStatus ·
+│   │                         Data/ProvisionTenantData (DTO) · Actions/ProvisionTenant ·
+│   │                         Rules/TenantSubdomain · Jobs/DeleteTenantDatabase ·
+│   │                         Exceptions/TenantProvisioningFailed
 │   ├── Http/                 Controllers/ (delgados) · Requests/ · Resources/ · Middleware/
 │   │                         (incl. SecurityHeaders — ADR-017 capa 3)
 │   ├── Policies/             RBAC por tenant
 │   ├── Support/              fronteras con interfaz + impl + fake: LlmClient, DocumentSigner,
 │   │                         SnrGateway, Messaging, Pdf (ADR-011)
-│   └── Console/
+│   └── Console/              Commands/ProvisionTenantCommand (tenants:provision)
 ├── routes/
 │   ├── api.php               lo que consume la SPA (y terceros, con token, a futuro)
 │   ├── web.php               sirve el shell de la SPA en los dominios CENTRALES
@@ -53,9 +56,12 @@ docket/
 │   ├── migrations/tenant/    base de cada CURADURÍA (todo el negocio) ← tenants:migrate
 │   ├── factories/  seeders/
 ├── resources/js/             SPA: router/ stores/ api/ components/ features/ layouts/
-├── tests/                    Pest
-│   └── Feature/{Tenancy,Expediente,Expensas,Radicacion}/   obligatorios (ADR-011)
-└── config/  bootstrap/  public/
+├── tests/                    Pest — SIEMPRE contra PostgreSQL real, base `docket_test`
+│   ├── Feature/{Tenancy,Platform,Expediente,Expensas,Radicacion}/   obligatorios (ADR-011)
+│   └── Concerns/UsesTenantDatabase   tenant de pruebas compartido + transacción por test
+├── config/                   tenancy.php (stancl) · platform.php (dominio base de tenants,
+│                             subdominios reservados)
+└── bootstrap/  public/
 ```
 
 ## Convenciones

@@ -108,3 +108,59 @@ cada término es definitiva.
 - Las acciones de dominio son reutilizables en la migración masiva desde
   Access (comandos Artisan) con audit y validaciones idénticos.
 - Costo asumido: disciplina de mantener el glosario y los DTOs al día.
+
+## Amendments
+
+### 2026-10-12 — Todos los tests corren contra PostgreSQL real
+
+Los tests de provisioning y aislamiento de tenants crean **bases físicas**, lo
+que SQLite no puede reproducir (y PostgreSQL se comporta distinto en `jsonb`,
+restricciones, transacciones y, más adelante, `pgvector`). Tener dos
+modalidades (SQLite por defecto, PostgreSQL solo para algunos) dejaba tests
+saltados en silencio que parecían verdes. Se unifica:
+
+- **Una sola modalidad: PostgreSQL**, con una base exclusiva `docket_test`.
+  Nunca se comparte con `docket_central` ni con bases de tenants de desarrollo.
+- `phpunit.xml` **fuerza** `DB_CONNECTION` y `DB_DATABASE` tanto en `<env>` como
+  en `<server>` con `force="true"`. Las dos son necesarias: el contenedor `app`
+  trae `DB_DATABASE=docket_central` como variable real, y Laravel lee primero de
+  `$_SERVER`, que `<env>` no pisa. Host, usuario y clave sí vienen del entorno.
+- `tests/TestCase.php` aborta **antes** de los traits de base de datos
+  (`setUpTraits()`) si la conexión no es `pgsql` o la base no termina en
+  `_test`. Es la defensa final: `DatabaseMigrations` hace `migrate:fresh`.
+- Tests que crean bases físicas usan `DatabaseMigrations`, no
+  `RefreshDatabase` (`CREATE DATABASE` no corre en transacción), y limpian sus
+  tenants en `afterEach` (el evento `TenantDeleted` borra la base física).
+- El CI levanta un servicio `postgres` efímero (`ci.yml`).
+
+**Tests sobre la base de un tenant** (mismo amendment, 2026-10-12). Dos
+categorías, para que la suite no se vuelva inusable cuando el esquema del tenant
+tenga decenas de tablas:
+
+1. *Provisioning y aislamiento* (pocos): crean tenants reales con
+   `DatabaseMigrations` (`tests/Feature/Platform/`, `tests/Feature/Tenancy/
+   DatabaseIsolationTest.php`). El de aislamiento usa dos tenants reales y una
+   tabla sonda propia: prueba el mecanismo sin depender del esquema del núcleo.
+2. *Dominio* (la gran mayoría): `uses(Tests\Concerns\UsesTenantDatabase::class)`.
+   **Un tenant de pruebas por proceso**, provisionado por los propios tests con
+   `ProvisionTenant`, y **una transacción por test, revertida al terminar**
+   (el DDL también: PostgreSQL es transaccional). Al terminar el proceso se
+   borran su base física y su fila. **Nunca se clona un tenant de desarrollo.**
+   Los tests de dominio no escriben en la base central.
+
+Las bases físicas de tenants creadas por tests usan el prefijo `tenanttest_`
+(no `tenant`), fijado en `TestCase`: se distinguen de las de desarrollo y
+`make test-clean` borra las huérfanas sin riesgo. Optimización futura si
+provisionar el tenant compartido se vuelve lento: base plantilla de pruebas
+(`CREATE DATABASE … TEMPLATE`, `template_tenant_connection` de stancl), creada
+y migrada por los tests, no un tenant real.
+
+La estrategia completa —rendimiento al crecer el esquema y regresión con datos
+realistas (casos borde, tests dorados de cálculos, ensayo de migración sobre
+copia real)— está en `docs/estrategia-de-pruebas.md`, marcada como propuesta a
+revisar.
+
+**Incidente que motivó las dos defensas** (2026-10-12): la primera versión solo
+usaba `<env>` sin `force`; al correr la suite en el contenedor, `migrate:fresh`
+se ejecutó sobre `docket_central` y vació el catálogo local. Sin pérdida real
+(datos de prueba), pero es exactamente el riesgo que las salvaguardas evitan.

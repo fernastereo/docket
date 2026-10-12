@@ -19,6 +19,22 @@ jobs:
     defaults:
       run:
         working-directory: docket
+    # PostgreSQL real: los tests de provisioning y aislamiento de tenants
+    # crean bases físicas (ADR-011/ADR-017). Efímero, solo vive en este job.
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: docket
+          POSTGRES_PASSWORD: docket-ci
+          POSTGRES_DB: docket_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U docket -d docket_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -60,6 +76,13 @@ jobs:
 
       - name: Pest
         run: vendor/bin/pest
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: "5432"
+          DB_DATABASE: docket_test
+          DB_USERNAME: docket
+          DB_PASSWORD: docket-ci
 
   secret-scan:
     runs-on: ubuntu-latest
