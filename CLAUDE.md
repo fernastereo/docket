@@ -241,6 +241,12 @@ en `resources/js/features/platform/`. Vitest + Vue Test Utils quedan como
 herramienta de tests del frontend (`make test-front`, también en el CI). El
 alta es síncrona (unos segundos); pasará a cola cuando el esquema crezca.
 
+**Base de diseño de la interfaz** (2026-10-18, en curso): la app hereda la
+identidad de la landing (paletas lavanda/turquesa/periwinkle/índigo, Inter
+Tight) con tokens claro/oscuro, componentes propios sobre Reka UI
+(`components/ui/`) y una estructura común (`AppShell`) para plataforma y
+curadurías. Detalle en `docs/diseno-ui.md`.
+
 **Siguiente paso** (orden acordado): terminar identidad/auth (ADR-005/006/017):
 MFA de plataforma, cuentas de empleado locales al tenant con RBAC,
 solicitantes y enrolamiento; eso desbloquea el panel de plataforma y el
@@ -257,6 +263,7 @@ moderno equivalente, cuestionando el legado por defecto.
 ## Convenciones de documentación
 
 - Estrategia de pruebas (propuesta, a revisar): docs/estrategia-de-pruebas.md.
+- Diseño de la interfaz (tokens, componentes, patrones): docs/diseno-ui.md.
 - Comandos del entorno local: `make help` (Makefile en la raíz; detalle en
   infra/README.md).
 - Decisiones: docs/adr/ADR-NNN-titulo.md (Contexto, Decisión, Consecuencias,

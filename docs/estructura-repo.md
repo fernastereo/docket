@@ -55,7 +55,14 @@ docket/
 │   ├── migrations/           base CENTRAL (catálogo de tenants, identidades)
 │   ├── migrations/tenant/    base de cada CURADURÍA (todo el negocio) ← tenants:migrate
 │   ├── factories/  seeders/
-├── resources/js/             SPA: router/ stores/ api/ components/ features/ layouts/
+├── resources/js/             SPA (Vue 3 + TS). Diseño y componentes: docs/diseno-ui.md
+│   ├── api/                  cliente HTTP (cookie de sesión + CSRF; anuncia los 401)
+│   ├── components/ui/        componentes base propios (Reka UI + tokens de marca)
+│   ├── components/layout/    AppShell, PageHeader, EmptyState, BrandMark
+│   ├── composables/          useTheme (claro / oscuro / sistema)
+│   ├── features/<área>/      pages/ stores/ components/ layouts/ (hoy: platform, dashboard)
+│   ├── lib/  router/         utilidades (cn) y vue-router con guardas
+│   └── *.test.ts             Vitest junto al código que prueba
 ├── tests/                    Pest — SIEMPRE contra PostgreSQL real, base `docket_test`
 │   ├── Feature/{Tenancy,Platform,Expediente,Expensas,Radicacion}/   obligatorios (ADR-011)
 │   └── Concerns/UsesTenantDatabase   tenant de pruebas compartido + transacción por test

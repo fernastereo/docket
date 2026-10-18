@@ -209,6 +209,23 @@ Detalle y razones en `docs/estrategia-de-pruebas.md`.
 - [ ] Revisar la estrategia completa cuando existan las primeras tablas del
       tenant; decidir si se eleva a ADR.
 
+## Interfaz / diseño (2026-10-18)
+Base y razones en `docs/diseno-ui.md`.
+- [ ] Logo definitivo (hoy: ícono de edificio público + nombre).
+- [ ] Verificar contraste AA (claro y oscuro) con una herramienta; en especial
+      `muted-foreground` y las insignias de estado.
+- [ ] Enlace "saltar al contenido" y revisión de accesibilidad con lector de
+      pantalla de las pantallas principales.
+- [ ] Guardar la preferencia de tema en el perfil del usuario (hoy: navegador).
+- [ ] Actualizar Node en las máquinas de desarrollo a >= 22.15 (el generador de
+      componentes de shadcn-vue falla con 22.13; npm avisa `EBADENGINE`).
+- [ ] Componentes complejos del dominio (selector de fechas con días hábiles,
+      tabla de expedientes con filtros, editor de actos): elegir librería
+      puntual cuando llegue cada pantalla; no adoptar una librería de interfaz
+      completa.
+- [ ] Revisar la densidad de las tablas con datos reales y el diseño en móvil
+      con quien trabaje en campo (visitas).
+
 ## Migración del legado
 - [ ] Inventario del esquema Access actual (tablas, relaciones, rarezas).
 - [ ] Estrategia por curaduría (.mdb → PostgreSQL del tenant).

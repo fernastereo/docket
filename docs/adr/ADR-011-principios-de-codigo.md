@@ -97,6 +97,12 @@ cada término es definitiva.
 ### Frontend
 
 - Vue 3 **Composition API** con `<script setup>` + **TypeScript** + **Pinia**.
+- **Interfaz** (amendment 2026-10-18): Tailwind 4 con los tokens de marca de la
+  landing, componentes propios sobre **Reka UI** al estilo de shadcn-vue, una
+  sola apariencia para todos los tipos de usuario, claro/oscuro. Los
+  componentes usan tokens semánticos, nunca colores de paleta sueltos. Tests
+  del frontend con **Vitest** + Vue Test Utils (corren en el CI). Detalle en
+  `docs/diseno-ui.md`.
 - Contratos de la API tipados (previene bugs de integración y rinde mejor con
   agentes de código).
 
