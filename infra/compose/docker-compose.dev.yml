@@ -102,10 +102,11 @@ services:
       retries: 10
 
 volumes:
-  # app_public: la imagen de app trae public/build horneado; al montarse un
-  # volumen nombrado vacío sobre esa ruta, Docker lo inicializa con ese
-  # contenido — Caddy lo sirve desde ahí sin duplicar la imagen (mismo patrón
-  # que docker-compose.prod.yml).
+  # app_public: Caddy sirve los assets (public/build) desde este volumen. Docker
+  # solo lo inicializa con el contenido de la imagen la PRIMERA vez; en cada
+  # arranque, entrypoint.sh copia /opt/public-seed (el public/ de la imagen)
+  # encima, así un deploy nuevo no deja los assets viejos (mismo patrón que
+  # docker-compose.prod.yml).
   app_public:
   caddy_data:
   caddy_config:

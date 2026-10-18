@@ -295,6 +295,22 @@ se hizo (ver `docs/dev-guide.md` §3).
 
 ---
 
+### Troubleshooting del deploy
+
+- **Desplegué y el frontend no cambió (el backend sí).** El volumen nombrado
+  `app_public` se monta sobre `public/` para que Caddy sirva `public/build`.
+  Docker solo inicializa un volumen con el contenido de la imagen la
+  **primera vez**; después el volumen tapa el `public/` de las imágenes nuevas
+  y los assets (y el `manifest.json` que usa `@vite`) se quedan viejos. Se
+  notó el 2026-10-18, en el primer deploy que cambiaba el frontend (el panel de
+  plataforma). Arreglo permanente: la imagen guarda una copia de `public/` en
+  `/opt/public-seed` y `entrypoint.sh` la copia al volumen cada vez que arranca
+  el contenedor `fpm` (por encima, sin borrar lo viejo). Cómo comprobarlo: el
+  HTML de `/` debe referenciar un `app-<hash>.js` distinto tras el deploy.
+  Si algún día hace falta forzarlo a mano, borra **solo** ese volumen
+  (`docker volume rm <proyecto>_app_public`, con los contenedores parados) y
+  nunca uses `docker compose down -v`: borraría también `db_data`.
+
 ## `docket-prod` — runbook de go-live (NADA de esto está aprovisionado)
 
 Se ejecuta cuando se decida ir a producción. Orden:

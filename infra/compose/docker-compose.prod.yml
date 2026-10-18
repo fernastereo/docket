@@ -74,7 +74,10 @@ services:
 
 volumes:
   # app_public: el contenedor de app publica aquí sus assets (public/build) para
-  # que Caddy los sirva como estáticos sin duplicar la imagen.
+  # que Caddy los sirva como estáticos sin duplicar la imagen. Al arrancar,
+  # entrypoint.sh copia /opt/public-seed (el public/ de la imagen) encima: un
+  # volumen nombrado solo se inicializa la primera vez y, sin esa copia, cada
+  # deploy posterior seguiría sirviendo los assets viejos.
   app_public:
   caddy_data:
   caddy_config:
