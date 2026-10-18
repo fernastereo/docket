@@ -89,10 +89,10 @@ Lista viva. Al resolverse, mover la decisión a un ADR.
       2026-09-13, `docs/seguridad/politicas.md` §2): **todos los números ya
       están fijados** (longitud de contraseña por dominio, MFA obligatoria
       para curador/admin de tenant, timeouts de sesión, rate limiting de
-      login, recovery codes) pero **nada está implementado en código
-      todavía** — el esqueleto de `docket/` solo trae Sanctum por defecto,
-      sin controlador de login, sin reglas de contraseña, sin rate limiting,
-      sin MFA, y las sesiones no están respaldadas en Redis todavía.
+      login, recovery codes). Implementado el 2026-10-18 **solo para
+      usuarios de plataforma** (login, contraseña, rate limit, sesión); falta
+      MFA, backoff progresivo antes del bloqueo, sesiones en Redis con
+      revocación, y los dominios de empleado y solicitante.
       Corresponde implementarlo en el bloque de identidad/auth (ver orden en
       `CLAUDE.md`).
 

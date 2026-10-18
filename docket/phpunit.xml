@@ -18,12 +18,15 @@
         </include>
     </source>
     <php>
-        <env name="APP_ENV" value="testing"/>
+        <env name="APP_ENV" value="testing" force="true"/>
         <env name="APP_KEY" value="base64:hERCo4CheoG8+Dh7sQrG8UTXqtYRQqqHfdBDhWwkLI8="/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
+        <!-- Argon2id con costo mínimo: en producción usa los valores por defecto (64 MiB). -->
+        <env name="ARGON_MEMORY" value="1024"/>
+        <env name="ARGON_TIME" value="1"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
-        <env name="CACHE_STORE" value="array"/>
+        <env name="CACHE_STORE" value="array" force="true"/>
         <!-- Tests SIEMPRE contra PostgreSQL real y una base exclusiva (docket_test).
              force="true" es imprescindible: sin él, el DB_DATABASE del entorno (el
              contenedor app trae docket_central) gana sobre este archivo y
@@ -35,10 +38,19 @@
              estas dos líneas el DB_DATABASE del contenedor sigue ganando. -->
         <server name="DB_CONNECTION" value="pgsql" force="true"/>
         <server name="DB_DATABASE" value="docket_test" force="true"/>
+        <!-- Mismo motivo para lo que cambia el comportamiento de los tests: sin
+             APP_ENV=testing Laravel no desactiva la verificación CSRF en tests, y
+             con CACHE_STORE/SESSION_DRIVER/QUEUE_CONNECTION del contenedor
+             (database, redis…) el rate limiter y la sesión persistirían entre
+             tests y entre corridas. -->
+        <server name="APP_ENV" value="testing" force="true"/>
+        <server name="CACHE_STORE" value="array" force="true"/>
+        <server name="SESSION_DRIVER" value="array" force="true"/>
+        <server name="QUEUE_CONNECTION" value="sync" force="true"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
-        <env name="QUEUE_CONNECTION" value="sync"/>
-        <env name="SESSION_DRIVER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>

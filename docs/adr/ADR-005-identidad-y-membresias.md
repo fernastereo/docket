@@ -8,6 +8,8 @@ persona natural (ver sección Amendments al final).
 pasan a la base de cada tenant y absorben la membresía; se descarta toda
 vista nacional agregada para solicitantes; se añade regla de conflicto de
 interés (ver sección Amendments al final).
+**Amendment 2026-10-18**: los usuarios de plataforma tienen tabla y guard
+propios en vez de un flag (ver sección Amendments al final).
 
 ## Contexto
 
@@ -28,7 +30,8 @@ Separar **identidad** de **membresía**:
   ciudadanos y a usuarios de plataforma; **desde el amendment 2026-09-02 ya no
   a empleados** — la cuenta de empleado es local al tenant (ver Amendments).
   Identificador técnico: **UUID**.
-  Flag de plataforma para usuarios de soporte/superadmin del proveedor.
+  Los usuarios de soporte/superadmin del proveedor van en **tabla y guard
+  propios** (`platform_users`), no en un flag — ver amendment 2026-10-18.
   Desde el amendment 2026-08-27, una identidad puede ser de **tipo natural**
   (documento: cédula/CE/PEP) o **tipo jurídica** (documento: NIT), cada una
   con credenciales propias e independientes — ver Amendments.
@@ -187,3 +190,45 @@ solicitante.
   autenticarse una sola vez para varias curadurías en el futuro, se
   resolvería con un IdP/SSO por encima de las cuentas locales, no
   reintroduciendo identidad de empleado en la central.
+
+### 2026-10-18 — Los usuarios de plataforma van en tabla propia, no en un flag
+
+**Motivo**: al implementar el primer bloque de identidad/auth se contrastó
+la frase "flag de plataforma para usuarios de soporte/superadmin" de la
+Decisión contra la política de seguridad (`docs/seguridad/politicas.md` §2),
+que fija reglas distintas por dominio de identidad (contraseña de 12
+caracteres, MFA obligatoria y 15 min de inactividad para plataforma; 8
+caracteres, MFA opcional y sesión larga para solicitantes).
+
+**Cambio**: la central tiene **dos tablas de identidad separadas**, cada una
+con su propio modelo y su propio guard de Laravel (`config/auth.php`):
+
+- `platform_users` — soporte y superadmin del proveedor. Guard `platform`.
+  Sin documento de identidad (no son parte de ningún trámite).
+- Identidad de **solicitante** (natural o jurídica, con documento como llave
+  natural) — se modela en el bloque de solicitantes, con su propio guard.
+
+Queda sin efecto la idea de un único modelo con un flag `is_platform`.
+
+**Razones**:
+
+- Distinto nivel de riesgo: una cuenta de plataforma puede crear y suspender
+  curadurías. Con un flag, ese privilegio queda a una columna de distancia de
+  la ruta pública más expuesta (el registro de solicitantes); con tablas
+  separadas, un fallo en el enrolamiento no puede producir un superadmin.
+- Las reglas de contraseña, MFA y sesión de cada dominio son configuración
+  del guard, no ramas `if ($user->is_platform)` repartidas por el código.
+- Es el patrón previsto por Laravel: un guard + un provider por tipo de
+  usuario cuando los modelos Eloquent son distintos.
+- Unir dos tablas después es una migración; separar una tabla con datos y
+  sesiones mezcladas no lo es.
+
+**Consecuencias**:
+
+- El `User` y la tabla `users` del esqueleto de Laravel se retiran cuando
+  entre la identidad de solicitante; no se reutilizan para plataforma.
+- Los guards de plataforma y de solicitante no comparten sesión: la cookie del
+  dominio central de plataforma no autentica en ningún subdominio de tenant.
+- El resto del ADR no cambia: las cuentas de empleado siguen siendo locales a
+  cada tenant, y la central sigue sin revelar en qué curadurías tiene trámites
+  o empleo una persona.

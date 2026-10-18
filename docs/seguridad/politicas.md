@@ -72,10 +72,13 @@ por malla Tailscale, sin puerto SSH expuesto a internet como camino real;
 MFA obligatoria en el proveedor de identidad de la VPN. Detalle en
 `docs/dev-guide.md` §3 e `infra/README.md`.
 
-**Estado de implementación**: todo lo anterior está **decidido, no
-implementado** — `docket/` aún no tiene controlador de login, reglas de
-contraseña, rate limiting ni MFA (pendiente en `docs/preguntas-abiertas.md`,
-bloque de identidad/auth).
+**Estado de implementación** (2026-10-18): implementado solo para el dominio
+**plataforma** — Argon2id, contraseña de 12+ con HIBP, bloqueo tras 5 fallos
+en 15 min (sin backoff progresivo todavía), sesión de 15 min / 8 h, cookie por
+host. **Pendiente**: MFA y recovery codes, sesiones respaldadas en Redis con
+"cerrar sesión en todos los dispositivos", y todo lo de empleados y
+solicitantes (pendiente en `docs/preguntas-abiertas.md`, bloque de
+identidad/auth).
 
 ## 3. Clasificación y manejo de datos
 
