@@ -121,6 +121,24 @@ terminar. Si interrumpes una corrida (Ctrl+C) pueden quedar huérfanas:
 `make test-clean` borra solo las `tenanttest_*` y vacía el catálogo de
 `docket_test`; nunca toca las de tus curadurías de desarrollo.
 
+### Frontend (Vue) en local
+
+El frontend se compila con el **Node de tu máquina** (la imagen de la app no
+trae Node), no dentro del contenedor:
+
+```bash
+make front-install   # primera vez, o si cambió package.json
+make front           # compila a docket/public/build; Caddy lo sirve del bind-mount
+make front-watch     # recompila al guardar (recarga el navegador a mano)
+make front-check     # typecheck + Vitest, como el CI
+```
+
+Tras `make front` basta recargar `https://docket.test:8443`; no hace falta
+reiniciar contenedores. Panel de plataforma: `/platform/login` (el usuario se
+crea con `make shell` → `php artisan platform:create-user "<nombre>" <email>`).
+No se usa el servidor de desarrollo de Vite (`npm run dev`): la app se sirve
+por HTTPS con Caddy y Vite en `http://localhost:5173` sería contenido mixto.
+
 ### Conectar DBeaver (u otro cliente) a la base local
 
 | Campo | Valor |

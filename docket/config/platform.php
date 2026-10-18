@@ -19,4 +19,22 @@ return [
         'storage', 'docs', 'help', 'soporte', 'support', 'blog', 'landing',
         'login', 'auth', 'portal', 'verificar', 'verify',
     ],
+
+    // Sesión del usuario de plataforma (docs/seguridad/politicas.md §2): más
+    // corta que la de cualquier otro dominio porque una cuenta comprometida
+    // puede crear y suspender curadurías. Se imponen en
+    // EnforcePlatformSessionLimits, además del lifetime general de sesión.
+    'session' => [
+        'idle_minutes' => (int) env('PLATFORM_SESSION_IDLE_MINUTES', 15),
+        'absolute_hours' => (int) env('PLATFORM_SESSION_ABSOLUTE_HOURS', 8),
+    ],
+
+    // Login: bloqueo temporal tras N fallos en la ventana (politicas.md §2).
+    'login' => [
+        'max_attempts' => 5,
+        'decay_seconds' => 15 * 60,
+    ],
+
+    // Contraseña (politicas.md §2): 12 mínimo, sin tope bajo, sin truncar.
+    'password_min_length' => 12,
 ];

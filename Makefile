@@ -12,7 +12,8 @@ DB      := docker exec docket-local-db-1 psql -U docket -d docket_central
 
 .DEFAULT_GOAL := help
 .PHONY: help up up-build stop down ps logs shell migrate db-test-create \
-        test test-clean lint fix stan check tenant tenant-delete tenants tenant-dbs psql
+        test test-clean lint fix stan check tenant tenant-delete tenants tenant-dbs psql \
+        front-install front front-watch test-front front-check
 
 help: ## Lista los comandos disponibles
 	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z_-]+:.*## / {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -72,7 +73,27 @@ fix: ## Pint: corrige el estilo
 stan: ## Larastan
 	$(APP) vendor/bin/phpstan analyse --memory-limit=1G --no-progress
 
-check: lint stan test ## Lo mismo que corre el CI: Pint + Larastan + Pest
+check: lint stan test front-check ## Lo mismo que corre el CI: Pint + Larastan + Pest + typecheck y tests del frontend
+
+# ---------- Frontend (Vue) ----------
+# Corren con el Node de tu máquina (la imagen de la app no trae Node). El
+# frontend compilado queda en docket/public/build, que Caddy sirve desde el
+# bind-mount: tras `make front` basta recargar el navegador, sin reiniciar nada.
+
+front-install: ## Instala las dependencias de npm (primera vez, o si cambió package.json)
+	cd docket && npm ci
+
+front: ## Compila el frontend (lo que sirve https://docket.test:8443)
+	cd docket && npm run build
+
+front-watch: ## Recompila el frontend al guardar un archivo (recarga el navegador a mano)
+	cd docket && npm run build -- --watch
+
+test-front: ## Vitest (tests del frontend)
+	cd docket && npm test
+
+front-check: ## Typecheck (vue-tsc) + Vitest, como el CI
+	cd docket && npm run typecheck && npm test
 
 # ---------- Curadurías (tenants) ----------
 

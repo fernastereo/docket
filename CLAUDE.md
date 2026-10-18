@@ -222,8 +222,29 @@ por proceso + transacción revertida por test; las bases de tests se llaman
 `tenanttest_<uuid>`, `make test-clean` borra las huérfanas). Nunca se clona un
 tenant de desarrollo. Detalle en el amendment 2026-10-12 de ADR-011.
 
-**Siguiente paso** (orden acordado): identidad/auth (ADR-005/006/017), que
-desbloquea el panel de plataforma y el usuario administrador de cada tenant;
+**Identidad/auth, paso 1: usuarios de plataforma** (2026-10-18, en curso): tabla
+`platform_users` y guard `platform` propios en la central (ADR-005, amendment
+2026-10-18: tabla propia, no un flag). Login/logout/me en
+`/api/platform/*` solo en dominios centrales, Argon2id, contraseña de 12+ con
+chequeo HIBP, bloqueo tras 5 fallos en 15 min, sesión de 15 min de inactividad
+y 8 h absolutas. Alta con `php artisan platform:create-user "<nombre>"
+<email>` (pide la contraseña). **Falta**: MFA (TOTP + recovery codes,
+obligatoria para plataforma), sesiones en Redis y revocación, empleados del
+tenant, solicitantes.
+
+**Panel de plataforma, primera rebanada vertical** (2026-10-18, en curso): se
+puede probar desde el navegador. `GET/POST /api/platform/tenants`
+(`TenantController`, `TenantPolicy`, `StoreTenantRequest`, `TenantResource`; el
+alta es la misma Action `ProvisionTenant` que usa `tenants:provision`) y, en el
+frontend, `/platform/login` y `/platform/tenants` (lista + formulario de alta)
+en `resources/js/features/platform/`. Vitest + Vue Test Utils quedan como
+herramienta de tests del frontend (`make test-front`, también en el CI). El
+alta es síncrona (unos segundos); pasará a cola cuando el esquema crezca.
+
+**Siguiente paso** (orden acordado): terminar identidad/auth (ADR-005/006/017):
+MFA de plataforma, cuentas de empleado locales al tenant con RBAC,
+solicitantes y enrolamiento; eso desbloquea el panel de plataforma y el
+usuario administrador de cada tenant;
 luego las migraciones del núcleo (las tablas reales de `database/migrations/
 tenant/`, hoy vacía) y la máquina de estados del Expediente. Todo el código
 nuevo lleva tests Pest.

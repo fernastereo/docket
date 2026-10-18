@@ -13,6 +13,14 @@ function readCookie(name: string): string | null {
     return match ? decodeURIComponent(match[1]) : null;
 }
 
+/**
+ * Evento global cuando la API responde 401 a una petición de una sesión que
+ * ya existía (p. ej. venció por inactividad). La app lo escucha en `app.ts`
+ * para limpiar la sesión y mandar al login; así el cliente no depende del
+ * router ni de los stores.
+ */
+export const UNAUTHORIZED_EVENT = 'api:unauthorized';
+
 export class ApiError extends Error {
     constructor(
         message: string,
@@ -41,6 +49,10 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
             ...init.headers,
         },
     });
+
+    if (response.status === 401) {
+        window.dispatchEvent(new CustomEvent(UNAUTHORIZED_EVENT));
+    }
 
     if (!response.ok) {
         const body = await response.json().catch(() => ({}));
