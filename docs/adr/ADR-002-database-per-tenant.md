@@ -57,3 +57,35 @@ Costos / obligaciones:
 - **Plomería multi-tenant**: la resuelve stancl/tenancy (ADR-003) —
   conmutación de conexión por tenant, jobs tenant-aware y disco de archivos por
   tenant (ADR-007). No se implementa a mano.
+
+## Amendments
+
+### 2026-10-09 — El cambio de curador no cambia la base
+
+Una **curaduría** es una entidad estable; el **curador** es quien la tiene a
+cargo durante un período (se puede nombrar a otro o renovar al mismo). La base
+sigue siendo **una por curaduría**, no una por curador/período. El curador y
+su período son **datos dentro de la base** (tabla de períodos; los actos se
+firman con referencia a su período).
+
+Razones: el curador saliente está obligado a entregar todo el archivo al
+entrante, así que no hay un requisito de aislamiento entre curadores del mismo
+despacho (ni siquiera las liquidaciones de expensas son confidenciales: son
+datos públicos en cada licencia). Una base por período convertiría cada cambio
+de curador en una fusión de datos de alto riesgo y rompería la continuidad de
+lo que debe ser continuo: verificación pública de actos antiguos (ADR-012),
+trámites en curso durante el cambio, modificaciones/prórrogas/revalidaciones
+sobre actos del curador anterior, numeración de actos y plazos corriendo
+(ADR-014). Además mantiene la migración del legado 1:1.
+
+El **dominio** pertenece a la curaduría y no cambia con el curador.
+
+**Identificadores**: el `id` del tenant es un UUID y la base física se llama
+`tenant<uuid>` (único e inmutable). El subdominio es el nombre legible y
+puede cambiar; se escribe a mano al dar de alta y se valida estricto (ver
+`App\Platform\Rules\TenantSubdomain`).
+
+Casos comerciales (curador saliente cuyo sucesor no contrata y un curador
+posterior que sí vuelve a contratar) → se resuelven en el ciclo de vida del
+tenant (ADR-010: suspendido y **reactivación**), no en el modelo de datos.
+Pendiente en `docs/preguntas-abiertas.md`.

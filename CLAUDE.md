@@ -22,7 +22,9 @@ expediente son críticos.
 - **ADR-001 — Modelo SaaS**: suscripción; el proveedor opera la plataforma.
 - **ADR-002 — Database-per-tenant**: una app desplegada; base PostgreSQL física
   independiente por curaduría; base central solo con catálogo de tenants e
-  identidades; resolución de tenant por subdominio.
+  identidades; resolución de tenant por subdominio. Clarificación 2026-10-09:
+  el cambio de curador NO cambia la base (el curador y su período son datos
+  dentro de ella); el dominio es de la curaduría.
 - **ADR-003 — Stack**: **Laravel** (API) + **Vue.js** (SPA, Sanctum) +
   **PostgreSQL** (+pgvector) + Redis + Docker. Multi-tenancy con
   **stancl/tenancy**. Amendment 2026-09-11: SPA de mismo origen que la API
@@ -55,7 +57,9 @@ expediente son críticos.
   queda como palanca futura para tenants premium).
 - **ADR-010 — Ciclo de vida del tenant**: demo / activo / suspendido
   (solo-lectura, nunca bloqueo total) / terminado (entrega dump + archivos +
-  snapshot de identidades). Provisioning = un comando.
+  snapshot de identidades). Provisioning = un comando. Amendment 2026-10-09:
+  estados `provisioning`/`failed` del proceso de alta y compensación de
+  fallos (reintentar = alta nueva).
 
 - **ADR-012 — Verificación pública de actos administrativos** (borrador):
   código/QR de verificación sin login, hash de integridad del documento.
@@ -96,7 +100,9 @@ expediente son críticos.
   SOLID pragmático + YAGNI. Pint + Larastan + Pest (tests obligatorios en
   transiciones, expensas, numeración y aislamiento de tenants). Vue 3
   Composition API + **TypeScript** + Pinia. **Código en inglés** con
-  glosario de dominio en docs/dominio/glosario.md.
+  glosario de dominio en docs/dominio/glosario.md. Amendment 2026-10-12:
+  **todos los tests corren contra PostgreSQL real** (base exclusiva
+  `docket_test`, forzada en `phpunit.xml` y con salvaguarda en `TestCase`).
 
 ## Principios del proyecto
 
@@ -166,9 +172,61 @@ origen, sin login server-rendered). Infraestructura de prod (`docket-prod`)
 concretada en el amendment 2026-09-01 de ADR-009 — **pendiente de ejecutar**
 (runbook completo en `infra/README.md`), se hace recién en el go-live.
 
-**Siguiente paso**: base central/provisioning (ADR-002/ADR-010) — hoy solo
-existe el esqueleto de `Tenant`/`Domain`, falta el flujo real de alta de
-curaduría.
+**Deploy real a `docket-dev` CERRADO y verificado end-to-end** (2026-10-08):
+CI (`.github/workflows/ci.yml` — Pint/Larastan/Pest + composer/npm audit +
+gitleaks + Semgrep + Trivy) y deploy manual
+(`.github/workflows/deploy.yml` — build+push a ghcr.io, conexión por
+Tailscale con nodo efímero `tag:ci`, migrate + tenants:migrate + up) ambos
+verificados en verde contra `docket-dev` real — `https://staging.curaduria.app`
+responde `200` desde el droplet, con los 6 servicios (`app`/`caddy`/`db`/
+`redis`/`sched`/`worker`) corriendo. Bugs reales encontrados y corregidos en
+el camino (detalle en `infra/README.md` troubleshooting): `entrypoint.sh`
+ignoraba el comando pasado a `docker compose run` (siempre arrancaba
+`php-fpm` por `APP_ROLE`); el heredoc de SSH del deploy perdía los comandos
+posteriores a `migrate` porque `docker compose run` sin `-T </dev/null`
+consumía el resto del heredoc como stdin; `APP_ENV` mal copiado en
+`dev.env.example`. Pendiente, no bloqueante: Dependabot
+(`docs/preguntas-abiertas.md`) para que bumps de seguridad no vuelvan a
+aparecer a mitad de un deploy.
+
+**Base central y provisioning CERRADO** (2026-10-09, probado contra
+PostgreSQL real): `php artisan tenants:provision "<nombre>" <subdominio>
+[--active]` da de alta una curaduría (catálogo + dominio + base
+`tenant<uuid>` + migraciones) y deja el tenant en `demo`/`active`; ante un
+fallo compensa (borra la base y libera el dominio) y lo deja en `failed`.
+Vive en `docket/app/Platform/` como **Action reutilizable**
+(`ProvisionTenant` + DTO `ProvisionTenantData`): el comando es solo la
+primera puerta de entrada; el panel de administración de plataforma (post
+identidad/auth, requiere login+MFA+RBAC) invocará la misma Action desde un
+controlador sin reescribir nada. Detalle en el amendment 2026-10-09 de
+ADR-010. El catálogo `tenants` tiene columnas reales (`name`, `status`,
+`failure_reason`, `provisioned_at`) y el host de cada curaduría es
+`<subdominio>.<PLATFORM_TENANT_BASE_DOMAIN>` (por ambiente; **el `dev.env`
+del droplet necesita `PLATFORM_TENANT_BASE_DOMAIN=staging.curaduria.app`**).
+Los pendientes del bloque (configuración de la curaduría dentro del tenant,
+período del curador, suspensión/reactivación, planes, credencial de BD por
+tenant, seed base, panel) están en `docs/preguntas-abiertas.md`.
+
+**Tests con PostgreSQL real** (2026-10-12, ADR-011 amendment): una sola
+modalidad, base exclusiva `docket_test`. Se corren desde el contenedor:
+`docker compose -f docker-compose.local.yml --env-file ../env/local.env exec
+app vendor/bin/pest` (ver `infra/README.md`). El CI levanta un servicio
+Postgres; ese cambio de `ci.yml` ya corrió en verde en GitHub (2026-10-12).
+
+**Infraestructura de tests de tenants LISTA** (2026-10-12): el **test de
+aislamiento** (ADR-011/017) ya no es un `todo` — prueba con dos tenants reales
+y una tabla sonda que A nunca ve datos de B (`tests/Feature/Tenancy/
+DatabaseIsolationTest.php`). Para tests de dominio sobre la base de un tenant:
+`uses(Tests\Concerns\UsesTenantDatabase::class)` (tenant de pruebas compartido
+por proceso + transacción revertida por test; las bases de tests se llaman
+`tenanttest_<uuid>`, `make test-clean` borra las huérfanas). Nunca se clona un
+tenant de desarrollo. Detalle en el amendment 2026-10-12 de ADR-011.
+
+**Siguiente paso** (orden acordado): identidad/auth (ADR-005/006/017), que
+desbloquea el panel de plataforma y el usuario administrador de cada tenant;
+luego las migraciones del núcleo (las tablas reales de `database/migrations/
+tenant/`, hoy vacía) y la máquina de estados del Expediente. Todo el código
+nuevo lleva tests Pest.
 
 **Principio de trabajo para lo que sigue**: al capturar conocimiento del
 legado, no asumir que su diseño (VB6+Access, 20 años) es el patrón a
@@ -177,6 +235,9 @@ moderno equivalente, cuestionando el legado por defecto.
 
 ## Convenciones de documentación
 
+- Estrategia de pruebas (propuesta, a revisar): docs/estrategia-de-pruebas.md.
+- Comandos del entorno local: `make help` (Makefile en la raíz; detalle en
+  infra/README.md).
 - Decisiones: docs/adr/ADR-NNN-titulo.md (Contexto, Decisión, Consecuencias,
   Estado). Dominio: docs/dominio/. Pendientes: docs/preguntas-abiertas.md.
   Seguridad: docs/seguridad/. Estructura del repo: docs/estructura-repo.md.

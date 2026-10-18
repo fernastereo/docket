@@ -19,12 +19,22 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:hERCo4CheoG8+Dh7sQrG8UTXqtYRQqqHfdBDhWwkLI8="/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
+        <!-- Tests SIEMPRE contra PostgreSQL real y una base exclusiva (docket_test).
+             force="true" es imprescindible: sin él, el DB_DATABASE del entorno (el
+             contenedor app trae docket_central) gana sobre este archivo y
+             DatabaseMigrations haría migrate:fresh sobre la base central.
+             Host, usuario y clave sí vienen del entorno (contenedor, CI o tu shell). -->
+        <env name="DB_CONNECTION" value="pgsql" force="true"/>
+        <env name="DB_DATABASE" value="docket_test" force="true"/>
+        <!-- Laravel lee primero de $_SERVER, y PHPUnit no lo pisa con <env>: sin
+             estas dos líneas el DB_DATABASE del contenedor sigue ganando. -->
+        <server name="DB_CONNECTION" value="pgsql" force="true"/>
+        <server name="DB_DATABASE" value="docket_test" force="true"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

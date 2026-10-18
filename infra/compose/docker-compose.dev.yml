@@ -87,6 +87,12 @@ services:
       POSTGRES_USER: ${DB_USERNAME:-docket}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in infra/env/dev.env}
       POSTGRES_DB: ${DB_DATABASE:-docket_central}
+    # Solo al loopback del droplet -- nunca a internet. El único camino de
+    # entrada es un túnel SSH por Tailscale (ver infra/README.md). Cubre la
+    # central y todas las bases de tenant: un solo Postgres, N bases
+    # (ADR-009), no un servidor por tenant.
+    ports:
+      - "127.0.0.1:5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:

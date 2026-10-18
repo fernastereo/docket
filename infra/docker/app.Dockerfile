@@ -51,8 +51,15 @@ COPY infra/docker/php/healthcheck.sh /usr/local/bin/php-fpm-healthcheck
 RUN chmod +x /usr/local/bin/entrypoint /usr/local/bin/php-fpm-healthcheck
 
 WORKDIR /var/www/html
-ENTRYPOINT ["entrypoint"]
-CMD ["php-fpm"]
+# Sin USER acá a propósito: los stages dev/prod que heredan de este todavía
+# necesitan correr como root (apk add, chown) antes de bajar a www-data al
+# final de cada uno — agregar USER en este stage base rompería esas
+# instalaciones. Ninguna imagen final se construye desde "runtime" solo.
+#
+# Sin CMD a propósito: sin argumentos, entrypoint decide el proceso por
+# APP_ROLE (fpm/worker/scheduler); un comando explícito (docker compose run
+# ... php artisan migrate) lo reemplaza — ver infra/docker/entrypoint.sh.
+ENTRYPOINT ["entrypoint"] # nosemgrep: dockerfile.security.missing-user-entrypoint.missing-user-entrypoint
 
 # ------------------------------------------------------------------ dev
 FROM runtime AS dev

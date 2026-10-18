@@ -1,0 +1,65 @@
+# Dependabot: weekly update PRs for every dependency manifest in the repo.
+# Security updates (separate setting in Settings -> Code security) open their own
+# PRs as soon as an advisory has a fix, without waiting for the weekly run.
+#
+# Cooldown: wait 7 days before proposing a newly published version (a malicious or
+# broken release is usually pulled within days). It does not delay security updates.
+#
+# Minor and patch bumps are grouped into one PR per ecosystem; major bumps come
+# one by one, because they may break things and need their own review.
+
+version: 2
+
+updates:
+  - package-ecosystem: composer
+    directory: /docket
+    target-branch: dev
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      composer-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /docket
+    target-branch: dev
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      npm-minor-patch:
+        update-types: [minor, patch]
+
+  # The landing page uses bun (bun.lock) and is deployed on its own to Cloudflare.
+  - package-ecosystem: bun
+    directory: /landing/curaduria-digital-colombia
+    target-branch: dev
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore(deps-landing)"
+    groups:
+      landing-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      actions-minor-patch:
+        update-types: [minor, patch]

@@ -277,7 +277,9 @@ decisión explícita, no automático en cada merge.
 
 ## Cómo se usa
 
-- PR contra `dev` → corre CI. Merge a `dev` → deploy manual a `docket-dev`.
+- PR contra `dev` → corre CI (levanta un servicio PostgreSQL efímero: los tests
+  crean bases físicas por tenant, ver ADR-011 amendment 2026-10-12). Merge a
+  `dev` → deploy manual a `docket-dev`.
 - Promoción a `main` → deploy manual a `docket-prod`.
 - Los workflows viven en `.github/workflows/` (se crean en la Fase 4).
 

@@ -3,6 +3,16 @@
 Lista viva. Al resolverse, mover la decisión a un ADR.
 
 ## Arquitectura / plataforma
+- [x] Configurar Dependabot (`.github/dependabot.yml`) para Composer, npm,
+      bun (landing) y GitHub Actions — resuelve ADR-017 capa 7 ("Renovate/
+      Dependabot para actualizaciones de dependencias"). Revisión semanal,
+      minor+patch agrupados en un PR por ecosistema, majors sueltos, PRs a
+      `dev`. Motivo concreto (2026-10-08, y otra vez 2026-10-18 con
+      `symfony/http-foundation`): `composer audit`/`npm audit` en CI
+      bloquearon trabajo ajeno por advisories nuevos publicados después del
+      último push — con Dependabot esos bumps llegan como PRs propios.
+      **Falta activar en GitHub** (Settings → Code security): Dependabot
+      alerts y Dependabot security updates.
 - [x] Escaneo antivirus y límites (tamaño/tipos) de documentos subidos —
       resuelto en ADR-017 (ClamAV async, allowlist MIME+extensión, tope de
       tamaño, cuarentena) y reflejado en ADR-007.
@@ -146,6 +156,58 @@ Lista viva. Al resolverse, mover la decisión a un ADR.
       proveedor no está disponible.
 - [ ] Ideas 1 (widget embebible), 5 (API/marketplace) y 6 (portal PWA) de
       `docs/vision-producto.md` — sin desarrollar todavía, no urgentes.
+
+## Plataforma / provisioning (2026-10-09)
+Cerrado: alta de tenant (`ProvisionTenant` + `tenants:provision`), catálogo con
+estados (`TenantStatus`), una base por curaduría; el curador y su período son
+datos dentro de la base, no una base aparte.
+- [ ] Configuración de la curaduría **dentro de la base del tenant** (no en la
+      central): razón social, NIT, número y ciudad, curador titular y
+      resoluciones de designación, numeración de actos, plazos, logo/membrete.
+- [ ] Período del curador (`curador_periodos`) y firma de actos con referencia
+      a su período; qué pasa con trámites en curso en el cambio de curador.
+- [ ] Ciclo de vida completo (ADR-010): suspensión, terminación, offboarding y
+      **reactivación**. Casos comerciales: el curador nuevo no contrata y un
+      curador posterior sí vuelve a contratar → ¿se reactiva el mismo tenant
+      conservando su historial?
+- [ ] Planes y facturación de la suscripción (ADR-001).
+- [ ] Credencial de BD por tenant (ADR-017) y prefijo/bucket de archivos
+      (ADR-007) durante el provisioning.
+- [ ] Seeders base del tenant (roles, estados del flujo, catálogos).
+- [ ] Alta del primer usuario administrador del tenant (depende de
+      identidad/auth).
+- [ ] Panel de administración de plataforma (invocará `ProvisionTenant` desde
+      un controlador; requiere login + MFA + RBAC de plataforma).
+- [ ] Limpieza/retención de tenants en `failed` (hoy se conservan para
+      diagnóstico; no hay purga automática).
+- [ ] Provisioning en cola (hoy síncrono) si el alta tarda demasiado desde el
+      panel.
+- [x] **CI**: el servicio Postgres de `ci.yml` (2026-10-12) ya corrió en verde
+      en GitHub (tests de tenants incluidos).
+- [ ] **CI**: la imagen `pgvector/pgvector:pg17` va por tag, no por digest (las
+      actions sí van pinneadas a SHA): fijar el digest.
+- [ ] **Entorno**: `dev.env` del droplet necesita
+      `PLATFORM_TENANT_BASE_DOMAIN=staging.curaduria.app` (si no, usa el valor
+      por defecto `docket.test`). Confirmar que `tenants` esté vacía en
+      staging antes del próximo deploy (la migración agrega `name NOT NULL`).
+- [ ] Tests de tenants: si provisionar el tenant compartido se vuelve lento al
+      crecer el esquema, pasar a base plantilla de pruebas (`CREATE DATABASE …
+      TEMPLATE`, `template_tenant_connection` de stancl). Cuando existan las
+      tablas del negocio, añadir un test que recorra todas las tablas del tenant
+      y verifique que ninguna exista en la central.
+- [ ] Automatizar la creación de `docket_test` en el Postgres local (hoy es un
+      `CREATE DATABASE` manual, ver `infra/README.md`).
+
+## Estrategia de pruebas (2026-10-12)
+Detalle y razones en `docs/estrategia-de-pruebas.md`.
+- [ ] Medir el tiempo de provisionar el tenant compartido con el primer esquema
+      real; si el arranque pasa de ~10 s, base plantilla o `schema:dump`.
+- [ ] Ensayo de migración sobre copia real de un tenant (entorno controlado,
+      antes del primer deploy a producción con datos reales).
+- [ ] Tests dorados de expensas y plazos con casos reales del legado
+      anonimizados; definir quién valida el resultado esperado.
+- [ ] Revisar la estrategia completa cuando existan las primeras tablas del
+      tenant; decidir si se eleva a ADR.
 
 ## Migración del legado
 - [ ] Inventario del esquema Access actual (tablas, relaciones, rarezas).

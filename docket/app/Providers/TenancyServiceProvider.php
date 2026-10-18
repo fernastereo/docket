@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Platform\Jobs\DeleteTenantDatabase;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Stancl\JobPipeline\JobPipeline;
 use Stancl\Tenancy\Events;
-use Stancl\Tenancy\Jobs;
 use Stancl\Tenancy\Listeners;
 use Stancl\Tenancy\Middleware;
 
@@ -24,19 +24,10 @@ class TenancyServiceProvider extends ServiceProvider
         return [
             // Tenant events
             Events\CreatingTenant::class => [],
-            Events\TenantCreated::class => [
-                JobPipeline::make([
-                    Jobs\CreateDatabase::class,
-                    Jobs\MigrateDatabase::class,
-                    // Jobs\SeedDatabase::class,
-
-                    // Your own jobs to prepare the tenant.
-                    // Provision API keys, create S3 buckets, anything you want!
-
-                ])->send(function (Events\TenantCreated $event) {
-                    return $event->tenant;
-                })->shouldBeQueued(false), // `false` by default, but you probably want to make this `true` for production.
-            ],
+            // Sin pipeline a propósito: crear la base y migrar lo orquesta
+            // App\Platform\Actions\ProvisionTenant (orden + compensación de
+            // fallos explícitos). Un Tenant::create() suelto NO crea base.
+            Events\TenantCreated::class => [],
             Events\SavingTenant::class => [],
             Events\TenantSaved::class => [],
             Events\UpdatingTenant::class => [],
@@ -44,7 +35,7 @@ class TenancyServiceProvider extends ServiceProvider
             Events\DeletingTenant::class => [],
             Events\TenantDeleted::class => [
                 JobPipeline::make([
-                    Jobs\DeleteDatabase::class,
+                    DeleteTenantDatabase::class, // tolera la base ya borrada (tenant en `failed`)
                 ])->send(function (Events\TenantDeleted $event) {
                     return $event->tenant;
                 })->shouldBeQueued(false), // `false` by default, but you probably want to make this `true` for production.
