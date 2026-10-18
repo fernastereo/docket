@@ -180,10 +180,10 @@ datos dentro de la base, no una base aparte.
       diagnóstico; no hay purga automática).
 - [ ] Provisioning en cola (hoy síncrono) si el alta tarda demasiado desde el
       panel.
-- [ ] **CI**: el servicio Postgres de `ci.yml` (2026-10-12) todavía no se ha
-      ejecutado en GitHub; verificar el primer run. La imagen
-      `pgvector/pgvector:pg17` va por tag, no por digest (las actions sí van
-      pinneadas a SHA): fijar el digest.
+- [x] **CI**: el servicio Postgres de `ci.yml` (2026-10-12) ya corrió en verde
+      en GitHub (tests de tenants incluidos).
+- [ ] **CI**: la imagen `pgvector/pgvector:pg17` va por tag, no por digest (las
+      actions sí van pinneadas a SHA): fijar el digest.
 - [ ] **Entorno**: `dev.env` del droplet necesita
       `PLATFORM_TENANT_BASE_DOMAIN=staging.curaduria.app` (si no, usa el valor
       por defecto `docket.test`). Confirmar que `tenants` esté vacía en

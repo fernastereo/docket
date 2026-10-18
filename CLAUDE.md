@@ -211,7 +211,7 @@ tenant, seed base, panel) están en `docs/preguntas-abiertas.md`.
 modalidad, base exclusiva `docket_test`. Se corren desde el contenedor:
 `docker compose -f docker-compose.local.yml --env-file ../env/local.env exec
 app vendor/bin/pest` (ver `infra/README.md`). El CI levanta un servicio
-Postgres; ese cambio de `ci.yml` **aún no se ha ejecutado en GitHub**.
+Postgres; ese cambio de `ci.yml` ya corrió en verde en GitHub (2026-10-12).
 
 **Infraestructura de tests de tenants LISTA** (2026-10-12): el **test de
 aislamiento** (ADR-011/017) ya no es un `todo` — prueba con dos tenants reales
