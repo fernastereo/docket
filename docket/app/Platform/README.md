@@ -13,6 +13,9 @@ plomería de plataforma, vive aparte de `app/Domain/` a propósito.
 | `Data/ProvisionTenantData` | DTO de entrada del alta (nombre, subdominio, estado inicial). Solo transporta datos. |
 | `Actions/ProvisionTenant` | **Única vía** para crear tenants: valida, crea tenant + dominio + base + migraciones, y compensa si falla. |
 | `Rules/TenantSubdomain` | Validación del subdominio (formato DNS, reservados, ocupado). La reutilizará el Form Request del panel. |
+| `Models/PlatformUser` | Soporte / superadmin del proveedor. Tabla `platform_users`, guard `platform` (ADR-005, amendment 2026-10-18). No es empleado de curaduría ni solicitante. |
+| `Actions/CreatePlatformUser` | **Única vía** para crear usuarios de plataforma (política de contraseña: 12+, HIBP). La usa `php artisan platform:create-user`. |
+| `Actions/AuthenticatePlatformUser` | Login: bloqueo tras 5 fallos en 15 min, mismo error para email inexistente, clave errónea y cuenta deshabilitada. |
 | `Jobs/DeleteTenantDatabase` | Borrado de base tolerante a que ya no exista (tenants en `failed`). |
 | `Exceptions/TenantProvisioningFailed` | El alta falló y quedó compensada. |
 
@@ -35,3 +38,20 @@ Puerta de entrada actual: `php artisan tenants:provision "<nombre>" <subdominio>
 
 Pendiente de este contexto: `docs/preguntas-abiertas.md` → sección
 "Plataforma / provisioning".
+
+## Usuarios de plataforma
+
+- Rutas: `POST /api/platform/login`, `POST /api/platform/logout`,
+  `GET /api/platform/me`, **solo en los dominios centrales** (`routes/api.php`,
+  `Route::domain()`); en un subdominio de tenant no existen.
+- Sesión por cookie de Sanctum SPA. Un login sin `Origin`/`Referer` de un
+  dominio stateful responde 400 en vez de ignorarse. Límites de sesión en
+  `EnforcePlatformSessionLimits` (15 min de inactividad, 8 h absolutas; ver
+  `config/platform.php`).
+- Las cookies son por host (`SESSION_DOMAIN` vacío): la sesión de plataforma no
+  llega a los subdominios de las curadurías. No fijar `SESSION_DOMAIN` a un
+  dominio padre.
+- Alta: `php artisan platform:create-user "<nombre>" <email>` (la contraseña se
+  pide en pantalla, no como argumento).
+- Pendiente: MFA (TOTP + recovery codes), sesiones en Redis con revocación,
+  backoff progresivo antes del bloqueo.
