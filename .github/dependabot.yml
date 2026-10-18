@@ -2,6 +2,9 @@
 # Security updates (separate setting in Settings -> Code security) open their own
 # PRs as soon as an advisory has a fix, without waiting for the weekly run.
 #
+# Cooldown: wait 7 days before proposing a newly published version (a malicious or
+# broken release is usually pulled within days). It does not delay security updates.
+#
 # Minor and patch bumps are grouped into one PR per ecosystem; major bumps come
 # one by one, because they may break things and need their own review.
 
@@ -13,6 +16,8 @@ updates:
     target-branch: dev
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "chore(deps)"
     groups:
@@ -24,6 +29,8 @@ updates:
     target-branch: dev
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "chore(deps)"
     groups:
@@ -36,6 +43,8 @@ updates:
     target-branch: dev
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "chore(deps-landing)"
     groups:
@@ -47,6 +56,8 @@ updates:
     target-branch: dev
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "chore(ci)"
     groups:
