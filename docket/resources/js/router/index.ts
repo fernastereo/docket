@@ -17,7 +17,6 @@ export const router = createRouter({
             name: 'dashboard',
             component: () => import('@/features/dashboard/DashboardPage.vue'),
         },
-        { path: '/platform', redirect: { name: 'platform.tenants' } },
         {
             path: '/platform/login',
             name: 'platform.login',
@@ -25,10 +24,17 @@ export const router = createRouter({
             meta: { guestOnly: true },
         },
         {
-            path: '/platform/tenants',
-            name: 'platform.tenants',
-            component: () => import('@/features/platform/pages/TenantsPage.vue'),
+            path: '/platform',
+            component: () => import('@/features/platform/layouts/PlatformLayout.vue'),
             meta: { requiresPlatformAuth: true },
+            children: [
+                { path: '', redirect: { name: 'platform.tenants' } },
+                {
+                    path: 'tenants',
+                    name: 'platform.tenants',
+                    component: () => import('@/features/platform/pages/TenantsPage.vue'),
+                },
+            ],
         },
     ],
 });
