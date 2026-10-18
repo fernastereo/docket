@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { CircleAlert, Loader2 } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
 import { ApiError } from '@/api/client';
+import BrandMark from '@/components/layout/BrandMark.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { usePlatformAuthStore } from '@/features/platform/stores/auth';
 
 const auth = usePlatformAuthStore();
@@ -36,43 +41,46 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-    <div class="mx-auto flex min-h-screen max-w-sm flex-col justify-center p-6">
-        <h1 class="text-2xl font-semibold">CuraduriAPP</h1>
-        <p class="mt-1 text-sm text-neutral-500">Panel de plataforma</p>
-
-        <form class="mt-8 space-y-4" @submit.prevent="submit">
-            <div>
-                <label for="email" class="block text-sm font-medium">Correo</label>
-                <input
-                    id="email"
-                    v-model="email"
-                    type="email"
-                    autocomplete="username"
-                    required
-                    class="mt-1 w-full rounded border border-neutral-300 px-3 py-2"
-                />
+    <div class="grid min-h-screen lg:grid-cols-2">
+        <aside class="surface-brand hidden flex-col justify-between p-12 text-lav-50 lg:flex">
+            <BrandMark />
+            <div class="max-w-md">
+                <p class="text-3xl leading-tight font-semibold tracking-tight">
+                    Expedientes, plazos y actos administrativos de cada curaduría, en un solo lugar.
+                </p>
+                <p class="mt-4 text-sm text-lav-300">Panel de plataforma · acceso para el equipo de CuraduriAPP.</p>
             </div>
-            <div>
-                <label for="password" class="block text-sm font-medium">Contraseña</label>
-                <input
-                    id="password"
-                    v-model="password"
-                    type="password"
-                    autocomplete="current-password"
-                    required
-                    class="mt-1 w-full rounded border border-neutral-300 px-3 py-2"
-                />
+        </aside>
+
+        <main class="flex items-center justify-center px-6 py-12">
+            <div class="w-full max-w-sm">
+                <div class="mb-10 lg:hidden">
+                    <BrandMark />
+                </div>
+                <h1 class="text-2xl font-semibold tracking-tight">Iniciar sesión</h1>
+                <p class="mt-1 text-sm text-muted-foreground">Usa tu cuenta del panel de plataforma.</p>
+
+                <form class="mt-8 space-y-5" @submit.prevent="submit">
+                    <div class="space-y-2">
+                        <Label for="email">Correo</Label>
+                        <Input id="email" v-model="email" type="email" autocomplete="username" required />
+                    </div>
+                    <div class="space-y-2">
+                        <Label for="password">Contraseña</Label>
+                        <Input id="password" v-model="password" type="password" autocomplete="current-password" required />
+                    </div>
+
+                    <p v-if="error" role="alert" class="flex items-start gap-2 text-sm text-destructive">
+                        <CircleAlert class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                        {{ error }}
+                    </p>
+
+                    <Button type="submit" class="w-full" :disabled="submitting">
+                        <Loader2 v-if="submitting" class="animate-spin" aria-hidden="true" />
+                        {{ submitting ? 'Entrando…' : 'Entrar' }}
+                    </Button>
+                </form>
             </div>
-
-            <p v-if="error" role="alert" class="text-sm text-red-700">{{ error }}</p>
-
-            <button
-                type="submit"
-                :disabled="submitting"
-                class="w-full rounded bg-neutral-900 px-3 py-2 font-medium text-white disabled:opacity-50"
-            >
-                {{ submitting ? 'Entrando…' : 'Entrar' }}
-            </button>
-        </form>
+        </main>
     </div>
 </template>
