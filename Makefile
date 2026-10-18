@@ -38,7 +38,7 @@ logs: ## Logs en vivo (make logs S=app para un solo servicio)
 	$(COMPOSE) logs -f --tail=100 $(S)
 
 shell: ## Shell dentro del contenedor app
-	$(APP) bash
+	$(APP) sh
 
 # ---------- Base de datos ----------
 
