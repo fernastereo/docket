@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Platform\AuthController as PlatformAuthController;
+use App\Http\Controllers\Platform\TenantController;
 use App\Http\Middleware\EnforcePlatformSessionLimits;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +49,9 @@ foreach (config('tenancy.central_domains', []) as $domain) {
         Route::middleware(['auth:platform', EnforcePlatformSessionLimits::class])->group(function () {
             Route::post('/logout', [PlatformAuthController::class, 'logout'])->name('logout');
             Route::get('/me', [PlatformAuthController::class, 'me'])->name('me');
+
+            Route::get('/tenants', [TenantController::class, 'index'])->name('tenants.index');
+            Route::post('/tenants', [TenantController::class, 'store'])->name('tenants.store');
         });
     });
 }

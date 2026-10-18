@@ -51,6 +51,11 @@ Pendiente de este contexto: `docs/preguntas-abiertas.md` → sección
 - Las cookies son por host (`SESSION_DOMAIN` vacío): la sesión de plataforma no
   llega a los subdominios de las curadurías. No fijar `SESSION_DOMAIN` a un
   dominio padre.
+- Curadurías para el panel: `GET /api/platform/tenants` (lista + `meta.base_domain`)
+  y `POST /api/platform/tenants` (`name`, `subdomain`, `active`): llama a la
+  misma Action `ProvisionTenant` que el comando. Autoriza `TenantPolicy`; un
+  fallo del alta responde 500 con mensaje genérico (el detalle queda en
+  `failure_reason` y en el log, no en la respuesta).
 - Alta: `php artisan platform:create-user "<nombre>" <email>` (la contraseña se
   pide en pantalla, no como argumento).
 - Pendiente: MFA (TOTP + recovery codes), sesiones en Redis con revocación,

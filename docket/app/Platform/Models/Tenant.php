@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace App\Platform\Models;
 
 use App\Platform\Enums\TenantStatus;
+use App\Platform\Policies\TenantPolicy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDomains;
+use Stancl\Tenancy\Database\Models\Domain;
 use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
 
 /**
@@ -21,7 +26,11 @@ use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
  * @property TenantStatus $status
  * @property string|null $failure_reason
  * @property Carbon|null $provisioned_at
+ * @property-read Collection<int, Domain> $domains
+ *
+ * @method HasMany<Domain, $this> domains()
  */
+#[UsePolicy(TenantPolicy::class)]
 class Tenant extends BaseTenant implements TenantWithDatabase
 {
     use HasDatabase, HasDomains;
