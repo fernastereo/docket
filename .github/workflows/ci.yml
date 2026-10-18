@@ -68,6 +68,9 @@ jobs:
       - name: Typecheck (Vue/TS)
         run: npm run typecheck
 
+      - name: Vitest (frontend tests)
+        run: npm test
+
       - name: Build assets
         run: npm run build
 
