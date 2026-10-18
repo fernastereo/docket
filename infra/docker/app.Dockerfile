@@ -80,4 +80,10 @@ COPY --from=vendor   --chown=www-data:www-data /app/vendor        ./vendor
 COPY --from=frontend --chown=www-data:www-data /app/public/build  ./public/build
 # permisos de escritura solo donde Laravel los necesita
 RUN chown -R www-data:www-data storage bootstrap/cache
+# Copia de public/ FUERA de la ruta que se monta como volumen. En dev/prod,
+# `app_public` se monta sobre public/ para que Caddy sirva los assets; Docker
+# solo inicializa un volumen nombrado con el contenido de la imagen la primera
+# vez, así que sin esto cada deploy posterior seguiría sirviendo el
+# public/build viejo. entrypoint.sh sincroniza esta copia al volumen al arrancar.
+RUN cp -a public /opt/public-seed
 USER www-data

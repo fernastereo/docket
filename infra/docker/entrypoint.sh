@@ -35,6 +35,13 @@ fi
 role="${APP_ROLE:-fpm}"
 case "$role" in
     fpm)
+        # Publica el public/ de ESTA imagen en el volumen compartido con Caddy
+        # (ver app.Dockerfile). Copia por encima, sin borrar: un navegador con
+        # la pestaña abierta de antes del deploy aún puede pedir los assets
+        # con hash viejo. No existe /opt/public-seed en dev (bind-mount).
+        if [ -d /opt/public-seed ]; then
+            cp -a /opt/public-seed/. public/
+        fi
         exec php-fpm
         ;;
     worker)
