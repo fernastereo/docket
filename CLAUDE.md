@@ -232,6 +232,15 @@ y 8 h absolutas. Alta con `php artisan platform:create-user "<nombre>"
 obligatoria para plataforma), sesiones en Redis y revocación, empleados del
 tenant, solicitantes.
 
+**Panel de plataforma, primera rebanada vertical** (2026-10-18, en curso): se
+puede probar desde el navegador. `GET/POST /api/platform/tenants`
+(`TenantController`, `TenantPolicy`, `StoreTenantRequest`, `TenantResource`; el
+alta es la misma Action `ProvisionTenant` que usa `tenants:provision`) y, en el
+frontend, `/platform/login` y `/platform/tenants` (lista + formulario de alta)
+en `resources/js/features/platform/`. Vitest + Vue Test Utils quedan como
+herramienta de tests del frontend (`make test-front`, también en el CI). El
+alta es síncrona (unos segundos); pasará a cola cuando el esquema crezca.
+
 **Siguiente paso** (orden acordado): terminar identidad/auth (ADR-005/006/017):
 MFA de plataforma, cuentas de empleado locales al tenant con RBAC,
 solicitantes y enrolamiento; eso desbloquea el panel de plataforma y el
