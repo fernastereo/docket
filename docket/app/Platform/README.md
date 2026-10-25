@@ -58,5 +58,12 @@ Pendiente de este contexto: `docs/preguntas-abiertas.md` → sección
   `failure_reason` y en el log, no en la respuesta).
 - Alta: `php artisan platform:create-user "<nombre>" <email>` (la contraseña se
   pide en pantalla, no como argumento).
-- Pendiente: MFA (TOTP + recovery codes), sesiones en Redis con revocación,
-  backoff progresivo antes del bloqueo.
+- MFA (TOTP, obligatoria): `POST /api/platform/mfa/setup` (QR + clave),
+  `/mfa/confirm` (activa y entrega 8 recovery codes, una sola vez) y
+  `/mfa/verify` (segundo paso del login). Lógica en `app/Platform/Mfa/
+  PlatformMfa` y las Actions `BeginPlatformMfaSetup`, `ConfirmPlatformMfa`,
+  `VerifyPlatformMfa`. Las rutas del panel van detrás de `RequirePlatformMfa`
+  (una ruta nueva va dentro de ese grupo en `routes/api.php`). Si alguien pierde
+  teléfono y códigos: `php artisan platform:reset-mfa <email>`.
+- Pendiente: sesiones en Redis con revocación, backoff progresivo antes del
+  bloqueo, regenerar recovery codes desde la UI.

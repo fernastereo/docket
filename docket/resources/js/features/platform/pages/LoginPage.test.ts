@@ -45,7 +45,7 @@ describe('LoginPage', () => {
     });
 
     it('goes to the tenants panel after a successful login', async () => {
-        api.mockResolvedValue({ data: { id: 'u1', name: 'Soporte', email: 'soporte@curaduria.app' } });
+        api.mockResolvedValue({ data: { id: 'u1', name: 'Soporte', email: 'soporte@curaduria.app', mfa_enabled: true, mfa_verified: false } });
         const { wrapper, router } = await mountLogin();
 
         await fill(wrapper);
@@ -54,7 +54,7 @@ describe('LoginPage', () => {
     });
 
     it('goes back to where the user was heading, when it is an internal path', async () => {
-        api.mockResolvedValue({ data: { id: 'u1', name: 'Soporte', email: 'soporte@curaduria.app' } });
+        api.mockResolvedValue({ data: { id: 'u1', name: 'Soporte', email: 'soporte@curaduria.app', mfa_enabled: true, mfa_verified: false } });
         const { wrapper, router } = await mountLogin('/platform/login?redirect=/platform/other');
 
         await fill(wrapper);
@@ -63,7 +63,7 @@ describe('LoginPage', () => {
     });
 
     it('ignores a redirect to another site', async () => {
-        api.mockResolvedValue({ data: { id: 'u1', name: 'Soporte', email: 'soporte@curaduria.app' } });
+        api.mockResolvedValue({ data: { id: 'u1', name: 'Soporte', email: 'soporte@curaduria.app', mfa_enabled: true, mfa_verified: false } });
         const { wrapper, router } = await mountLogin('/platform/login?redirect=//evil.example');
 
         await fill(wrapper);

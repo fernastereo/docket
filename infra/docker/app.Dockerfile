@@ -30,7 +30,10 @@ RUN composer install ${COMPOSER_FLAGS} \
 # ------------------------------------------------------------------ runtime base
 FROM php:${PHP_VERSION}-fpm-alpine AS runtime
 
+# `apk upgrade` trae los parches de seguridad del SO que la imagen base de PHP
+# todavía no incluye (Trivy bloquea el CI por CVEs con corrección disponible).
 RUN set -eux; \
+    apk upgrade --no-cache; \
     apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
         postgresql-dev icu-dev libzip-dev oniguruma-dev linux-headers; \
     apk add --no-cache \

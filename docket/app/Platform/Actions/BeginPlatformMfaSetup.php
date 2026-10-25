@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Platform\Actions;
+
+use App\Platform\Mfa\PlatformMfa;
+use App\Platform\Models\PlatformUser;
+use Illuminate\Validation\ValidationException;
+
+/**
+ * Primer paso de la activación de MFA: genera un secreto TOTP nuevo y lo guarda
+ * (cifrado) SIN activarlo. Solo se activa al confirmarlo con un código
+ * (ConfirmPlatformMfa). Repetirlo antes de confirmar reemplaza el secreto.
+ */
+final class BeginPlatformMfaSetup
+{
+    public function __construct(private readonly PlatformMfa $mfa) {}
+
+    /**
+     * @return array{secret: string, uri: string, qr: string}
+     *
+     * @throws ValidationException si el usuario ya tiene MFA activa
+     */
+    public function handle(PlatformUser $user): array
+    {
+        if ($user->hasMfaEnabled()) {
+            throw ValidationException::withMessages(['mfa' => __('Two-factor authentication is already enabled.')]);
+        }
+
+        $secret = $this->mfa->newSecret();
+        $user->forceFill(['mfa_secret' => $secret, 'mfa_confirmed_at' => null, 'mfa_last_used_timestamp' => null])->save();
+
+        $uri = $this->mfa->provisioningUri($user, $secret);
+
+        return ['secret' => $secret, 'uri' => $uri, 'qr' => $this->mfa->qrDataUri($uri)];
+    }
+}

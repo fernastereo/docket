@@ -228,9 +228,11 @@ tenant de desarrollo. Detalle en el amendment 2026-10-12 de ADR-011.
 `/api/platform/*` solo en dominios centrales, Argon2id, contraseña de 12+ con
 chequeo HIBP, bloqueo tras 5 fallos en 15 min, sesión de 15 min de inactividad
 y 8 h absolutas. Alta con `php artisan platform:create-user "<nombre>"
-<email>` (pide la contraseña). **Falta**: MFA (TOTP + recovery codes,
-obligatoria para plataforma), sesiones en Redis y revocación, empleados del
-tenant, solicitantes.
+<email>` (pide la contraseña). **MFA de plataforma** (2026-10-25, TOTP +
+8 recovery codes, obligatoria): la contraseña sola no abre el panel
+(`RequirePlatformMfa`); la pantalla `/platform/mfa` activa o verifica el
+segundo factor; `platform:reset-mfa <email>` lo reinicia desde consola.
+**Falta**: sesiones en Redis y revocación, empleados del tenant, solicitantes.
 
 **Panel de plataforma, primera rebanada vertical** (2026-10-18, en curso): se
 puede probar desde el navegador. `GET/POST /api/platform/tenants`
@@ -248,7 +250,7 @@ Tight) con tokens claro/oscuro, componentes propios sobre Reka UI
 curadurías. Detalle en `docs/diseno-ui.md`.
 
 **Siguiente paso** (orden acordado): terminar identidad/auth (ADR-005/006/017):
-MFA de plataforma, cuentas de empleado locales al tenant con RBAC,
+cuentas de empleado locales al tenant con RBAC,
 solicitantes y enrolamiento; eso desbloquea el panel de plataforma y el
 usuario administrador de cada tenant;
 luego las migraciones del núcleo (las tablas reales de `database/migrations/

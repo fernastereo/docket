@@ -90,8 +90,9 @@ Lista viva. Al resolverse, mover la decisión a un ADR.
       están fijados** (longitud de contraseña por dominio, MFA obligatoria
       para curador/admin de tenant, timeouts de sesión, rate limiting de
       login, recovery codes). Implementado el 2026-10-18 **solo para
-      usuarios de plataforma** (login, contraseña, rate limit, sesión); falta
-      MFA, backoff progresivo antes del bloqueo, sesiones en Redis con
+      usuarios de plataforma** (login, contraseña, rate limit, sesión, MFA TOTP
+      con recovery codes — 2026-10-25); falta regenerar recovery codes desde
+      la UI, WebAuthn, backoff progresivo antes del bloqueo, sesiones en Redis con
       revocación, y los dominios de empleado y solicitante.
       Corresponde implementarlo en el bloque de identidad/auth (ver orden en
       `CLAUDE.md`).
