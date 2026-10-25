@@ -232,3 +232,12 @@ test('the user resource and the model never expose the secret or the recovery co
     expect(json_encode($this->getJson(mfaUrl('/me'))->json()))->not->toContain(PlatformUserFactory::MFA_SECRET)
         ->and($user->toArray())->not->toHaveKeys(['mfa_secret', 'mfa_recovery_codes']);
 });
+
+test('the authenticator entry carries the issuer, so environments can be told apart', function () {
+    config(['platform.mfa.issuer' => 'CuraduriAPP (staging)']);
+    loginWith(PlatformUser::factory()->create());
+
+    $uri = $this->postJson(mfaUrl('/mfa/setup'))->json('data.uri');
+
+    expect(rawurldecode($uri))->toContain('CuraduriAPP (staging)');
+});
