@@ -9,6 +9,7 @@ use Database\Factories\PlatformUserFactory;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use PragmaRX\Google2FA\Google2FA;
 use Stancl\Tenancy\Events\DatabaseCreated;
 
 // Crear una curaduría crea una base física: DatabaseMigrations, no RefreshDatabase.
@@ -24,7 +25,7 @@ function panelHost(): string
 function asPlatformUser(): PlatformUser
 {
     config(['platform.tenant_base_domain' => 'docket.test', 'sanctum.stateful' => [panelHost()]]);
-    $user = PlatformUser::factory()->create();
+    $user = PlatformUser::factory()->withMfa()->create();
 
     // Como el navegador de la SPA: todas las peticiones llevan Origin, así la
     // sesión (cookie) se mantiene entre login y llamadas siguientes.
@@ -33,6 +34,11 @@ function asPlatformUser(): PlatformUser
             'email' => $user->email,
             'password' => PlatformUserFactory::PASSWORD,
         ])->assertOk();
+
+    // Segundo factor, como lo hace la persona con su app de autenticación.
+    test()->postJson(panelUrl('/mfa/verify'), [
+        'code' => app(Google2FA::class)->getCurrentOtp(PlatformUserFactory::MFA_SECRET),
+    ])->assertOk();
 
     return $user;
 }
@@ -138,7 +144,7 @@ test('a provisioning failure answers 500 with a safe message and leaves a failed
 });
 
 test('a disabled platform user cannot list or create', function () {
-    $user = PlatformUser::factory()->create();
+    $user = PlatformUser::factory()->withMfa()->create();
     config(['sanctum.stateful' => [panelHost()]]);
     $this->actingAs($user, 'platform');
     $user->forceFill(['disabled_at' => now()])->save();

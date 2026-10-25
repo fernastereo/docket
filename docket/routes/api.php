@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Platform\AuthController as PlatformAuthController;
+use App\Http\Controllers\Platform\MfaController;
 use App\Http\Controllers\Platform\TenantController;
 use App\Http\Middleware\EnforcePlatformSessionLimits;
+use App\Http\Middleware\RequirePlatformMfa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -50,8 +52,18 @@ foreach (config('tenancy.central_domains', []) as $domain) {
             Route::post('/logout', [PlatformAuthController::class, 'logout'])->name('logout');
             Route::get('/me', [PlatformAuthController::class, 'me'])->name('me');
 
-            Route::get('/tenants', [TenantController::class, 'index'])->name('tenants.index');
-            Route::post('/tenants', [TenantController::class, 'store'])->name('tenants.store');
+            // Segundo factor: lo único (junto con me y logout) que alcanza una
+            // sesión con contraseña pero sin MFA verificada.
+            Route::post('/mfa/setup', [MfaController::class, 'setup'])->name('mfa.setup');
+            Route::post('/mfa/confirm', [MfaController::class, 'confirm'])->name('mfa.confirm');
+            Route::post('/mfa/verify', [MfaController::class, 'verify'])->name('mfa.verify');
+
+            // Todo lo demás del panel exige MFA verificada. Una ruta nueva va
+            // acá adentro por defecto.
+            Route::middleware(RequirePlatformMfa::class)->group(function () {
+                Route::get('/tenants', [TenantController::class, 'index'])->name('tenants.index');
+                Route::post('/tenants', [TenantController::class, 'store'])->name('tenants.store');
+            });
         });
     });
 }

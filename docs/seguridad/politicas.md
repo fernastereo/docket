@@ -75,7 +75,15 @@ MFA obligatoria en el proveedor de identidad de la VPN. Detalle en
 **Estado de implementación** (2026-10-18): implementado solo para el dominio
 **plataforma** — Argon2id, contraseña de 12+ con HIBP, bloqueo tras 5 fallos
 en 15 min (sin backoff progresivo todavía), sesión de 15 min / 8 h, cookie por
-host. **Pendiente**: MFA y recovery codes, sesiones respaldadas en Redis con
+host. **MFA de plataforma** (2026-10-25): TOTP (`pragmarx/google2fa`) con
+ventana de ±1 paso, secreto cifrado con `APP_KEY`, un código no se acepta dos
+veces, 8 recovery codes de un solo uso guardados como HMAC, 5 fallos en 15 min
+bloquean el segundo paso, y la sesión con solo contraseña no llega a ninguna
+ruta del panel (`RequirePlatformMfa`, 403). Un usuario sin MFA solo puede
+activarla; si pierde el teléfono y los códigos, `php artisan
+platform:reset-mfa <email>` (consola del servidor, no hay flujo en la app).
+**Pendiente**: regenerar recovery codes desde la interfaz, WebAuthn/passkeys
+(TOTP no resiste phishing en tiempo real), sesiones respaldadas en Redis con
 "cerrar sesión en todos los dispositivos", y todo lo de empleados y
 solicitantes (pendiente en `docs/preguntas-abiertas.md`, bloque de
 identidad/auth).

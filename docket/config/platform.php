@@ -35,6 +35,16 @@ return [
         'decay_seconds' => 15 * 60,
     ],
 
+    // MFA (TOTP, RFC 6238). Obligatoria para plataforma (ADR-017). `window` =
+    // pasos de 30 s que se aceptan a cada lado por desfase de reloj.
+    'mfa' => [
+        'issuer' => env('PLATFORM_MFA_ISSUER', 'CuraduriAPP'),
+        'window' => 1,
+        'recovery_codes' => 8,
+        'max_attempts' => 5,
+        'decay_seconds' => 15 * 60,
+    ],
+
     // Contraseña (politicas.md §2): 12 mínimo, sin tope bajo, sin truncar.
     'password_min_length' => 12,
 ];
