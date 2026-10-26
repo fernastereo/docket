@@ -124,7 +124,10 @@ terminar. Si interrumpes una corrida (Ctrl+C) pueden quedar huérfanas:
 ### Frontend (Vue) en local
 
 El frontend se compila con el **Node de tu máquina** (la imagen de la app no
-trae Node), no dentro del contenedor:
+trae Node), no dentro del contenedor. Hace falta Node **22.22.2 o superior**
+(`docket/.nvmrc` y `engines` de `package.json`); con uno más viejo Vitest no
+arranca (`Cannot read properties of undefined (reading 'bind')`). Con nvm:
+`nvm install` y `nvm use` dentro de `docket/` toman la versión de `.nvmrc`.
 
 ```bash
 make front-install   # primera vez, o si cambió package.json
