@@ -232,7 +232,17 @@ y 8 h absolutas. Alta con `php artisan platform:create-user "<nombre>"
 8 recovery codes, obligatoria): la contraseña sola no abre el panel
 (`RequirePlatformMfa`); la pantalla `/platform/mfa` activa o verifica el
 segundo factor; `platform:reset-mfa <email>` lo reinicia desde consola.
-**Falta**: sesiones en Redis y revocación, empleados del tenant, solicitantes.
+**Falta**: sesiones en Redis y revocación, solicitantes.
+
+**Cuentas de empleado y RBAC, paso 1** (2026-10-26, en curso): `employees` y las
+tablas de `spatie/laravel-permission` en la base de cada curaduría
+(`database/migrations/tenant/`), dominio en `app/Domain/Identity/` (`Employee`,
+`EmployeeRole` con 12 roles, `CreateEmployee`, `SeedEmployeeRoles`). Al
+provisionar se siembran los roles y, con `--admin-name/--admin-email`, se crea
+el primer administrador sin contraseña (queda pendiente de invitación).
+**Falta** (en este orden): login/sesión/MFA del empleado (curador y admin con
+MFA obligatoria), invitación por correo para fijar la contraseña y el alta del
+primer admin desde el panel, solicitantes.
 
 **Panel de plataforma, primera rebanada vertical** (2026-10-18, en curso): se
 puede probar desde el navegador. `GET/POST /api/platform/tenants`

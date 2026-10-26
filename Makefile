@@ -97,9 +97,9 @@ front-check: ## Typecheck (vue-tsc) + Vitest, como el CI
 
 # ---------- Curadurías (tenants) ----------
 
-tenant: ## Alta de curaduría: make tenant NAME="Curaduría Urbana 1" SUB=cu1 [ACTIVE=1]
+tenant: ## Alta de curaduría: make tenant NAME="Curaduría Urbana 1" SUB=cu1 [ACTIVE=1] [ADMIN_NAME="Ana Pérez" ADMIN_EMAIL=ana@cu1.co]
 	@test -n "$(NAME)" -a -n "$(SUB)" || { echo 'Uso: make tenant NAME="Curaduría Urbana 1" SUB=cu1 [ACTIVE=1]'; exit 1; }
-	$(APP) php artisan tenants:provision "$(NAME)" "$(SUB)" $(if $(ACTIVE),--active)
+	$(APP) php artisan tenants:provision "$(NAME)" "$(SUB)" $(if $(ACTIVE),--active) $(if $(ADMIN_EMAIL),--admin-name="$(ADMIN_NAME)" --admin-email="$(ADMIN_EMAIL)")
 	@echo "Recuerda: /etc/hosts no admite comodines -> 127.0.0.1 $(shell echo $(SUB) | tr A-Z a-z).docket.test"
 
 tenant-delete: ## Borra una curaduría Y su base física: make tenant-delete ID=<uuid>

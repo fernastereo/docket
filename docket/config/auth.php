@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Identity\Models\Employee;
 use App\Models\User;
 use App\Platform\Models\PlatformUser;
 
@@ -50,6 +51,13 @@ return [
             'driver' => 'session',
             'provider' => 'platform_users',
         ],
+
+        // Empleados de una curaduría: viven en la base de cada tenant (ADR-005,
+        // amendment 2026-09-02). El login llega en el siguiente paso.
+        'employee' => [
+            'driver' => 'session',
+            'provider' => 'employees',
+        ],
     ],
 
     /*
@@ -78,6 +86,11 @@ return [
         'platform_users' => [
             'driver' => 'eloquent',
             'model' => PlatformUser::class,
+        ],
+
+        'employees' => [
+            'driver' => 'eloquent',
+            'model' => Employee::class,
         ],
 
         // 'users' => [

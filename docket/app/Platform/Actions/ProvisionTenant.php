@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Platform\Actions;
 
+use App\Domain\Identity\Actions\CreateEmployee;
+use App\Domain\Identity\Actions\SeedEmployeeRoles;
+use App\Domain\Identity\DataTransferObjects\CreateEmployeeData;
+use App\Domain\Identity\Enums\EmployeeRole;
 use App\Platform\Data\ProvisionTenantData;
 use App\Platform\Enums\TenantStatus;
 use App\Platform\Exceptions\TenantProvisioningFailed;
@@ -47,6 +51,7 @@ final class ProvisionTenant
 
             Bus::dispatchSync(new CreateDatabase($tenant));
             $this->migrate($tenant);
+            $this->bootstrapIdentity($tenant, $data);
         } catch (Throwable $e) {
             $this->compensate($tenant, $e);
 
@@ -64,12 +69,21 @@ final class ProvisionTenant
     private function validate(ProvisionTenantData $data): void
     {
         Validator::make(
-            ['name' => $data->name, 'subdomain' => $data->subdomain, 'status' => $data->status->value],
+            [
+                'name' => $data->name,
+                'subdomain' => $data->subdomain,
+                'status' => $data->status->value,
+                'admin_name' => $data->adminName,
+                'admin_email' => $data->adminEmail,
+            ],
             [
                 'name' => ['required', 'string', 'min:3', 'max:150'],
                 'subdomain' => ['required', new TenantSubdomain],
                 // Un tenant nace operable: demo o activo. El resto son estados de ciclo de vida.
                 'status' => [Rule::in([TenantStatus::Demo->value, TenantStatus::Active->value])],
+                // El primer administrador se da completo o no se da.
+                'admin_name' => ['nullable', 'required_with:admin_email', 'string', 'min:3', 'max:150'],
+                'admin_email' => ['nullable', 'required_with:admin_name', 'email:rfc', 'max:254'],
             ],
         )->validate();
     }
@@ -82,6 +96,26 @@ final class ProvisionTenant
         if ($exitCode !== 0) {
             throw new RuntimeException('tenants:migrate terminó con código '.$exitCode.': '.trim(Artisan::output()));
         }
+    }
+
+    /**
+     * Roles de la curaduría y, si se indicó, su primer administrador. Corre
+     * dentro de la base del tenant recién migrada. El administrador nace sin
+     * contraseña: la fija al aceptar su invitación.
+     */
+    private function bootstrapIdentity(Tenant $tenant, ProvisionTenantData $data): void
+    {
+        $tenant->run(function () use ($data): void {
+            app(SeedEmployeeRoles::class)->handle();
+
+            if ($data->adminEmail !== null && $data->adminName !== null) {
+                app(CreateEmployee::class)->handle(new CreateEmployeeData(
+                    name: $data->adminName,
+                    email: $data->adminEmail,
+                    roles: [EmployeeRole::Admin],
+                ));
+            }
+        });
     }
 
     /**

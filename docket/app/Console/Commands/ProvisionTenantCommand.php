@@ -23,7 +23,9 @@ class ProvisionTenantCommand extends Command
     protected $signature = 'tenants:provision
         {name : Nombre de la curaduría (p. ej. "Curaduría Urbana 1 de Bogotá")}
         {subdomain : Subdominio, en minúsculas (p. ej. cu1bogota)}
-        {--active : Crear directamente como activo en lugar de demo}';
+        {--active : Crear directamente como activo en lugar de demo}
+        {--admin-name= : Nombre del primer administrador de la curaduría}
+        {--admin-email= : Correo del primer administrador (nace sin contraseña, queda pendiente de invitación)}';
 
     protected $description = 'Da de alta una curaduría: catálogo, dominio, base PostgreSQL y migraciones';
 
@@ -33,6 +35,8 @@ class ProvisionTenantCommand extends Command
             name: trim((string) $this->argument('name')),
             subdomain: Str::lower(trim((string) $this->argument('subdomain'))),
             status: $this->option('active') ? TenantStatus::Active : TenantStatus::Demo,
+            adminName: $this->option('admin-name') ? trim((string) $this->option('admin-name')) : null,
+            adminEmail: $this->option('admin-email') ? trim((string) $this->option('admin-email')) : null,
         );
 
         try {
