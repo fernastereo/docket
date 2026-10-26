@@ -268,3 +268,7 @@ Base y razones en `docs/diseno-ui.md`.
       `wrangler dev -c .output/server/wrangler.json`). Falta un paso de lint y
       build de la landing en `ci.yml` (Dependabot mergeó 38+ actualizaciones sin
       que nada las compilara) y pasar este procedimiento a `docs/dev-guide.md`.
+- [ ] Landing: error en la consola del navegador (`Uncaught SyntaxError:
+      Unexpected token ':' (at (index):1:1837)`, 2026-10-26). No impide que la
+      página funcione ni que el formulario envíe; revisar el script en línea
+      del HTML generado (columna 1837) en una rama aparte.

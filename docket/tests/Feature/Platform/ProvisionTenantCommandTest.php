@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Identity\Models\Employee;
 use App\Platform\Enums\TenantStatus;
 use App\Platform\Models\Tenant;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -37,4 +38,29 @@ test('provisions a tenant, lowercasing the subdomain the user typed', function (
         ->and($tenant->domains()->pluck('domain')->all())->toBe(['cucomando.docket.test']);
 
     $tenant->delete(); // elimina también la base física
+});
+
+test('creates the first admin when the admin options are given', function () {
+    $this->artisan('tenants:provision', [
+        'name' => 'Curaduría Con Admin',
+        'subdomain' => 'cucmdadmin',
+        '--admin-name' => 'Ana Pérez',
+        '--admin-email' => 'ana@cucmdadmin.co',
+    ])->assertSuccessful();
+
+    $tenant = Tenant::query()->sole();
+
+    expect($tenant->run(fn () => Employee::query()->pluck('email')->all()))->toBe(['ana@cucmdadmin.co']);
+
+    $tenant->delete();
+});
+
+test('an admin email without a name fails and creates nothing', function () {
+    $this->artisan('tenants:provision', [
+        'name' => 'Curaduría Sin Nombre Admin',
+        'subdomain' => 'cusinnombre',
+        '--admin-email' => 'ana@cu.co',
+    ])->assertFailed();
+
+    expect(Tenant::count())->toBe(0);
 });
