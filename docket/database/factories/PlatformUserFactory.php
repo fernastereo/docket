@@ -18,6 +18,9 @@ class PlatformUserFactory extends Factory
      */
     public const PASSWORD = 'plataforma-prueba-9f3k-Zq72';
 
+    /** Secreto TOTP fijo para pruebas (base32, 32 caracteres). */
+    public const MFA_SECRET = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
+
     public function definition(): array
     {
         return [
@@ -25,6 +28,15 @@ class PlatformUserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'password' => self::PASSWORD,
         ];
+    }
+
+    /** Con MFA activa (secreto MFA_SECRET) y sin códigos de recuperación. */
+    public function withMfa(): static
+    {
+        return $this->state(fn () => [
+            'mfa_secret' => self::MFA_SECRET,
+            'mfa_confirmed_at' => now(),
+        ]);
     }
 
     public function disabled(): static

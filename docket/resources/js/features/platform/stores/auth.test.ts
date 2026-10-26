@@ -9,7 +9,7 @@ vi.mock('@/api/client', async (importOriginal) => ({
     api,
 }));
 
-const user = { id: 'u1', name: 'Soporte Uno', email: 'soporte@curaduria.app' };
+const user = { id: 'u1', name: 'Soporte Uno', email: 'soporte@curaduria.app', mfa_enabled: true, mfa_verified: false };
 
 describe('platform auth store', () => {
     beforeEach(() => {
@@ -69,5 +69,47 @@ describe('platform auth store', () => {
         await auth.logout().catch(() => undefined);
 
         expect(auth.user).toBeNull();
+    });
+
+    it('startMfaSetup returns the QR data without touching the user', async () => {
+        api.mockResolvedValue({ data: { secret: 'ABC', uri: 'otpauth://x', qr: 'data:image/svg+xml;base64,AA' } });
+        const auth = usePlatformAuthStore();
+
+        const setup = await auth.startMfaSetup();
+
+        expect(api).toHaveBeenCalledWith('/platform/mfa/setup', { method: 'POST' });
+        expect(setup.secret).toBe('ABC');
+        expect(auth.user).toBeNull();
+    });
+
+    it('confirmMfa returns the recovery codes and updates the user', async () => {
+        const verified = { ...user, mfa_enabled: true, mfa_verified: true };
+        api.mockResolvedValue({ data: { recovery_codes: ['AAAAA-BBBBB'], user: verified } });
+        const auth = usePlatformAuthStore();
+
+        const codes = await auth.confirmMfa('123456');
+
+        expect(codes).toEqual(['AAAAA-BBBBB']);
+        expect(auth.user).toEqual(verified);
+    });
+
+    it('verifyMfa marks the session as verified', async () => {
+        api.mockResolvedValue({ data: { ...user, mfa_enabled: true, mfa_verified: true } });
+        const auth = usePlatformAuthStore();
+
+        await auth.verifyMfa('123456');
+
+        expect(auth.user?.mfa_verified).toBe(true);
+    });
+
+    it('a rejected code lets the error through and keeps the user as it was', async () => {
+        api.mockResolvedValueOnce({ data: user });
+        const auth = usePlatformAuthStore();
+        await auth.login('a@b.co', 'x');
+        api.mockRejectedValueOnce(new ApiError('Invalid', 422, { code: ['Bad'] }));
+
+        await expect(auth.verifyMfa('000000')).rejects.toBeInstanceOf(ApiError);
+
+        expect(auth.user?.mfa_verified).toBe(false);
     });
 });

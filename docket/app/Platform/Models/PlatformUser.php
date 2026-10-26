@@ -23,9 +23,13 @@ use Illuminate\Support\Carbon;
  * @property string $email
  * @property Carbon|null $disabled_at
  * @property Carbon|null $last_login_at
+ * @property string|null $mfa_secret
+ * @property Carbon|null $mfa_confirmed_at
+ * @property int|null $mfa_last_used_timestamp
+ * @property list<string>|null $mfa_recovery_codes HMAC de cada código, no el código
  */
 #[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password'])]
+#[Hidden(['password', 'mfa_secret', 'mfa_recovery_codes'])]
 #[UseFactory(PlatformUserFactory::class)]
 class PlatformUser extends Authenticatable
 {
@@ -38,7 +42,17 @@ class PlatformUser extends Authenticatable
             'password' => 'hashed',
             'disabled_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'mfa_secret' => 'encrypted',
+            'mfa_confirmed_at' => 'datetime',
+            'mfa_last_used_timestamp' => 'integer',
+            'mfa_recovery_codes' => 'array',
         ];
+    }
+
+    /** MFA activa = secreto confirmado con un código (no solo generado). */
+    public function hasMfaEnabled(): bool
+    {
+        return $this->mfa_secret !== null && $this->mfa_confirmed_at !== null;
     }
 
     /** El email se compara siempre en minúsculas: un solo formato en la base. */

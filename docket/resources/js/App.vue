@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import DefaultLayout from '@/layouts/DefaultLayout.vue';
+import { Toaster } from '@/components/ui/sonner';
 </script>
 
 <template>
-    <DefaultLayout />
+    <router-view />
+    <Toaster position="bottom-right" />
 </template>

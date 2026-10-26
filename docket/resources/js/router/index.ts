@@ -17,7 +17,6 @@ export const router = createRouter({
             name: 'dashboard',
             component: () => import('@/features/dashboard/DashboardPage.vue'),
         },
-        { path: '/platform', redirect: { name: 'platform.tenants' } },
         {
             path: '/platform/login',
             name: 'platform.login',
@@ -25,25 +24,43 @@ export const router = createRouter({
             meta: { guestOnly: true },
         },
         {
-            path: '/platform/tenants',
-            name: 'platform.tenants',
-            component: () => import('@/features/platform/pages/TenantsPage.vue'),
+            // Segundo factor: activarlo (primera vez) o verificarlo (cada login).
+            path: '/platform/mfa',
+            name: 'platform.mfa',
+            component: () => import('@/features/platform/pages/MfaPage.vue'),
+            meta: { requiresPlatformSession: true },
+        },
+        {
+            path: '/platform',
+            component: () => import('@/features/platform/layouts/PlatformLayout.vue'),
             meta: { requiresPlatformAuth: true },
+            children: [
+                { path: '', redirect: { name: 'platform.tenants' } },
+                {
+                    path: 'tenants',
+                    name: 'platform.tenants',
+                    component: () => import('@/features/platform/pages/TenantsPage.vue'),
+                },
+            ],
         },
     ],
 });
 
 router.beforeEach(async (to) => {
-    if (!to.meta.requiresPlatformAuth && !to.meta.guestOnly) return true;
+    if (!to.meta.requiresPlatformAuth && !to.meta.requiresPlatformSession && !to.meta.guestOnly) return true;
 
     const auth = usePlatformAuthStore();
     if (!auth.loaded) await auth.fetchUser();
 
-    if (to.meta.requiresPlatformAuth && !auth.user) {
+    if ((to.meta.requiresPlatformAuth || to.meta.requiresPlatformSession) && !auth.user) {
         return { name: 'platform.login', query: { redirect: to.fullPath } };
     }
+    // Con contraseña pero sin segundo factor verificado, solo se llega a la pantalla de MFA.
+    if (to.meta.requiresPlatformAuth && auth.user && !auth.user.mfa_verified) {
+        return { name: 'platform.mfa', query: { redirect: to.fullPath } };
+    }
     if (to.meta.guestOnly && auth.user) {
-        return { name: 'platform.tenants' };
+        return auth.user.mfa_verified ? { name: 'platform.tenants' } : { name: 'platform.mfa' };
     }
 
     return true;

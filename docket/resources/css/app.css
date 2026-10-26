@@ -1,9 +1,206 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Sistema de diseño de CuraduriAPP (docs/diseno-ui.md).
+ *
+ * Hereda la identidad de la landing (landing/curaduria-digital-colombia/src/
+ * styles.css): mismas paletas (lavanda, turquesa, periwinkle, índigo) y la
+ * misma tipografía (Inter Tight). Si cambia la marca, cambia en los dos sitios.
+ *
+ * Los componentes NO usan colores de paleta directamente: usan los tokens
+ * semánticos de abajo (bg-primary, text-muted-foreground, border-border…), que
+ * cambian solos entre modo claro y oscuro.
+ */
+
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+  --color-lav-50: #efeff6;
+  --color-lav-100: #dfdfec;
+  --color-lav-200: #c0beda;
+  --color-lav-300: #a09ec7;
+  --color-lav-400: #807db5;
+  --color-lav-500: #615da2;
+  --color-lav-600: #4d4a82;
+  --color-lav-700: #3a3861;
+  --color-lav-800: #272541;
+  --color-lav-900: #131320;
+  --color-lav-950: #0e0d17;
+  --color-turq-50: #e7fdfb;
+  --color-turq-100: #d0fbf7;
+  --color-turq-200: #a1f7ef;
+  --color-turq-300: #71f4e7;
+  --color-turq-400: #42f0de;
+  --color-turq-500: #13ecd6;
+  --color-turq-600: #0fbdab;
+  --color-turq-700: #0b8e81;
+  --color-turq-800: #085e56;
+  --color-turq-900: #042f2b;
+  --color-turq-950: #03211e;
+  --color-peri-50: #edeff8;
+  --color-peri-100: #dadff1;
+  --color-peri-200: #b5bfe3;
+  --color-peri-300: #909fd5;
+  --color-peri-400: #6b7fc7;
+  --color-peri-500: #465fb9;
+  --color-peri-600: #384c94;
+  --color-peri-700: #2a396f;
+  --color-peri-800: #1c264a;
+  --color-peri-900: #0e1325;
+  --color-peri-950: #0a0d1a;
+  --color-indigo-x-50: #eaeefa;
+  --color-indigo-x-100: #d5dcf6;
+  --color-indigo-x-200: #acbaec;
+  --color-indigo-x-300: #8297e3;
+  --color-indigo-x-400: #5975d9;
+  --color-indigo-x-500: #2f52d0;
+  --color-indigo-x-600: #2642a6;
+  --color-indigo-x-700: #1c317d;
+  --color-indigo-x-800: #132153;
+  --color-indigo-x-900: #09102a;
+  --color-indigo-x-950: #070b1d;
+
+  --font-sans: 'Inter Tight', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-indicator: var(--sidebar-indicator);
+}
+
+/* ------------------------------------------------------------------ claro */
+:root {
+  --radius: 0.5rem;
+  --background: var(--color-lav-50);
+  --foreground: var(--color-indigo-x-900);
+  --card: #ffffff;
+  --card-foreground: var(--color-indigo-x-900);
+  --popover: #ffffff;
+  --popover-foreground: var(--color-indigo-x-900);
+  --primary: var(--color-indigo-x-800);
+  --primary-foreground: var(--color-lav-50);
+  --secondary: var(--color-lav-100);
+  --secondary-foreground: var(--color-peri-800);
+  --muted: var(--color-lav-100);
+  --muted-foreground: var(--color-lav-600);
+  --accent: var(--color-turq-500);
+  --accent-foreground: var(--color-indigo-x-950);
+  --destructive: oklch(0.55 0.22 27);
+  --success: var(--color-turq-700);
+  --info: var(--color-peri-600);
+  --warning: oklch(0.5 0.12 65);
+  --border: var(--color-lav-200);
+  --input: var(--color-lav-200);
+  --ring: var(--color-peri-500);
+
+  /* La barra lateral es oscura en ambos modos: ancla visual de la herramienta. */
+  --sidebar: var(--color-indigo-x-900);
+  --sidebar-foreground: var(--color-lav-100);
+  --sidebar-muted: var(--color-lav-300);
+  --sidebar-accent: oklch(1 0 0 / 8%);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-indicator: var(--color-turq-500);
+}
+
+/* ----------------------------------------------------------------- oscuro */
+.dark {
+  --background: var(--color-lav-950);
+  --foreground: var(--color-lav-50);
+  --card: var(--color-lav-900);
+  --card-foreground: var(--color-lav-50);
+  --popover: var(--color-lav-900);
+  --popover-foreground: var(--color-lav-50);
+  --primary: var(--color-lav-100);
+  --primary-foreground: var(--color-indigo-x-900);
+  --secondary: var(--color-lav-800);
+  --secondary-foreground: var(--color-lav-50);
+  --muted: var(--color-lav-800);
+  --muted-foreground: var(--color-lav-300);
+  --accent: var(--color-turq-500);
+  --accent-foreground: var(--color-indigo-x-950);
+  --destructive: oklch(0.7 0.19 22);
+  --success: var(--color-turq-400);
+  --info: var(--color-peri-300);
+  --warning: oklch(0.82 0.14 80);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: var(--color-peri-400);
+
+  --sidebar: var(--color-indigo-x-950);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Foco visible para quien navega con teclado, en todo lo que no traiga el suyo. */
+  :focus-visible {
+    outline-color: var(--color-ring);
+  }
+}
+
+/* Fondo de marca (el de la landing) para la pantalla de acceso. */
+@utility surface-brand {
+  background:
+    radial-gradient(80rem 40rem at 15% -10%, var(--color-peri-800) 0%, transparent 60%),
+    linear-gradient(160deg, var(--color-indigo-x-900) 0%, var(--color-indigo-x-950) 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -1,11 +1,20 @@
+<script setup lang="ts">
+import { ArrowRight } from 'lucide-vue-next';
+import BrandMark from '@/components/layout/BrandMark.vue';
+import { Button } from '@/components/ui/button';
+</script>
+
 <template>
-    <div class="mx-auto max-w-3xl p-8">
-        <h1 class="text-2xl font-semibold">CuraduriAPP</h1>
-        <p class="mt-2 text-neutral-600">
-            Esqueleto vivo — Laravel + stancl/tenancy + Vue 3 / TypeScript.
-        </p>
-        <p class="mt-4 text-sm">
-            <router-link :to="{ name: 'platform.tenants' }" class="text-blue-700 underline">Panel de plataforma</router-link>
-        </p>
+    <div class="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-6">
+        <BrandMark />
+        <p class="text-muted-foreground">Gestión de trámites para curadurías urbanas.</p>
+        <div>
+            <Button as-child>
+                <router-link :to="{ name: 'platform.tenants' }">
+                    Panel de plataforma
+                    <ArrowRight />
+                </router-link>
+            </Button>
+        </div>
     </div>
 </template>

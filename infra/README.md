@@ -124,7 +124,10 @@ terminar. Si interrumpes una corrida (Ctrl+C) pueden quedar huérfanas:
 ### Frontend (Vue) en local
 
 El frontend se compila con el **Node de tu máquina** (la imagen de la app no
-trae Node), no dentro del contenedor:
+trae Node), no dentro del contenedor. Hace falta Node **22.22.2 o superior**
+(`docket/.nvmrc` y `engines` de `package.json`); con uno más viejo Vitest no
+arranca (`Cannot read properties of undefined (reading 'bind')`). Con nvm:
+`nvm install` y `nvm use` dentro de `docket/` toman la versión de `.nvmrc`.
 
 ```bash
 make front-install   # primera vez, o si cambió package.json
@@ -294,6 +297,22 @@ El ACL de Tailscale (`infra/tailscale/acl.json`) ya tiene la regla para
 se hizo (ver `docs/dev-guide.md` §3).
 
 ---
+
+### Troubleshooting del deploy
+
+- **Desplegué y el frontend no cambió (el backend sí).** El volumen nombrado
+  `app_public` se monta sobre `public/` para que Caddy sirva `public/build`.
+  Docker solo inicializa un volumen con el contenido de la imagen la
+  **primera vez**; después el volumen tapa el `public/` de las imágenes nuevas
+  y los assets (y el `manifest.json` que usa `@vite`) se quedan viejos. Se
+  notó el 2026-10-18, en el primer deploy que cambiaba el frontend (el panel de
+  plataforma). Arreglo permanente: la imagen guarda una copia de `public/` en
+  `/opt/public-seed` y `entrypoint.sh` la copia al volumen cada vez que arranca
+  el contenedor `fpm` (por encima, sin borrar lo viejo). Cómo comprobarlo: el
+  HTML de `/` debe referenciar un `app-<hash>.js` distinto tras el deploy.
+  Si algún día hace falta forzarlo a mano, borra **solo** ese volumen
+  (`docker volume rm <proyecto>_app_public`, con los contenedores parados) y
+  nunca uses `docker compose down -v`: borraría también `db_data`.
 
 ## `docket-prod` — runbook de go-live (NADA de esto está aprovisionado)
 

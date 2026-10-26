@@ -74,10 +74,22 @@ copy:
 2. **PR title:** `Imperative description`, short.
 3. **PR description:** the content of `.github/pull_request_template.md`
    without the HTML comments (`<!-- … -->`), with:
-   - **What changed:** what was wrong or missing and how it was solved, a few
-     bullets with the main changes (classes, routes, templates) and tests
-     added. Mention anything deliberately left out of scope.
-   - **Notes for deployment:** from step 4.
+   - **What changed:** short, because nobody reads long PRs. A one- or
+     two-sentence summary of what was missing and why, then **at most 5
+     bullets**, one line each, on the main changes. Rules:
+     - Say *what* and *why*, not *how*: no lists of classes, files or
+       endpoints (the diff already shows them), no step-by-step flows.
+     - Tests: one line at most ("Pest and Vitest cover X, Y"), never one
+       bullet per test.
+     - Docs updated: skip it, unless the docs are the whole change.
+     - Mention a deliberate limitation or something left out of scope only if
+       the reviewer could mistake it for a bug; one line.
+     - Keep the details that a reviewer could not guess from the diff (a
+       subtle bug found, a security trade-off), in one line each.
+     - Target: under ~120 words in total. If it is longer, cut it.
+   - **Notes for deployment:** from step 4, only the items that apply, one
+     line each. Write `none` for the whole section when nothing applies,
+     instead of listing every item with "none".
 
 After the blocks, remind the developer of the PR options:
 merge commit (no squash), "Delete source branch" checked, 1 approval from

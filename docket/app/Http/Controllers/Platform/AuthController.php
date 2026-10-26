@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Platform;
 
 use App\Http\Controllers\Controller;
 use App\Http\Middleware\EnforcePlatformSessionLimits;
+use App\Http\Middleware\RequirePlatformMfa;
 use App\Http\Requests\Platform\PlatformLoginRequest;
 use App\Http\Resources\Platform\PlatformUserResource;
 use App\Platform\Actions\AuthenticatePlatformUser;
@@ -34,6 +35,8 @@ final class AuthController extends Controller
         $now = now()->getTimestamp();
         $request->session()->put(EnforcePlatformSessionLimits::LOGGED_IN_AT, $now);
         $request->session()->put(EnforcePlatformSessionLimits::LAST_ACTIVITY_AT, $now);
+        // La contraseña sola no basta: el segundo factor va aparte (RequirePlatformMfa).
+        $request->session()->put(RequirePlatformMfa::PASSED, false);
 
         return new PlatformUserResource($user);
     }

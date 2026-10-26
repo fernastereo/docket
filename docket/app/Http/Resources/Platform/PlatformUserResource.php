@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Platform;
 
+use App\Http\Middleware\RequirePlatformMfa;
 use App\Platform\Models\PlatformUser;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -22,6 +23,9 @@ final class PlatformUserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            // Estado del segundo factor: la SPA decide con esto qué pantalla mostrar.
+            'mfa_enabled' => $this->hasMfaEnabled(),
+            'mfa_verified' => $request->hasSession() && $request->session()->get(RequirePlatformMfa::PASSED) === true,
         ];
     }
 }

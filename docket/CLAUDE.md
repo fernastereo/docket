@@ -35,3 +35,21 @@ tenant de pruebas compartido y en una transacción que se revierte por test;
 bases físicas de tests se llaman `tenanttest_<uuid>`; si una corrida se
 interrumpe, `make test-clean`. Para probar provisioning o aislamiento NO se usa
 el trait: ver `tests/Feature/Tenancy/DatabaseIsolationTest.php`.
+
+## Frontend
+
+Vue 3 + TypeScript + Tailwind 4, en `resources/js/`. Diseño, tokens, componentes
+y patrones: **`docs/diseno-ui.md`** (leerlo antes de tocar una pantalla).
+Reglas que no se rompen:
+
+- Los componentes usan **tokens semánticos** (`bg-primary`, `text-muted-foreground`…),
+  nunca colores de paleta sueltos: así funcionan en claro y oscuro.
+- Componentes base en `components/ui/` (Reka UI); uno nuevo se copia de un
+  patrón existente. No usar la CLI de shadcn-vue con Node < 22.15.
+- CSP estricta (`SecurityHeaders`): nada de `style="…"` ni scripts en línea sin
+  nonce.
+- Se compila con el Node de tu máquina, no en el contenedor: `make front`,
+  `make front-watch`, `make front-check` (typecheck + Vitest).
+- Un `beforeEach` de Vitest con función flecha sin llaves que devuelve un mock
+  (p. ej. `() => api.mockReset()`) lo ejecuta como limpieza: usar llaves.
+
