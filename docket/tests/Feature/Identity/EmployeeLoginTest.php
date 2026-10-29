@@ -91,6 +91,7 @@ test('an employee with a role that does not require MFA signs in with the passwo
     employeeLogin()->assertOk()
         ->assertJsonPath('data.email', 'ana@curaduria.test')
         ->assertJsonPath('data.roles', ['architect'])
+        ->assertJsonPath('data.role_labels', [EmployeeRole::Architect->label()])
         ->assertJsonPath('data.mfa_required', false)
         ->assertJsonPath('data.mfa_verified', true);
 

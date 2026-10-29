@@ -1,20 +1,9 @@
-export interface PlatformUser {
-    id: string;
-    name: string;
-    email: string;
-    /** El usuario ya activó su app de autenticación. */
-    mfa_enabled: boolean;
-    /** Esta sesión ya pasó el segundo factor (sin eso el panel responde 403). */
-    mfa_verified: boolean;
-}
+import type { AuthUser, MfaSetup } from '@/features/auth/types';
 
-export interface MfaSetup {
-    /** Clave en base32 para teclearla si no se puede escanear el QR. */
-    secret: string;
-    uri: string;
-    /** Imagen SVG en data: URI. */
-    qr: string;
-}
+export type { MfaSetup };
+
+/** Usuario de plataforma: la MFA siempre es obligatoria. */
+export type PlatformUser = AuthUser;
 
 export type TenantStatus = 'provisioning' | 'failed' | 'demo' | 'active' | 'suspended' | 'terminated';
 

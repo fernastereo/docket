@@ -240,16 +240,21 @@ tablas de `spatie/laravel-permission` en la base de cada curaduría
 `EmployeeRole` con 12 roles, `CreateEmployee`, `SeedEmployeeRoles`). Al
 provisionar se siembran los roles y, con `--admin-name/--admin-email`, se crea
 el primer administrador sin contraseña (queda pendiente de invitación).
-**Paso 2, login del empleado** (2026-10-29, en curso, backend): `POST
+**Paso 2, login del empleado** (2026-10-29, en curso): `POST
 /api/employee/{login,logout,mfa/*}` y `GET /api/employee/me` en el subdominio de
 la curaduría (guard `employee`, tenancy por dominio), sesión de 30 min / 12 h,
 bloqueo tras 5 fallos, y la misma MFA que plataforma (`app/Support/Mfa/`):
 obligatoria para curador y admin, opcional para el resto pero exigida si la
 activaron (`RequireEmployeeMfa`). Una cuenta suspendida o fuera de vigencia
 pierde la sesión en la siguiente petición. Hasta que exista la invitación, la
-contraseña se fija con `employees:set-password <subdominio> <email>`.
-**Falta** (en este orden): pantallas de login y MFA del empleado, invitación por
-correo para fijar la contraseña y el alta del primer admin desde el panel,
+contraseña se fija con `employees:set-password <subdominio> <email>`. En el
+frontend, el servidor le dice a la SPA si está en el dominio central o en una
+curaduría (`data-context` de `#app`) y solo existen las rutas de ese contexto:
+`/login`, `/mfa` e inicio en la curaduría; `/platform/*` en el central. Las
+pantallas de login y MFA son componentes compartidos
+(`features/auth/components/`) y el store de sesión sale de una fábrica
+(`defineAuthStore`).
+**Falta** (en este orden): invitación por correo para fijar la contraseña y el alta del primer admin desde el panel,
 restablecer contraseña y reiniciar MFA de un empleado (lo hace su admin),
 solicitantes.
 
