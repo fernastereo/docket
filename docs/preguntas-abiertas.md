@@ -93,7 +93,10 @@ Lista viva. Al resolverse, mover la decisión a un ADR.
       usuarios de plataforma** (login, contraseña, rate limit, sesión, MFA TOTP
       con recovery codes — 2026-10-25); falta regenerar recovery codes desde
       la UI, WebAuthn, backoff progresivo antes del bloqueo, sesiones en Redis con
-      revocación, y los dominios de empleado y solicitante.
+      revocación (y con prefijo por curaduría: hoy las claves de sesión no lo
+      llevan; activarlo exige que la ruta del CSRF también inicialice la
+      tenancy) y el dominio de solicitante. El empleado tiene login y MFA en
+      el backend desde el 2026-10-29; faltan sus pantallas.
       Corresponde implementarlo en el bloque de identidad/auth (ver orden en
       `CLAUDE.md`).
 

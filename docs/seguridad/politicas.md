@@ -82,6 +82,13 @@ bloquean el segundo paso, y la sesión con solo contraseña no llega a ninguna
 ruta del panel (`RequirePlatformMfa`, 403). Un usuario sin MFA solo puede
 activarla; si pierde el teléfono y los códigos, `php artisan
 platform:reset-mfa <email>` (consola del servidor, no hay flujo en la app).
+**Empleados** (2026-10-29, solo backend): login en el subdominio de la
+curaduría con Argon2id, sesión de 30 min / 12 h, bloqueo tras 5 fallos en 15
+min por (curaduría + email + IP) y MFA con el mismo servicio que plataforma:
+obligatoria para curador y admin (sin MFA solo pueden activarla), opcional para
+el resto pero exigida en cada login una vez activada. La suspensión o el fin de
+vigencia de una cuenta cortan la sesión abierta en la siguiente petición. Las
+sesiones de Redis todavía no llevan prefijo por curaduría.
 **Pendiente**: regenerar recovery codes desde la interfaz, WebAuthn/passkeys
 (TOTP no resiste phishing en tiempo real), sesiones respaldadas en Redis con
 "cerrar sesión en todos los dispositivos", y todo lo de empleados y
