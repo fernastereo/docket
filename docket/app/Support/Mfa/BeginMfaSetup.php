@@ -2,27 +2,26 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Actions;
+namespace App\Support\Mfa;
 
-use App\Platform\Mfa\PlatformMfa;
-use App\Platform\Models\PlatformUser;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 
 /**
  * Primer paso de la activación de MFA: genera un secreto TOTP nuevo y lo guarda
  * (cifrado) SIN activarlo. Solo se activa al confirmarlo con un código
- * (ConfirmPlatformMfa). Repetirlo antes de confirmar reemplaza el secreto.
+ * (ConfirmMfa). Repetirlo antes de confirmar reemplaza el secreto.
  */
-final class BeginPlatformMfaSetup
+final class BeginMfaSetup
 {
-    public function __construct(private readonly PlatformMfa $mfa) {}
+    public function __construct(private readonly Mfa $mfa) {}
 
     /**
      * @return array{secret: string, uri: string, qr: string}
      *
      * @throws ValidationException si el usuario ya tiene MFA activa
      */
-    public function handle(PlatformUser $user): array
+    public function handle(Model&MfaSubject $user): array
     {
         if ($user->hasMfaEnabled()) {
             throw ValidationException::withMessages(['mfa' => __('Two-factor authentication is already enabled.')]);

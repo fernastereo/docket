@@ -190,7 +190,7 @@ test('the second step locks after too many failures, even with the right code af
     $user = PlatformUser::factory()->withMfa()->create();
     loginWith($user);
 
-    foreach (range(1, (int) config('platform.mfa.max_attempts')) as $ignored) {
+    foreach (range(1, (int) config('mfa.max_attempts')) as $ignored) {
         $this->postJson(mfaUrl('/mfa/verify'), ['code' => '000000'])->assertUnprocessable();
     }
 
@@ -234,7 +234,7 @@ test('the user resource and the model never expose the secret or the recovery co
 });
 
 test('the authenticator entry carries the issuer, so environments can be told apart', function () {
-    config(['platform.mfa.issuer' => 'CuraduriAPP (staging)']);
+    config(['mfa.issuer' => 'CuraduriAPP (staging)']);
     loginWith(PlatformUser::factory()->create());
 
     $uri = $this->postJson(mfaUrl('/mfa/setup'))->json('data.uri');
