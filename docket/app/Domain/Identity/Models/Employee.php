@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Identity\Models;
 
 use App\Domain\Identity\Enums\EmployeeStatus;
+use App\Support\Mfa\MfaSubject;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -28,10 +29,15 @@ use Spatie\Permission\Traits\HasRoles;
  * @property EmployeeStatus $status
  * @property Carbon $valid_from
  * @property Carbon|null $valid_until
+ * @property Carbon|null $last_login_at
+ * @property string|null $mfa_secret
+ * @property Carbon|null $mfa_confirmed_at
+ * @property int|null $mfa_last_used_timestamp
+ * @property list<string>|null $mfa_recovery_codes HMAC de cada código, no el código
  */
 #[Fillable(['name', 'email', 'password', 'valid_from', 'valid_until'])]
-#[Hidden(['password'])]
-class Employee extends Authenticatable
+#[Hidden(['password', 'mfa_secret', 'mfa_recovery_codes'])]
+class Employee extends Authenticatable implements MfaSubject
 {
     use HasRoles, HasUuids;
 
@@ -48,7 +54,27 @@ class Employee extends Authenticatable
             'status' => EmployeeStatus::class,
             'valid_from' => 'date',
             'valid_until' => 'date',
+            'last_login_at' => 'datetime',
+            'mfa_secret' => 'encrypted',
+            'mfa_confirmed_at' => 'datetime',
+            'mfa_last_used_timestamp' => 'integer',
+            'mfa_recovery_codes' => 'array',
         ];
+    }
+
+    public function hasMfaEnabled(): bool
+    {
+        return $this->mfa_secret !== null && $this->mfa_confirmed_at !== null;
+    }
+
+    public function mfaAccountName(): string
+    {
+        return $this->email;
+    }
+
+    public function mfaThrottleKey(): string
+    {
+        return 'employee-mfa|'.$this->id;
     }
 
     /** El email se compara siempre en minúsculas: un solo formato en la base. */

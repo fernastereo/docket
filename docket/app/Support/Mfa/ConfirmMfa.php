@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Actions;
+namespace App\Support\Mfa;
 
-use App\Platform\Mfa\PlatformMfa;
-use App\Platform\Models\PlatformUser;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Validation\ValidationException;
 
@@ -14,9 +13,9 @@ use Illuminate\Validation\ValidationException;
  * válidos con el secreto. Recién ahí MFA queda activa y se emiten los códigos
  * de recuperación (devueltos una sola vez).
  */
-final class ConfirmPlatformMfa
+final class ConfirmMfa
 {
-    public function __construct(private readonly PlatformMfa $mfa) {}
+    public function __construct(private readonly Mfa $mfa) {}
 
     /**
      * @return list<string> códigos de recuperación en claro
@@ -24,9 +23,9 @@ final class ConfirmPlatformMfa
      * @throws ValidationException código inválido, o no hay activación en curso / ya está activa
      * @throws ThrottleRequestsException demasiados intentos
      */
-    public function handle(PlatformUser $user, string $code): array
+    public function handle(Model&MfaSubject $user, string $code): array
     {
-        if ($user->hasMfaEnabled() || $user->mfa_secret === null) {
+        if ($user->hasMfaEnabled() || $user->getAttribute('mfa_secret') === null) {
             throw ValidationException::withMessages(['mfa' => __('There is no pending two-factor setup.')]);
         }
 
