@@ -240,9 +240,18 @@ tablas de `spatie/laravel-permission` en la base de cada curaduría
 `EmployeeRole` con 12 roles, `CreateEmployee`, `SeedEmployeeRoles`). Al
 provisionar se siembran los roles y, con `--admin-name/--admin-email`, se crea
 el primer administrador sin contraseña (queda pendiente de invitación).
-**Falta** (en este orden): login/sesión/MFA del empleado (curador y admin con
-MFA obligatoria), invitación por correo para fijar la contraseña y el alta del
-primer admin desde el panel, solicitantes.
+**Paso 2, login del empleado** (2026-10-29, en curso, backend): `POST
+/api/employee/{login,logout,mfa/*}` y `GET /api/employee/me` en el subdominio de
+la curaduría (guard `employee`, tenancy por dominio), sesión de 30 min / 12 h,
+bloqueo tras 5 fallos, y la misma MFA que plataforma (`app/Support/Mfa/`):
+obligatoria para curador y admin, opcional para el resto pero exigida si la
+activaron (`RequireEmployeeMfa`). Una cuenta suspendida o fuera de vigencia
+pierde la sesión en la siguiente petición. Hasta que exista la invitación, la
+contraseña se fija con `employees:set-password <subdominio> <email>`.
+**Falta** (en este orden): pantallas de login y MFA del empleado, invitación por
+correo para fijar la contraseña y el alta del primer admin desde el panel,
+restablecer contraseña y reiniciar MFA de un empleado (lo hace su admin),
+solicitantes.
 
 **Panel de plataforma, primera rebanada vertical** (2026-10-18, en curso): se
 puede probar desde el navegador. `GET/POST /api/platform/tenants`

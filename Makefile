@@ -12,7 +12,7 @@ DB      := docker exec docket-local-db-1 psql -U docket -d docket_central
 
 .DEFAULT_GOAL := help
 .PHONY: help up up-build stop down ps logs shell migrate db-test-create \
-        test test-clean lint fix stan check tenant tenant-delete tenants tenant-dbs psql \
+        test test-clean lint fix stan check tenant employee-password tenant-delete tenants tenant-dbs psql \
         front-install front front-watch test-front front-check
 
 help: ## Lista los comandos disponibles
@@ -101,6 +101,10 @@ tenant: ## Alta de curaduría: make tenant NAME="Curaduría Urbana 1" SUB=cu1 [A
 	@test -n "$(NAME)" -a -n "$(SUB)" || { echo 'Uso: make tenant NAME="Curaduría Urbana 1" SUB=cu1 [ACTIVE=1]'; exit 1; }
 	$(APP) php artisan tenants:provision "$(NAME)" "$(SUB)" $(if $(ACTIVE),--active) $(if $(ADMIN_EMAIL),--admin-name="$(ADMIN_NAME)" --admin-email="$(ADMIN_EMAIL)")
 	@echo "Recuerda: /etc/hosts no admite comodines -> 127.0.0.1 $(shell echo $(SUB) | tr A-Z a-z).docket.test"
+
+employee-password: ## Fija la contraseña de un empleado: make employee-password SUB=cu1 EMAIL=ana@cu1.co
+	@test -n "$(SUB)" -a -n "$(EMAIL)" || { echo 'Uso: make employee-password SUB=cu1 EMAIL=ana@cu1.co'; exit 1; }
+	$(APP) php artisan employees:set-password "$(SUB)" "$(EMAIL)"
 
 tenant-delete: ## Borra una curaduría Y su base física: make tenant-delete ID=<uuid>
 	@test -n "$(ID)" || { echo 'Uso: make tenant-delete ID=<uuid>  (ids con: make tenants)'; exit 1; }

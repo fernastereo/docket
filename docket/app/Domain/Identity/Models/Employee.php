@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Identity\Models;
 
+use App\Domain\Identity\Enums\EmployeeRole;
 use App\Domain\Identity\Enums\EmployeeStatus;
 use App\Support\Mfa\MfaSubject;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -60,6 +61,17 @@ class Employee extends Authenticatable implements MfaSubject
             'mfa_last_used_timestamp' => 'integer',
             'mfa_recovery_codes' => 'array',
         ];
+    }
+
+    /** Alguno de sus roles exige MFA (curador, admin): ADR-017, politicas.md §2. */
+    public function mustUseMfa(): bool
+    {
+        $roles = array_map(
+            fn (EmployeeRole $role) => $role->value,
+            array_filter(EmployeeRole::cases(), fn (EmployeeRole $role) => $role->requiresMfa()),
+        );
+
+        return $this->hasAnyRole($roles);
     }
 
     public function hasMfaEnabled(): bool
