@@ -254,9 +254,17 @@ curaduría (`data-context` de `#app`) y solo existen las rutas de ese contexto:
 pantallas de login y MFA son componentes compartidos
 (`features/auth/components/`) y el store de sesión sale de una fábrica
 (`defineAuthStore`).
-**Falta** (en este orden): invitación por correo para fijar la contraseña y el alta del primer admin desde el panel,
-restablecer contraseña y reiniciar MFA de un empleado (lo hace su admin),
-solicitantes.
+**Paso 3, invitación por correo, backend** (2026-10-30, en curso):
+`InviteEmployee` crea un token de un solo uso (solo se guarda su hash, vence a
+los 7 días) y envía el correo por la cola (`EmployeeInvitationMail`, cifrado);
+el enlace `https://<curaduría>/invitation/<token>` lo atiende
+`GET/POST /api/employee/invitation/{token}[/accept]` (público, 404 uniforme).
+Al dar de alta una curaduría con admin se le invita solo cuando el tenant ya
+está operable; `employees:invite <subdominio> <email>` reenvía. Mientras
+`MAIL_MAILER=log` (local y staging) el correo sale al log del worker. **Falta**
+(en este orden): la pantalla del enlace y el alta del primer admin desde el
+panel, configurar Brevo (SMTP) para correo real, restablecer contraseña y
+reiniciar MFA de un empleado (lo hace su admin), solicitantes.
 
 **Panel de plataforma, primera rebanada vertical** (2026-10-18, en curso): se
 puede probar desde el navegador. `GET/POST /api/platform/tenants`

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Platform\Actions;
 
 use App\Domain\Identity\Actions\CreateEmployee;
+use App\Domain\Identity\Actions\InviteEmployee;
 use App\Domain\Identity\Actions\SeedEmployeeRoles;
 use App\Domain\Identity\DataTransferObjects\CreateEmployeeData;
 use App\Domain\Identity\Enums\EmployeeRole;
+use App\Domain\Identity\Models\Employee;
 use App\Platform\Data\ProvisionTenantData;
 use App\Platform\Enums\TenantStatus;
 use App\Platform\Exceptions\TenantProvisioningFailed;
@@ -63,6 +65,8 @@ final class ProvisionTenant
             'provisioned_at' => now(),
         ]);
 
+        $this->inviteAdmin($tenant, $data);
+
         return $tenant;
     }
 
@@ -114,6 +118,34 @@ final class ProvisionTenant
                     email: $data->adminEmail,
                     roles: [EmployeeRole::Admin],
                 ));
+            }
+        });
+    }
+
+    /**
+     * Envía la invitación al primer administrador, ya con el tenant operable
+     * (un enlace de un alta que luego falla quedaría apuntando a la nada). Un
+     * fallo del envío no tumba el alta: el tenant ya existe y la invitación se
+     * reenvía con `employees:invite`.
+     */
+    private function inviteAdmin(Tenant $tenant, ProvisionTenantData $data): void
+    {
+        if ($data->adminEmail === null) {
+            return;
+        }
+
+        // El try va DENTRO de run(): si la excepción saliera de él, stancl no
+        // cerraría el contexto del tenant y su base quedaría con una conexión abierta.
+        $tenant->run(function () use ($tenant, $data): void {
+            try {
+                $admin = Employee::query()->where('email', mb_strtolower(trim((string) $data->adminEmail)))->firstOrFail();
+
+                app(InviteEmployee::class)->handle($admin);
+            } catch (Throwable $e) {
+                Log::warning('No se pudo enviar la invitación al primer administrador', [
+                    'tenant_id' => $tenant->getTenantKey(),
+                    'exception' => $e,
+                ]);
             }
         });
     }

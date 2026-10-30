@@ -42,6 +42,19 @@ class Tenant extends BaseTenant implements TenantWithDatabase
      *
      * @return array<int, string>
      */
+    /**
+     * URL absoluta de esta curaduría (su primer dominio), p. ej. para los
+     * enlaces de los correos. Siempre https; en local lleva el puerto de
+     * PLATFORM_TENANT_URL_PORT.
+     */
+    public function url(string $path = '/'): string
+    {
+        $domain = $this->domains()->orderBy('created_at')->firstOrFail()->domain;
+        $port = config('platform.tenant_url_port');
+
+        return 'https://'.$domain.($port ? ':'.$port : '').'/'.ltrim($path, '/');
+    }
+
     public static function getCustomColumns(): array
     {
         return [

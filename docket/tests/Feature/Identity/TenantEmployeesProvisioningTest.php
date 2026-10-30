@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use App\Domain\Identity\Enums\EmployeeRole;
+use App\Domain\Identity\Mail\EmployeeInvitationMail;
 use App\Domain\Identity\Models\Employee;
 use App\Platform\Actions\ProvisionTenant;
 use App\Platform\Data\ProvisionTenantData;
 use App\Platform\Models\Tenant;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
@@ -33,6 +35,34 @@ test('provisioning with a first admin creates it without a password and with the
     expect($admin->email)->toBe('ana@cuconadmin.co')
         ->and($admin->password)->toBeNull()
         ->and($admin->roles->pluck('name')->all())->toBe([EmployeeRole::Admin->value]);
+});
+
+test('the first admin is invited by email once the curaduría is ready', function () {
+    Mail::fake();
+
+    app(ProvisionTenant::class)->handle(new ProvisionTenantData(
+        name: 'Curaduría Invitada',
+        subdomain: 'cuinvitada',
+        adminName: 'Ana Pérez',
+        adminEmail: 'ana@cuinvitada.co',
+    ));
+
+    Mail::assertQueued(EmployeeInvitationMail::class, fn (EmployeeInvitationMail $mail) => $mail->hasTo('ana@cuinvitada.co')
+        && str_contains($mail->url, 'cuinvitada.docket.test/invitation/'));
+});
+
+test('a failure sending the invitation does not undo the provisioning', function () {
+    Mail::shouldReceive('to')->andThrow(new RuntimeException('Brevo is down'));
+
+    $tenant = app(ProvisionTenant::class)->handle(new ProvisionTenantData(
+        name: 'Curaduría Sin Correo',
+        subdomain: 'cusincorreo',
+        adminName: 'Ana Pérez',
+        adminEmail: 'ana@cusincorreo.co',
+    ));
+
+    expect($tenant->status->value)->toBe('demo')
+        ->and($tenant->run(fn () => Employee::query()->count()))->toBe(1);
 });
 
 test('provisioning without an admin still seeds the roles and creates no employee', function () {

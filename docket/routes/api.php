@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Employee\AuthController as EmployeeAuthController;
+use App\Http\Controllers\Employee\InvitationController;
 use App\Http\Controllers\Employee\MfaController as EmployeeMfaController;
 use App\Http\Controllers\Platform\AuthController as PlatformAuthController;
 use App\Http\Controllers\Platform\MfaController;
@@ -88,6 +89,13 @@ foreach (config('tenancy.central_domains', []) as $domain) {
 Route::middleware([InitializeTenancyByDomain::class, PreventAccessFromCentralDomains::class])
     ->prefix('employee')->name('employee.')->group(function () {
         Route::post('/login', [EmployeeAuthController::class, 'login'])->name('login');
+
+        // Enlace de la invitación (públicas; el token es la credencial). Con
+        // límite por IP aunque un token de 64 caracteres no se adivine.
+        Route::middleware('throttle:20,1')->prefix('invitation/{token}')->name('invitation.')->group(function () {
+            Route::get('/', [InvitationController::class, 'show'])->name('show');
+            Route::post('/accept', [InvitationController::class, 'accept'])->name('accept');
+        });
 
         Route::middleware(['auth:employee', EnforceEmployeeSessionLimits::class])->group(function () {
             Route::post('/logout', [EmployeeAuthController::class, 'logout'])->name('logout');
