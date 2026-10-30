@@ -11,7 +11,7 @@ APP     := $(COMPOSE) exec app
 DB      := docker exec docket-local-db-1 psql -U docket -d docket_central
 
 .DEFAULT_GOAL := help
-.PHONY: help up up-build stop down ps logs shell migrate db-test-create \
+.PHONY: help up up-build recreate stop down ps logs shell migrate db-test-create \
         test test-clean lint fix stan check tenant employee-password tenant-delete tenants tenant-dbs psql \
         front-install front front-watch test-front front-check
 
@@ -25,6 +25,9 @@ up: ## Levanta el stack local (sin reconstruir imágenes)
 
 up-build: ## Levanta el stack local reconstruyendo imágenes (tras cambiar Dockerfile o dependencias)
 	$(COMPOSE) up -d --build
+
+recreate: ## Recrea app, worker y sched para que lean un local.env cambiado (conserva los datos)
+	$(COMPOSE) up -d --force-recreate app worker sched
 
 stop: ## Detiene los contenedores (conserva los datos)
 	$(COMPOSE) stop

@@ -10,6 +10,10 @@ return [
     // local: docket.test · dev: staging.curaduria.app · prod: curaduria.app
     'tenant_base_domain' => env('PLATFORM_TENANT_BASE_DOMAIN', 'docket.test'),
 
+    // Puerto con el que se arman los enlaces a una curaduría (correos). Solo en
+    // local, donde la app se sirve en :8443; en dev y prod se deja vacío.
+    'tenant_url_port' => env('PLATFORM_TENANT_URL_PORT'),
+
     // Subdominios que ninguna curaduría puede tomar (infraestructura, correo,
     // suplantación de la propia plataforma).
     'reserved_subdomains' => [

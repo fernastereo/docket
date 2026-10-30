@@ -19,5 +19,10 @@ return [
         'decay_seconds' => 15 * 60,
     ],
 
+    // Invitación para fijar la contraseña (un solo uso).
+    'invitation' => [
+        'valid_days' => (int) env('EMPLOYEE_INVITATION_VALID_DAYS', 7),
+    ],
+
     'password_min_length' => 12,
 ];

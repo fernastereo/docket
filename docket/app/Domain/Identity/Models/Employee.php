@@ -10,6 +10,7 @@ use App\Support\Mfa\MfaSubject;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Carbon;
 use Spatie\Permission\Traits\HasRoles;
@@ -87,6 +88,12 @@ class Employee extends Authenticatable implements MfaSubject
     public function mfaThrottleKey(): string
     {
         return 'employee-mfa|'.$this->id;
+    }
+
+    /** @return HasMany<EmployeeInvitation, $this> */
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(EmployeeInvitation::class);
     }
 
     /** El email se compara siempre en minúsculas: un solo formato en la base. */
