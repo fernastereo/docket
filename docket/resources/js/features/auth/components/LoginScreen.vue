@@ -3,10 +3,10 @@ import { ref } from 'vue';
 import { CircleAlert, Loader2 } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
 import { ApiError } from '@/api/client';
-import BrandMark from '@/components/layout/BrandMark.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import AuthLayout from '@/features/auth/components/AuthLayout.vue';
 import type { AuthSession } from '@/features/auth/types';
 
 const props = defineProps<{
@@ -50,46 +50,29 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-    <div class="grid min-h-screen lg:grid-cols-2">
-        <aside class="surface-brand hidden flex-col justify-between p-12 text-lav-50 lg:flex">
-            <BrandMark />
-            <div class="max-w-md">
-                <p class="text-3xl leading-tight font-semibold tracking-tight">
-                    Expedientes, plazos y actos administrativos de cada curaduría, en un solo lugar.
-                </p>
-                <p class="mt-4 text-sm text-lav-300">{{ asideNote }}</p>
+    <AuthLayout :aside-note="asideNote">
+        <h1 class="text-2xl font-semibold tracking-tight">Iniciar sesión</h1>
+        <p class="mt-1 text-sm text-muted-foreground">{{ subtitle }}</p>
+
+        <form class="mt-8 space-y-5" @submit.prevent="submit">
+            <div class="space-y-2">
+                <Label for="email">Correo</Label>
+                <Input id="email" v-model="email" type="email" autocomplete="username" required />
             </div>
-        </aside>
-
-        <main class="flex items-center justify-center px-6 py-12">
-            <div class="w-full max-w-sm">
-                <div class="mb-10 lg:hidden">
-                    <BrandMark />
-                </div>
-                <h1 class="text-2xl font-semibold tracking-tight">Iniciar sesión</h1>
-                <p class="mt-1 text-sm text-muted-foreground">{{ subtitle }}</p>
-
-                <form class="mt-8 space-y-5" @submit.prevent="submit">
-                    <div class="space-y-2">
-                        <Label for="email">Correo</Label>
-                        <Input id="email" v-model="email" type="email" autocomplete="username" required />
-                    </div>
-                    <div class="space-y-2">
-                        <Label for="password">Contraseña</Label>
-                        <Input id="password" v-model="password" type="password" autocomplete="current-password" required />
-                    </div>
-
-                    <p v-if="error" role="alert" class="flex items-start gap-2 text-sm text-destructive">
-                        <CircleAlert class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                        {{ error }}
-                    </p>
-
-                    <Button type="submit" class="w-full" :disabled="submitting">
-                        <Loader2 v-if="submitting" class="animate-spin" aria-hidden="true" />
-                        {{ submitting ? 'Entrando…' : 'Entrar' }}
-                    </Button>
-                </form>
+            <div class="space-y-2">
+                <Label for="password">Contraseña</Label>
+                <Input id="password" v-model="password" type="password" autocomplete="current-password" required />
             </div>
-        </main>
-    </div>
+
+            <p v-if="error" role="alert" class="flex items-start gap-2 text-sm text-destructive">
+                <CircleAlert class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                {{ error }}
+            </p>
+
+            <Button type="submit" class="w-full" :disabled="submitting">
+                <Loader2 v-if="submitting" class="animate-spin" aria-hidden="true" />
+                {{ submitting ? 'Entrando…' : 'Entrar' }}
+            </Button>
+        </form>
+    </AuthLayout>
 </template>

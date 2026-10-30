@@ -254,17 +254,28 @@ curaduría (`data-context` de `#app`) y solo existen las rutas de ese contexto:
 pantallas de login y MFA son componentes compartidos
 (`features/auth/components/`) y el store de sesión sale de una fábrica
 (`defineAuthStore`).
-**Paso 3, invitación por correo, backend** (2026-10-30, en curso):
+**Paso 3, invitación por correo** (2026-10-30, en curso):
 `InviteEmployee` crea un token de un solo uso (solo se guarda su hash, vence a
 los 7 días) y envía el correo por la cola (`EmployeeInvitationMail`, cifrado);
 el enlace `https://<curaduría>/invitation/<token>` lo atiende
 `GET/POST /api/employee/invitation/{token}[/accept]` (público, 404 uniforme).
 Al dar de alta una curaduría con admin se le invita solo cuando el tenant ya
 está operable; `employees:invite <subdominio> <email>` reenvía. Mientras
-`MAIL_MAILER=log` (local y staging) el correo sale al log del worker. **Falta**
-(en este orden): la pantalla del enlace y el alta del primer admin desde el
-panel, configurar Brevo (SMTP) para correo real, restablecer contraseña y
-reiniciar MFA de un empleado (lo hace su admin), solicitantes.
+`MAIL_MAILER=log` el correo sale al log del worker (local y staging usan
+Mailtrap por SMTP). La pantalla del enlace es `/invitation/:token` (pública, en
+el contexto de curaduría) y el alta de curaduría del panel ahora **exige** el
+primer administrador (`admin_name`/`admin_email`); el listado muestra ese
+administrador (se lee de la base de cada curaduría, la central no guarda
+empleados) y desde ahí el operador puede enviarle su enlace (invitación, o
+recuperación si ya tiene contraseña; mismo token y misma pantalla
+`/invitation/:token`) o fijarle la contraseña él mismo (decisión del dueño de
+la plataforma; queda en el log quién lo hizo, la MFA del admin se mantiene). La
+contraseña de nadie se puede ver (Argon2id). Falta el "olvidé mi contraseña"
+de autoservicio. Los tests fuerzan
+`MAIL_MAILER=array` y sin puerto en los enlaces, sin depender del `local.env`.
+**Falta** (en este orden): configurar Brevo (SMTP) para correo real,
+restablecer contraseña y reiniciar MFA de un empleado (lo hace su admin),
+solicitantes.
 
 **Panel de plataforma, primera rebanada vertical** (2026-10-18, en curso): se
 puede probar desde el navegador. `GET/POST /api/platform/tenants`

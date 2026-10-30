@@ -7,6 +7,7 @@ use App\Http\Controllers\Employee\InvitationController;
 use App\Http\Controllers\Employee\MfaController as EmployeeMfaController;
 use App\Http\Controllers\Platform\AuthController as PlatformAuthController;
 use App\Http\Controllers\Platform\MfaController;
+use App\Http\Controllers\Platform\TenantAdminController;
 use App\Http\Controllers\Platform\TenantController;
 use App\Http\Middleware\EnforceEmployeeSessionLimits;
 use App\Http\Middleware\EnforcePlatformSessionLimits;
@@ -68,6 +69,12 @@ foreach (config('tenancy.central_domains', []) as $domain) {
             Route::middleware(RequirePlatformMfa::class)->group(function () {
                 Route::get('/tenants', [TenantController::class, 'index'])->name('tenants.index');
                 Route::post('/tenants', [TenantController::class, 'store'])->name('tenants.store');
+                Route::post('/tenants/{tenant}/admin/link', [TenantAdminController::class, 'sendLink'])
+                    ->middleware('throttle:10,1')
+                    ->name('tenants.admin.link');
+                Route::put('/tenants/{tenant}/admin/password', [TenantAdminController::class, 'setPassword'])
+                    ->middleware('throttle:10,1')
+                    ->name('tenants.admin.password');
             });
         });
     });

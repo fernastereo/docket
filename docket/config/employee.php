@@ -20,6 +20,9 @@ return [
     ],
 
     // Invitación para fijar la contraseña (un solo uso).
+    // Enlace de recuperación que envía el panel de plataforma a quien ya tiene contraseña.
+    'password_reset' => ['valid_days' => 2],
+
     'invitation' => [
         'valid_days' => (int) env('EMPLOYEE_INVITATION_VALID_DAYS', 7),
     ],

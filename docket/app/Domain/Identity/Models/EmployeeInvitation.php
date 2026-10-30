@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Invitación de un solo uso para que un empleado fije su contraseña. Solo se
@@ -54,6 +56,27 @@ class EmployeeInvitation extends Model
     public function scopeUsable(Builder $query): void
     {
         $query->whereNull('used_at')->where('expires_at', '>', now());
+    }
+
+    /**
+     * Emite un enlace nuevo para el empleado y devuelve el token en claro (única
+     * vez que existe). Los enlaces anteriores sin usar quedan invalidados.
+     */
+    public static function issueFor(Employee $employee, int $days): string
+    {
+        $token = Str::random(64);
+
+        DB::transaction(function () use ($employee, $token, $days): void {
+            self::query()->where('employee_id', $employee->id)->whereNull('used_at')->delete();
+
+            self::create([
+                'employee_id' => $employee->id,
+                'token_hash' => self::hashToken($token),
+                'expires_at' => now()->addDays($days),
+            ]);
+        });
+
+        return $token;
     }
 
     /** La invitación vigente que corresponde a este token, si existe. */
