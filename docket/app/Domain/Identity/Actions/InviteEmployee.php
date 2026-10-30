@@ -9,9 +9,7 @@ use App\Domain\Identity\Mail\EmployeeInvitationMail;
 use App\Domain\Identity\Models\Employee;
 use App\Domain\Identity\Models\EmployeeInvitation;
 use App\Platform\Models\Tenant;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -40,17 +38,7 @@ final class InviteEmployee
         /** @var Tenant $tenant */
         $tenant = tenant();
         $days = (int) config('employee.invitation.valid_days');
-        $token = Str::random(64);
-
-        DB::transaction(function () use ($employee, $token, $days): void {
-            EmployeeInvitation::query()->where('employee_id', $employee->id)->whereNull('used_at')->delete();
-
-            EmployeeInvitation::create([
-                'employee_id' => $employee->id,
-                'token_hash' => EmployeeInvitation::hashToken($token),
-                'expires_at' => now()->addDays($days),
-            ]);
-        });
+        $token = EmployeeInvitation::issueFor($employee, $days);
 
         Mail::to($employee->email)->queue(new EmployeeInvitationMail(
             employeeName: $employee->name,

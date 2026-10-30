@@ -31,6 +31,10 @@ final class StoreTenantRequest extends FormRequest
             'name' => ['required', 'string'],
             'subdomain' => ['required', 'string'],
             'active' => ['sometimes', 'boolean'],
+            // Toda curaduría nace con su primer administrador: sin él nadie
+            // podría entrar. Longitud y formato los valida la Action.
+            'admin_name' => ['required', 'string'],
+            'admin_email' => ['required', 'string'],
         ];
     }
 
@@ -40,6 +44,8 @@ final class StoreTenantRequest extends FormRequest
             name: trim($this->string('name')->toString()),
             subdomain: mb_strtolower(trim($this->string('subdomain')->toString())),
             status: $this->boolean('active') ? TenantStatus::Active : TenantStatus::Demo,
+            adminName: trim($this->string('admin_name')->toString()),
+            adminEmail: trim($this->string('admin_email')->toString()),
         );
     }
 }

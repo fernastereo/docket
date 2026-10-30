@@ -48,7 +48,14 @@
         <server name="SESSION_DRIVER" value="array" force="true"/>
         <server name="QUEUE_CONNECTION" value="sync" force="true"/>
         <env name="DB_URL" value=""/>
-        <env name="MAIL_MAILER" value="array"/>
+        <!-- Correo y enlaces de las pruebas no dependen del entorno: con el
+             MAIL_MAILER=smtp de un local.env los tests intentarían enviar correo
+             real, y con PLATFORM_TENANT_URL_PORT los enlaces saldrían con puerto.
+             Va también como <server> por la misma razón que DB_DATABASE. -->
+        <env name="MAIL_MAILER" value="array" force="true"/>
+        <server name="MAIL_MAILER" value="array" force="true"/>
+        <env name="PLATFORM_TENANT_URL_PORT" value="" force="true"/>
+        <server name="PLATFORM_TENANT_URL_PORT" value="" force="true"/>
         <env name="QUEUE_CONNECTION" value="sync" force="true"/>
         <env name="SESSION_DRIVER" value="array" force="true"/>
         <env name="PULSE_ENABLED" value="false"/>

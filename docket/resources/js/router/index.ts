@@ -69,6 +69,12 @@ const tenantRoutes: RouteRecordRaw[] = [
         meta: { realm: 'employee', access: 'guest' },
     },
     {
+        // Enlace del correo de invitación; público: la persona aún no tiene contraseña.
+        path: '/invitation/:token',
+        name: 'employee.invitation',
+        component: () => import('@/features/employee/pages/InvitationPage.vue'),
+    },
+    {
         path: '/mfa',
         name: 'employee.mfa',
         component: () => import('@/features/employee/pages/MfaPage.vue'),

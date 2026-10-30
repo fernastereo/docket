@@ -12,12 +12,17 @@ export const useTenantsStore = defineStore('platformTenants', {
         async load(): Promise<void> {
             this.loading = true;
             try {
-                const response = await api<{ data: Tenant[]; meta: { base_domain: string } }>('/platform/tenants');
-                this.items = response.data;
-                this.baseDomain = response.meta.base_domain;
+                await this.refresh();
             } finally {
                 this.loading = false;
             }
+        },
+
+        /** Vuelve a leer la lista sin el estado de carga (la tabla no parpadea). */
+        async refresh(): Promise<void> {
+            const response = await api<{ data: Tenant[]; meta: { base_domain: string } }>('/platform/tenants');
+            this.items = response.data;
+            this.baseDomain = response.meta.base_domain;
         },
 
         /** Lanza ApiError (422 con `errors` por campo, 500 si el alta falló). */
@@ -29,6 +34,24 @@ export const useTenantsStore = defineStore('platformTenants', {
             this.items.unshift(response.data);
 
             return response.data;
+        },
+
+        /**
+         * Envía al administrador su invitación (si no tiene contraseña) o un enlace de
+         * recuperación (si ya la tiene). Lanza ApiError (422: sin administrador, cuenta suspendida…).
+         */
+        async sendAdminLink(id: string): Promise<void> {
+            await api(`/platform/tenants/${id}/admin/link`, { method: 'POST' });
+            await this.refresh();
+        },
+
+        /** Fija la contraseña del administrador. Lanza ApiError (422 con `errors.password`). */
+        async setAdminPassword(id: string, password: string, passwordConfirmation: string): Promise<void> {
+            await api(`/platform/tenants/${id}/admin/password`, {
+                method: 'PUT',
+                body: JSON.stringify({ password, password_confirmation: passwordConfirmation }),
+            });
+            await this.refresh();
         },
     },
 });

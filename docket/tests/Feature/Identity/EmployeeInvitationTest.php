@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 use App\Domain\Identity\Actions\CreateEmployee;
 use App\Domain\Identity\Actions\InviteEmployee;
+use App\Domain\Identity\Actions\SendEmployeePasswordReset;
 use App\Domain\Identity\DataTransferObjects\CreateEmployeeData;
 use App\Domain\Identity\Enums\EmployeeRole;
 use App\Domain\Identity\Enums\EmployeeStatus;
 use App\Domain\Identity\Mail\EmployeeInvitationMail;
+use App\Domain\Identity\Mail\EmployeePasswordResetMail;
 use App\Domain\Identity\Models\Employee;
 use App\Domain\Identity\Models\EmployeeInvitation;
 use Illuminate\Support\Facades\Hash;
@@ -193,4 +195,56 @@ test('the email renders with the name, the curaduría, the link and the expiry',
         ->and($html)->toContain('Curaduría Urbana 1')
         ->and($html)->toContain('https://cu1.curaduria.app/invitation/abc')
         ->and($html)->toContain('7 días');
+});
+
+test('a recovery link lets an employee who has a password choose a new one through the same screen', function () {
+    $employee = pendingEmployee();
+    $employee->forceFill(['password' => 'prueba-prueba-prueba'])->save();
+
+    app(SendEmployeePasswordReset::class)->handle($employee);
+
+    $url = '';
+    Mail::assertQueued(EmployeePasswordResetMail::class, function (EmployeePasswordResetMail $mail) use (&$url) {
+        $url = $mail->url;
+
+        return $mail->hasTo('ana@curaduria.test')
+            && str_starts_with($mail->url, "https://{$this->linkHost}/invitation/")
+            && $mail->validDays === 2;
+    });
+    $token = Str::afterLast($url, '/invitation/');
+    $new = 'contraseña-recuperada-2026';
+
+    // Hasta usar el enlace, la contraseña actual sigue valiendo.
+    expect(Hash::check('prueba-prueba-prueba', $employee->refresh()->password))->toBeTrue();
+
+    $this->postJson(invitationUrl($token, '/accept'), ['password' => $new, 'password_confirmation' => $new])->assertNoContent();
+
+    expect(Hash::check($new, $employee->refresh()->password))->toBeTrue()
+        ->and(EmployeeInvitation::findUsable($token))->toBeNull();
+});
+
+test('a recovery link is for accounts with a password and active, and voids the previous link', function () {
+    $pending = pendingEmployee();
+    $suspended = pendingEmployee(['email' => 'susp@curaduria.test', 'status' => EmployeeStatus::Suspended]);
+    $suspended->forceFill(['password' => 'prueba-prueba-prueba'])->save();
+
+    expect(fn () => app(SendEmployeePasswordReset::class)->handle($pending))->toThrow(ValidationException::class)
+        ->and(fn () => app(SendEmployeePasswordReset::class)->handle($suspended))->toThrow(ValidationException::class);
+    Mail::assertNothingQueued();
+
+    $active = pendingEmployee(['email' => 'act@curaduria.test']);
+    $active->forceFill(['password' => 'prueba-prueba-prueba'])->save();
+    $first = EmployeeInvitation::issueFor($active, 1);
+    app(SendEmployeePasswordReset::class)->handle($active);
+
+    expect(EmployeeInvitation::findUsable($first))->toBeNull();
+});
+
+test('the recovery email renders with the name, the curaduría, the link and the expiry', function () {
+    $html = (new EmployeePasswordResetMail('Ana Pérez', 'Curaduría Urbana 1', 'https://cu1.curaduria.app/invitation/abc', 2))->render();
+
+    expect($html)->toContain('Ana Pérez')
+        ->and($html)->toContain('Curaduría Urbana 1')
+        ->and($html)->toContain('https://cu1.curaduria.app/invitation/abc')
+        ->and($html)->toContain('2 días');
 });

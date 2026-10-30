@@ -90,6 +90,12 @@ class Employee extends Authenticatable implements MfaSubject
         return 'employee-mfa|'.$this->id;
     }
 
+    /** El administrador más antiguo de la curaduría (el primero que se dio de alta). Requiere tenancy. */
+    public static function firstAdmin(): ?self
+    {
+        return self::query()->role(EmployeeRole::Admin->value)->oldest()->first();
+    }
+
     /** @return HasMany<EmployeeInvitation, $this> */
     public function invitations(): HasMany
     {
