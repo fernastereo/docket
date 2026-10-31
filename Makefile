@@ -12,11 +12,11 @@ DB      := docker exec docket-local-db-1 psql -U docket -d docket_central
 
 .DEFAULT_GOAL := help
 .PHONY: help up up-build recreate stop down ps logs shell migrate db-test-create \
-        test test-clean lint fix stan check tenant employee-password tenant-delete tenants tenant-dbs psql \
+        test test-clean lint fix stan check tenant employee-password employee-create employee-reset-mfa tenant-delete tenants tenant-dbs psql \
         front-install front front-watch test-front front-check
 
 help: ## Lista los comandos disponibles
-	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z_-]+:.*## / {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z_-]+:.*## / {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 # ---------- Entorno ----------
 
@@ -108,6 +108,14 @@ tenant: ## Alta de curaduría: make tenant NAME="Curaduría Urbana 1" SUB=cu1 [A
 employee-password: ## Fija la contraseña de un empleado: make employee-password SUB=cu1 EMAIL=ana@cu1.co
 	@test -n "$(SUB)" -a -n "$(EMAIL)" || { echo 'Uso: make employee-password SUB=cu1 EMAIL=ana@cu1.co'; exit 1; }
 	$(APP) php artisan employees:set-password "$(SUB)" "$(EMAIL)"
+
+employee-create: ## Crea un empleado (admin por defecto) y le envía la invitación: make employee-create SUB=cu1 EMAIL=ana@cu1.co NAME="Ana Pérez" [ROLE=architect]
+	@test -n "$(SUB)" -a -n "$(EMAIL)" -a -n "$(NAME)" || { echo 'Uso: make employee-create SUB=cu1 EMAIL=ana@cu1.co NAME="Ana Pérez" [ROLE=architect]'; exit 1; }
+	$(APP) php artisan employees:create "$(SUB)" "$(EMAIL)" --name="$(NAME)" $(if $(ROLE),--role="$(ROLE)") --invite
+
+employee-reset-mfa: ## Reinicia el MFA de un empleado: make employee-reset-mfa SUB=cu1 EMAIL=ana@cu1.co
+	@test -n "$(SUB)" -a -n "$(EMAIL)" || { echo 'Uso: make employee-reset-mfa SUB=cu1 EMAIL=ana@cu1.co'; exit 1; }
+	$(APP) php artisan employees:reset-mfa "$(SUB)" "$(EMAIL)"
 
 tenant-delete: ## Borra una curaduría Y su base física: make tenant-delete ID=<uuid>
 	@test -n "$(ID)" || { echo 'Uso: make tenant-delete ID=<uuid>  (ids con: make tenants)'; exit 1; }
