@@ -29,7 +29,7 @@ afterEach(fn () => $this->tenant->domains()->delete());
 
 test('sets the password of an employee of that curaduría', function () {
     $this->artisan('employees:set-password', ['subdomain' => $this->subdomain, 'email' => 'ANA@curaduria.test'])
-        ->expectsQuestion('Contraseña (12+ caracteres)', 'empleado-prueba-7h2q-Wx91')
+        ->expectsQuestion('Contraseña (mínimo 8 caracteres)', 'empleado-prueba-7h2q-Wx91')
         ->expectsQuestion('Repite la contraseña', 'empleado-prueba-7h2q-Wx91')
         ->expectsOutputToContain('Contraseña fijada')
         ->assertSuccessful();
@@ -41,7 +41,7 @@ test('sets the password of an employee of that curaduría', function () {
 
 test('rejects a password that is too short', function () {
     $this->artisan('employees:set-password', ['subdomain' => $this->subdomain, 'email' => 'ana@curaduria.test'])
-        ->expectsQuestion('Contraseña (12+ caracteres)', 'corta')
+        ->expectsQuestion('Contraseña (mínimo 8 caracteres)', 'corta')
         ->expectsQuestion('Repite la contraseña', 'corta')
         ->assertFailed();
 
@@ -50,7 +50,7 @@ test('rejects a password that is too short', function () {
 
 test('rejects passwords that do not match', function () {
     $this->artisan('employees:set-password', ['subdomain' => $this->subdomain, 'email' => 'ana@curaduria.test'])
-        ->expectsQuestion('Contraseña (12+ caracteres)', 'empleado-prueba-7h2q-Wx91')
+        ->expectsQuestion('Contraseña (mínimo 8 caracteres)', 'empleado-prueba-7h2q-Wx91')
         ->expectsQuestion('Repite la contraseña', 'otra-distinta-1234567')
         ->expectsOutputToContain('no coinciden')
         ->assertFailed();
@@ -64,7 +64,7 @@ test('fails for an unknown curaduría or employee', function () {
         ->assertFailed();
 
     $this->artisan('employees:set-password', ['subdomain' => $this->subdomain, 'email' => 'nadie@curaduria.test'])
-        ->expectsQuestion('Contraseña (12+ caracteres)', 'empleado-prueba-7h2q-Wx91')
+        ->expectsQuestion('Contraseña (mínimo 8 caracteres)', 'empleado-prueba-7h2q-Wx91')
         ->expectsQuestion('Repite la contraseña', 'empleado-prueba-7h2q-Wx91')
         ->expectsOutputToContain('No existe un empleado')
         ->assertFailed();

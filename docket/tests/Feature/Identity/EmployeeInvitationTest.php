@@ -12,6 +12,7 @@ use App\Domain\Identity\Mail\EmployeeInvitationMail;
 use App\Domain\Identity\Mail\EmployeePasswordResetMail;
 use App\Domain\Identity\Models\Employee;
 use App\Domain\Identity\Models\EmployeeInvitation;
+use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -247,4 +248,42 @@ test('the recovery email renders with the name, the curaduría, the link and the
         ->and($html)->toContain('Curaduría Urbana 1')
         ->and($html)->toContain('https://cu1.curaduria.app/invitation/abc')
         ->and($html)->toContain('2 días');
+});
+
+test('the password policy answers in Spanish, with no sample passwords', function (string $password, string $confirmation, string $message) {
+    $token = inviteAndGetToken(pendingEmployee());
+    // Reemplaza el Http::fake del beforeEach (gana el primero registrado): este
+    // test necesita que la contraseña "filtrada" aparezca en la respuesta de HIBP.
+    app()->forgetInstance(HttpFactory::class);
+    Http::clearResolvedInstances();
+    $hash = strtoupper(sha1('contraseña-filtrada'));
+    Http::fake(['api.pwnedpasswords.com/*' => Http::response(substr($hash, 5).':9999', 200)]);
+
+    $response = $this->postJson(invitationUrl($token, '/accept'), ['password' => $password, 'password_confirmation' => $confirmation])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors('password');
+
+    expect($response->json('errors.password.0'))->toBe($message);
+})->with([
+    'too short' => ['corta12', 'corta12', 'La contraseña debe tener al menos 8 caracteres.'],
+    'not confirmed' => ['una-frase-larga', 'otra-frase-larga', 'Las contraseñas no coinciden.'],
+    'leaked' => ['contraseña-filtrada', 'contraseña-filtrada', 'Esa contraseña aparece en filtraciones de datos conocidas. Elige otra.'],
+]);
+
+test('eight characters are enough, and the invitation link works with them', function () {
+    $employee = pendingEmployee();
+    $token = inviteAndGetToken($employee);
+
+    $this->postJson(invitationUrl($token, '/accept'), ['password' => 'a1b2-c3d', 'password_confirmation' => 'a1b2-c3d'])
+        ->assertNoContent();
+
+    expect(Hash::check('a1b2-c3d', $employee->refresh()->password))->toBeTrue();
+});
+
+test('the employee account errors shown to the operator are in Spanish', function () {
+    $withPassword = pendingEmployee();
+    $withPassword->forceFill(['password' => 'prueba-prueba-prueba'])->save();
+
+    expect(fn () => app(InviteEmployee::class)->handle($withPassword))
+        ->toThrow(ValidationException::class, 'Este empleado ya tiene contraseña.');
 });

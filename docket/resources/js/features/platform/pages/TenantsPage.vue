@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
-import { ExternalLink, KeyRound, Landmark, Loader2, Plus, Send } from 'lucide-vue-next';
+import { ExternalLink, Landmark, Loader2, Plus } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { ApiError } from '@/api/client';
 import EmptyState from '@/components/layout/EmptyState.vue';
@@ -12,7 +12,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AdminPasswordDialog from '@/features/platform/components/AdminPasswordDialog.vue';
 import StatusBadge from '@/features/platform/components/StatusBadge.vue';
+import TenantAdminCell from '@/features/platform/components/TenantAdminCell.vue';
+import TenantRowActions from '@/features/platform/components/TenantRowActions.vue';
 import { useTenantsStore } from '@/features/platform/stores/tenants';
 import type { Tenant } from '@/features/platform/types';
 
@@ -26,7 +29,14 @@ const formError = ref('');
 const loadError = ref(false);
 const sending = ref<string | null>(null);
 
-const dateFormat = new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium' });
+const dateFormat = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+
+/** "30 oct 2026": el formato corto de es-CO sobra de "de" y de punto. */
+function formatDate(iso: string): string {
+    const part = (type: string) => dateFormat.formatToParts(new Date(iso)).find((p) => p.type === type)?.value.replace('.', '') ?? '';
+
+    return `${part('day')} ${part('month')} ${part('year')}`;
+}
 
 onMounted(async () => {
     try {
@@ -86,36 +96,8 @@ async function sendLink(tenant: Tenant): Promise<void> {
     }
 }
 
+/** Curaduría cuyo administrador está cambiando de contraseña (diálogo abierto). */
 const passwordTarget = ref<Tenant | null>(null);
-const passwordForm = reactive({ password: '', confirmation: '' });
-const passwordSubmitting = ref(false);
-const passwordErrors = ref<string[]>([]);
-
-function openPassword(tenant: Tenant): void {
-    passwordTarget.value = tenant;
-    passwordForm.password = '';
-    passwordForm.confirmation = '';
-    passwordErrors.value = [];
-}
-
-async function submitPassword(): Promise<void> {
-    if (!passwordTarget.value) return;
-
-    passwordSubmitting.value = true;
-    passwordErrors.value = [];
-    try {
-        await tenants.setAdminPassword(passwordTarget.value.id, passwordForm.password, passwordForm.confirmation);
-        toast.success('Contraseña cambiada', { description: `Ya puede entrar ${passwordTarget.value.admin?.email ?? ''} con la contraseña nueva.` });
-        passwordTarget.value = null;
-    } catch (e) {
-        if (!(e instanceof ApiError)) throw e;
-        passwordErrors.value = Object.values(e.errors ?? {})[0] ?? [e.message];
-    } finally {
-        passwordForm.password = '';
-        passwordForm.confirmation = '';
-        passwordSubmitting.value = false;
-    }
-}
 
 /** Enlace al sitio de la curaduría, conservando el puerto del panel (8443 en local). */
 function tenantUrl(host: string): string {
@@ -159,68 +141,36 @@ function tenantUrl(host: string): string {
 
             <Table v-else>
                 <TableHeader>
-                    <TableRow class="hover:bg-transparent">
-                        <TableHead>Nombre</TableHead>
-                        <TableHead>Dirección</TableHead>
+                    <TableRow class="bg-muted/40 hover:bg-muted/40">
+                        <TableHead class="pl-6">Curaduría</TableHead>
                         <TableHead>Administrador</TableHead>
                         <TableHead>Estado</TableHead>
-                        <TableHead>Creada</TableHead>
+                        <TableHead>Creadasss</TableHead>
+                        <TableHead class="pr-6 text-right"><span class="sr-only">Acciones</span></TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    <TableRow v-for="t in tenants.items" :key="t.id">
-                        <TableCell>
-                            <span class="font-medium">{{ t.name }}</span>
-                            <span v-if="t.failure_reason" class="mt-0.5 block max-w-md truncate text-xs text-destructive">{{ t.failure_reason }}</span>
-                        </TableCell>
-                        <TableCell>
+                    <TableRow v-for="t in tenants.items" :key="t.id" class="last:border-b-0">
+                        <TableCell class="py-4 pl-6">
+                            <span class="block font-medium">{{ t.name }}</span>
                             <a
                                 v-if="t.host"
                                 :href="tenantUrl(t.host)"
                                 target="_blank"
                                 rel="noopener"
-                                class="inline-flex items-center gap-1.5 text-primary underline-offset-4 hover:underline"
+                                class="mt-0.5 inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-action"
                             >
                                 {{ t.host }}
-                                <ExternalLink class="size-3.5" aria-hidden="true" />
+                                <ExternalLink class="size-3" aria-hidden="true" />
                             </a>
-                            <span v-else class="text-muted-foreground">—</span>
+                            <span v-if="t.failure_reason" class="mt-0.5 block max-w-md truncate text-xs text-destructive">{{ t.failure_reason }}</span>
                         </TableCell>
-                        <TableCell>
-                            <div v-if="t.admin" class="space-y-2">
-                                <div class="min-w-0">
-                                    <span class="block truncate">{{ t.admin.name }}</span>
-                                    <span class="block truncate text-xs text-muted-foreground">{{ t.admin.email }}</span>
-                                    <span v-if="t.admin.invitation_pending" class="text-xs font-medium text-warning">Invitación pendiente</span>
-                                </div>
-                                <div class="flex flex-wrap gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        :disabled="!['demo', 'active'].includes(t.status)"
-                                        :aria-label="`Cambiar la contraseña de ${t.admin.email}`"
-                                        @click="openPassword(t)"
-                                    >
-                                        <KeyRound aria-hidden="true" />
-                                        Cambiar contraseña
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        :disabled="sending === t.id"
-                                        :aria-label="`${t.admin.invitation_pending ? 'Reenviar invitación' : 'Enviar enlace de recuperación'} a ${t.admin.email}`"
-                                        @click="sendLink(t)"
-                                    >
-                                        <Loader2 v-if="sending === t.id" class="animate-spin" aria-hidden="true" />
-                                        <Send v-else aria-hidden="true" />
-                                        {{ t.admin.invitation_pending ? 'Reenviar invitación' : 'Enviar enlace' }}
-                                    </Button>
-                                </div>
-                            </div>
-                            <span v-else class="text-muted-foreground">—</span>
+                        <TableCell class="py-4"><TenantAdminCell :admin="t.admin" /></TableCell>
+                        <TableCell class="py-4"><StatusBadge :status="t.status" /></TableCell>
+                        <TableCell class="py-4 text-muted-foreground tabular-nums">{{ formatDate(t.created_at) }}</TableCell>
+                        <TableCell class="py-4 pr-6">
+                            <TenantRowActions :tenant="t" :sending="sending === t.id" @send-link="sendLink(t)" @change-password="passwordTarget = t" />
                         </TableCell>
-                        <TableCell><StatusBadge :status="t.status" /></TableCell>
-                        <TableCell class="text-muted-foreground tabular-nums">{{ dateFormat.format(new Date(t.created_at)) }}</TableCell>
                     </TableRow>
                 </TableBody>
             </Table>
@@ -296,38 +246,6 @@ function tenantUrl(host: string): string {
             </DialogContent>
         </Dialog>
 
-        <Dialog :open="passwordTarget !== null" @update:open="(open) => !open && (passwordTarget = null)">
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Cambiar contraseña</DialogTitle>
-                    <DialogDescription>
-                        Para {{ passwordTarget?.admin?.name }} ({{ passwordTarget?.admin?.email }}). No se envía por correo: se la comunicas tú. Su verificación en dos pasos
-                        se mantiene.
-                    </DialogDescription>
-                </DialogHeader>
-
-                <form class="space-y-5" @submit.prevent="submitPassword">
-                    <div class="space-y-2">
-                        <Label for="admin_password">Contraseña nueva</Label>
-                        <Input id="admin_password" v-model="passwordForm.password" type="password" autocomplete="new-password" required minlength="12" />
-                        <p class="text-xs text-muted-foreground">Al menos 12 caracteres.</p>
-                    </div>
-                    <div class="space-y-2">
-                        <Label for="admin_password_confirmation">Repite la contraseña</Label>
-                        <Input id="admin_password_confirmation" v-model="passwordForm.confirmation" type="password" autocomplete="new-password" required />
-                    </div>
-
-                    <p v-for="m in passwordErrors" :key="m" role="alert" class="text-sm text-destructive">{{ m }}</p>
-
-                    <DialogFooter>
-                        <Button type="button" variant="outline" @click="passwordTarget = null">Cancelar</Button>
-                        <Button type="submit" :disabled="passwordSubmitting">
-                            <Loader2 v-if="passwordSubmitting" class="animate-spin" aria-hidden="true" />
-                            {{ passwordSubmitting ? 'Guardando…' : 'Cambiar contraseña' }}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+        <AdminPasswordDialog :tenant="passwordTarget" @close="passwordTarget = null" />
     </div>
 </template>

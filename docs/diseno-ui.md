@@ -59,7 +59,7 @@ navegador). Cifras en tablas con `tabular-nums`.
 `components/ui/` son componentes **propios en el repo**, escritos al estilo de
 shadcn-vue sobre **Reka UI** (accesibles: foco, teclado, ARIA) y los tokens de
 arriba: Button, Input, Label, Card, Table, Badge, Dialog, DropdownMenu,
-Separator, Skeleton, Sheet y el aviso (`vue-sonner`). Para agregar uno nuevo se
+Separator, Skeleton, Sheet, Tooltip, IconButton, InitialsAvatar y el aviso (`vue-sonner`). Para agregar uno nuevo se
 copia ese patrón; **no usar la CLI de shadcn-vue con Node < 22.15** (falla al
 arrancar, ya probado).
 
@@ -107,12 +107,29 @@ Piezas compartidas (`components/layout/`):
 - `EmptyState`: icono, título, explicación y la acción para salir del vacío.
 - `BrandMark`: marca (ícono + nombre) de la barra y de las pantallas de acceso.
 
+**Acciones con icono** (regla de toda la interfaz): una acción clicable que sea
+solo un icono —cambiar contraseña, enviar enlace, sugerir, mostrar/ocultar— se
+dibuja como **icono suelto, estilo enlace**: 18 px, sin borde ni fondo, con la
+mano al pasar el ratón y cambio de color a turquesa (`text-muted-foreground` →
+`text-action`; el token `--action` es `turq-700` en claro y `turq-400` en
+oscuro), más un tooltip que dice qué hace. El hover tiene que notarse: un cambio
+de tono (lavanda → turquesa), no de luminosidad. Se usa el componente `IconButton`, nunca un
+`Button` con borde. Los botones con borde o relleno quedan para acciones con
+texto (guardar, cancelar, crear). Deshabilitado, el tooltip explica por qué.
+Todos los `<button>` llevan `cursor-pointer` (Tailwind 4 los deja con la flecha).
+
 Patrones:
 
 - **Crear algo** → diálogo con el formulario; al guardar, el diálogo se cierra
   y aparece un aviso. Si falla, el diálogo sigue abierto con el error en el campo.
 - **Listas** → tabla dentro de una tarjeta, con esqueletos mientras carga, un
   estado vacío que invita a crear, y un mensaje si no se pudo cargar.
+- **Tablas de personas y entidades** → una fila por entidad, con su dirección o
+  dato secundario como segunda línea del nombre (no una columna aparte), las
+  personas con avatar de iniciales (`InitialsAvatar`), el estado como `Badge`
+  con punto, las fechas como "30 oct 2026" y las acciones de la fila al final,
+  alineadas a la derecha y como iconos. Cabecera con fondo tenue y filas con
+  hover.
 - **Estados de negocio** → un `Badge` por estado con un componente propio
   (p. ej. `StatusBadge`), no colores sueltos.
 

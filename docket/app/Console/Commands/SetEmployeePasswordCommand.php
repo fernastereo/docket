@@ -39,7 +39,7 @@ final class SetEmployeePasswordCommand extends Command
         }
 
         $email = mb_strtolower(trim((string) $this->argument('email')));
-        $password = (string) $this->secret('Contraseña (12+ caracteres)');
+        $password = (string) $this->secret('Contraseña (mínimo '.config('employee.password_min_length').' caracteres)');
 
         if ($password !== (string) $this->secret('Repite la contraseña')) {
             $this->error('Las contraseñas no coinciden.');

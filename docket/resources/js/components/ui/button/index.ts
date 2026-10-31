@@ -4,7 +4,7 @@ import { cva } from 'class-variance-authority';
 export { default as Button } from './Button.vue';
 
 export const buttonVariants = cva(
-    "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+    "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
     {
         variants: {
             variant: {
@@ -14,6 +14,8 @@ export const buttonVariants = cva(
                 secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/70',
                 ghost: 'hover:bg-secondary hover:text-secondary-foreground',
                 link: 'text-primary underline-offset-4 hover:underline',
+                // Acción solo con icono (estilo enlace): sin borde ni fondo, cambia de color al pasar el ratón.
+                action: "text-muted-foreground hover:text-action [&_svg:not([class*='size-'])]:size-[18px]",
             },
             size: {
                 default: 'h-9 px-4 py-2',

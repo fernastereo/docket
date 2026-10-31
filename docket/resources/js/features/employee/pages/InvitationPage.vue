@@ -4,10 +4,9 @@ import { CircleAlert, CircleCheck, Loader2 } from 'lucide-vue-next';
 import { RouterLink, useRoute } from 'vue-router';
 import { api, ApiError } from '@/api/client';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import AuthLayout from '@/features/auth/components/AuthLayout.vue';
+import PasswordFields from '@/features/auth/components/PasswordFields.vue';
 import type { InvitationInfo } from '@/features/employee/types';
 import { readAppContext } from '@/lib/appContext';
 
@@ -84,15 +83,7 @@ async function submit(): Promise<void> {
             </p>
 
             <form class="mt-8 space-y-5" @submit.prevent="submit">
-                <div class="space-y-2">
-                    <Label for="password">Contraseña</Label>
-                    <Input id="password" v-model="password" type="password" autocomplete="new-password" required minlength="12" />
-                    <p class="text-xs text-muted-foreground">Al menos 12 caracteres. Una frase larga es mejor que una palabra con símbolos.</p>
-                </div>
-                <div class="space-y-2">
-                    <Label for="password_confirmation">Repite la contraseña</Label>
-                    <Input id="password_confirmation" v-model="passwordConfirmation" type="password" autocomplete="new-password" required />
-                </div>
+                <PasswordFields id="password" v-model:password="password" v-model:confirmation="passwordConfirmation" />
 
                 <p v-if="error" role="alert" class="flex items-start gap-2 text-sm text-destructive">
                     <CircleAlert class="mt-0.5 size-4 shrink-0" aria-hidden="true" />

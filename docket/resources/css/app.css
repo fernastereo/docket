@@ -89,6 +89,7 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-success: var(--success);
+  --color-action: var(--action);
   --color-info: var(--info);
   --color-warning: var(--warning);
   --color-border: var(--border);
@@ -119,6 +120,8 @@
   --muted-foreground: var(--color-lav-600);
   --accent: var(--color-turq-500);
   --accent-foreground: var(--color-indigo-x-950);
+  /* Color de las acciones con icono al pasar el ratón: turquesa oscuro, legible sobre blanco. */
+  --action: var(--color-turq-700);
   --destructive: oklch(0.55 0.22 27);
   --success: var(--color-turq-700);
   --info: var(--color-peri-600);
@@ -152,6 +155,7 @@
   --muted-foreground: var(--color-lav-300);
   --accent: var(--color-turq-500);
   --accent-foreground: var(--color-indigo-x-950);
+  --action: var(--color-turq-400);
   --destructive: oklch(0.7 0.19 22);
   --success: var(--color-turq-400);
   --info: var(--color-peri-300);
