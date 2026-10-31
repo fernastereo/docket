@@ -1,0 +1,8 @@
+{
+    "This employee already has a password.": "Este empleado ya tiene contraseña.",
+    "This employee has no password yet; send an invitation instead.": "Este empleado todavía no tiene contraseña: envíale una invitación.",
+    "This employee account is not active.": "La cuenta de este empleado no está activa.",
+    "This invitation is no longer valid.": "Este enlace ya no es válido.",
+    "This curaduría is not ready for that yet.": "La curaduría todavía no está lista para eso.",
+    "This curaduría has no administrator.": "La curaduría no tiene administrador."
+}

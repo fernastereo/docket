@@ -20,5 +20,8 @@ const current = computed(() => presentation[props.status]);
 </script>
 
 <template>
-    <Badge :variant="current.variant">{{ current.label }}</Badge>
+    <Badge :variant="current.variant" class="gap-1.5">
+        <span class="size-1.5 rounded-full bg-current" aria-hidden="true" />
+        {{ current.label }}
+    </Badge>
 </template>

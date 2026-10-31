@@ -19,6 +19,6 @@
     @vite(['resources/css/app.css', 'resources/js/app.ts'])
 </head>
 <body>
-    <div id="app"></div>
+    <div id="app" data-context="{{ $context }}" @if ($tenantName) data-tenant-name="{{ $tenantName }}" @endif></div>
 </body>
 </html>

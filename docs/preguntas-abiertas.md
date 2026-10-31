@@ -93,7 +93,10 @@ Lista viva. Al resolverse, mover la decisión a un ADR.
       usuarios de plataforma** (login, contraseña, rate limit, sesión, MFA TOTP
       con recovery codes — 2026-10-25); falta regenerar recovery codes desde
       la UI, WebAuthn, backoff progresivo antes del bloqueo, sesiones en Redis con
-      revocación, y los dominios de empleado y solicitante.
+      revocación (y con prefijo por curaduría: hoy las claves de sesión no lo
+      llevan; activarlo exige que la ruta del CSRF también inicialice la
+      tenancy) y el dominio de solicitante. El empleado tiene login y MFA en
+      el backend desde el 2026-10-29; faltan sus pantallas.
       Corresponde implementarlo en el bloque de identidad/auth (ver orden en
       `CLAUDE.md`).
 
@@ -252,3 +255,23 @@ Base y razones en `docs/diseno-ui.md`.
 - [ ] Observabilidad: logs etiquetados por tenant, monitoreo del cluster.
       Enganchado con ADR-017 capa 8 (alertas de señal de seguridad, monitor de
       uptime externo, Sentry con PII depurada).
+- [ ] Landing: unificar herramientas con `docket/` (2026-10-26). La landing
+      usa **bun** (`bun.lock`, `bunfig.toml`, Dependabot `bun`) porque venía
+      así de Lovable; el resto del repo usa npm. Pasarla a npm: borrar
+      `bun.lock` y `bunfig.toml`, generar `package-lock.json` (las versiones se
+      resuelven de nuevo: reprobar `dev`, `build` y el formulario de leads),
+      cambiar el ecosistema en `.github/dependabot.yml`. Rama aparte, **no**
+      mezclar con un despliegue de la landing.
+- [ ] Landing: no hay CI ni documentación del deploy. Hoy es manual desde la
+      máquina del desarrollador: `bun install` (respeta el lockfile), `npm run
+      dev` para probar, `npm run build` y `npx wrangler deploy --config
+      .output/server/wrangler.json` (el Custom Domain de `curaduria.app` ya
+      apunta al Worker; no hay repo conectado en Cloudflare, el merge a `main`
+      no publica). `vite preview` no sirve (la build es de Workers: probar con
+      `wrangler dev -c .output/server/wrangler.json`). Falta un paso de lint y
+      build de la landing en `ci.yml` (Dependabot mergeó 38+ actualizaciones sin
+      que nada las compilara) y pasar este procedimiento a `docs/dev-guide.md`.
+- [ ] Landing: error en la consola del navegador (`Uncaught SyntaxError:
+      Unexpected token ':' (at (index):1:1837)`, 2026-10-26). No impide que la
+      página funcione ni que el formulario envíe; revisar el script en línea
+      del HTML generado (columna 1837) en una rama aparte.

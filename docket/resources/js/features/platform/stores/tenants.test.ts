@@ -15,6 +15,7 @@ const tenant = (overrides: Partial<Tenant> = {}): Tenant => ({
     name: 'Curaduría Uno',
     host: 'cuuno.docket.test',
     status: 'demo',
+    admin: null,
     failure_reason: null,
     provisioned_at: null,
     created_at: '2026-10-18T10:00:00+00:00',
@@ -52,12 +53,14 @@ describe('tenants store', () => {
         tenants.items = [tenant({ id: 'old' })];
         api.mockResolvedValue({ data: tenant({ id: 'new' }) });
 
-        await tenants.create({ name: 'Curaduría Dos', subdomain: 'cudos', active: false });
+        const input = { name: 'Curaduría Dos', subdomain: 'cudos', active: false, admin_name: 'Ana Pérez', admin_email: 'ana@cudos.test' };
+
+        await tenants.create(input);
 
         expect(tenants.items.map((t) => t.id)).toEqual(['new', 'old']);
         expect(api).toHaveBeenCalledWith('/platform/tenants', {
             method: 'POST',
-            body: JSON.stringify({ name: 'Curaduría Dos', subdomain: 'cudos', active: false }),
+            body: JSON.stringify(input),
         });
     });
 
@@ -66,8 +69,31 @@ describe('tenants store', () => {
         tenants.items = [tenant()];
         api.mockRejectedValue(new ApiError('Invalid', 422, { subdomain: ['Taken'] }));
 
-        await expect(tenants.create({ name: 'X', subdomain: 'cuuno', active: false })).rejects.toBeInstanceOf(ApiError);
+        await expect(tenants.create({ name: 'X', subdomain: 'cuuno', active: false, admin_name: 'Ana Pérez', admin_email: 'ana@cuuno.test' })).rejects.toBeInstanceOf(ApiError);
 
         expect(tenants.items).toHaveLength(1);
+    });
+
+    it('sends the admin link and refreshes the list without the loading state', async () => {
+        const tenants = useTenantsStore();
+        api.mockResolvedValueOnce(undefined).mockResolvedValueOnce({ data: [tenant({ id: 'abc' })], meta: { base_domain: 'docket.test' } });
+
+        await tenants.sendAdminLink('abc');
+
+        expect(api).toHaveBeenNthCalledWith(1, '/platform/tenants/abc/admin/link', { method: 'POST' });
+        expect(tenants.items.map((t) => t.id)).toEqual(['abc']);
+        expect(tenants.loading).toBe(false);
+    });
+
+    it('sets the admin password through the tenant endpoint', async () => {
+        const tenants = useTenantsStore();
+        api.mockResolvedValueOnce(undefined).mockResolvedValueOnce({ data: [], meta: { base_domain: 'docket.test' } });
+
+        await tenants.setAdminPassword('abc', 'una-frase-larga-y-segura', 'una-frase-larga-y-segura');
+
+        expect(api).toHaveBeenNthCalledWith(1, '/platform/tenants/abc/admin/password', {
+            method: 'PUT',
+            body: JSON.stringify({ password: 'una-frase-larga-y-segura', password_confirmation: 'una-frase-larga-y-segura' }),
+        });
     });
 });

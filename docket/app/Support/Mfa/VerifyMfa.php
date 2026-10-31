@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Actions;
+namespace App\Support\Mfa;
 
-use App\Platform\Mfa\PlatformMfa;
-use App\Platform\Models\PlatformUser;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Validation\ValidationException;
 
@@ -14,15 +13,15 @@ use Illuminate\Validation\ValidationException;
  * recuperación (de un solo uso). No toca la sesión: marcarla como verificada
  * es del controlador.
  */
-final class VerifyPlatformMfa
+final class VerifyMfa
 {
-    public function __construct(private readonly PlatformMfa $mfa) {}
+    public function __construct(private readonly Mfa $mfa) {}
 
     /**
      * @throws ValidationException código inválido, o el usuario no tiene MFA activa
      * @throws ThrottleRequestsException demasiados intentos
      */
-    public function handle(PlatformUser $user, string $code): void
+    public function handle(Model&MfaSubject $user, string $code): void
     {
         if (! $user->hasMfaEnabled()) {
             throw ValidationException::withMessages(['mfa' => __('Two-factor authentication is not enabled.')]);

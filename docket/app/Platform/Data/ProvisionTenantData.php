@@ -17,5 +17,8 @@ final readonly class ProvisionTenantData
         public string $name,
         public string $subdomain,
         public TenantStatus $status = TenantStatus::Demo,
+        /** Primer administrador de la curaduría (nombre y correo juntos, o ninguno). */
+        public ?string $adminName = null,
+        public ?string $adminEmail = null,
     ) {}
 }

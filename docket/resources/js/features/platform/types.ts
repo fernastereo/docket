@@ -1,28 +1,26 @@
-export interface PlatformUser {
-    id: string;
-    name: string;
-    email: string;
-    /** El usuario ya activó su app de autenticación. */
-    mfa_enabled: boolean;
-    /** Esta sesión ya pasó el segundo factor (sin eso el panel responde 403). */
-    mfa_verified: boolean;
-}
+import type { AuthUser, MfaSetup } from '@/features/auth/types';
 
-export interface MfaSetup {
-    /** Clave en base32 para teclearla si no se puede escanear el QR. */
-    secret: string;
-    uri: string;
-    /** Imagen SVG en data: URI. */
-    qr: string;
-}
+export type { MfaSetup };
+
+/** Usuario de plataforma: la MFA siempre es obligatoria. */
+export type PlatformUser = AuthUser;
 
 export type TenantStatus = 'provisioning' | 'failed' | 'demo' | 'active' | 'suspended' | 'terminated';
+
+/** Administrador de una curaduría; `invitation_pending`: aún no eligió contraseña. */
+export interface TenantAdmin {
+    name: string;
+    email: string;
+    invitation_pending: boolean;
+}
 
 export interface Tenant {
     id: string;
     name: string;
     host: string | null;
     status: TenantStatus;
+    /** Null si la curaduría no está operable o no tiene administrador. */
+    admin: TenantAdmin | null;
     failure_reason: string | null;
     provisioned_at: string | null;
     created_at: string;
@@ -32,4 +30,7 @@ export interface NewTenant {
     name: string;
     subdomain: string;
     active: boolean;
+    /** Primer administrador de la curaduría: recibe la invitación por correo. */
+    admin_name: string;
+    admin_email: string;
 }

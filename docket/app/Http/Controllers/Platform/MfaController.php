@@ -7,12 +7,12 @@ namespace App\Http\Controllers\Platform;
 use App\Http\Controllers\Controller;
 use App\Http\Middleware\EnforcePlatformSessionLimits;
 use App\Http\Middleware\RequirePlatformMfa;
-use App\Http\Requests\Platform\PlatformMfaCodeRequest;
+use App\Http\Requests\MfaCodeRequest;
 use App\Http\Resources\Platform\PlatformUserResource;
-use App\Platform\Actions\BeginPlatformMfaSetup;
-use App\Platform\Actions\ConfirmPlatformMfa;
-use App\Platform\Actions\VerifyPlatformMfa;
 use App\Platform\Models\PlatformUser;
+use App\Support\Mfa\BeginMfaSetup;
+use App\Support\Mfa\ConfirmMfa;
+use App\Support\Mfa\VerifyMfa;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -24,13 +24,13 @@ use Illuminate\Http\Request;
 final class MfaController extends Controller
 {
     /** Genera el secreto y devuelve QR + clave manual. No activa nada todavía. */
-    public function setup(Request $request, BeginPlatformMfaSetup $begin): JsonResponse
+    public function setup(Request $request, BeginMfaSetup $begin): JsonResponse
     {
         return response()->json(['data' => $begin->handle($this->user($request))]);
     }
 
     /** Activa MFA con un primer código válido y entrega los códigos de recuperación (una sola vez). */
-    public function confirm(PlatformMfaCodeRequest $request, ConfirmPlatformMfa $confirm): JsonResponse
+    public function confirm(MfaCodeRequest $request, ConfirmMfa $confirm): JsonResponse
     {
         $codes = $confirm->handle($this->user($request), $request->code());
 
@@ -45,7 +45,7 @@ final class MfaController extends Controller
     }
 
     /** Segundo paso del login. */
-    public function verify(PlatformMfaCodeRequest $request, VerifyPlatformMfa $verify): PlatformUserResource
+    public function verify(MfaCodeRequest $request, VerifyMfa $verify): PlatformUserResource
     {
         $verify->handle($this->user($request), $request->code());
 

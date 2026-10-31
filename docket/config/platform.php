@@ -10,6 +10,10 @@ return [
     // local: docket.test · dev: staging.curaduria.app · prod: curaduria.app
     'tenant_base_domain' => env('PLATFORM_TENANT_BASE_DOMAIN', 'docket.test'),
 
+    // Puerto con el que se arman los enlaces a una curaduría (correos). Solo en
+    // local, donde la app se sirve en :8443; en dev y prod se deja vacío.
+    'tenant_url_port' => env('PLATFORM_TENANT_URL_PORT'),
+
     // Subdominios que ninguna curaduría puede tomar (infraestructura, correo,
     // suplantación de la propia plataforma).
     'reserved_subdomains' => [
@@ -31,21 +35,6 @@ return [
 
     // Login: bloqueo temporal tras N fallos en la ventana (politicas.md §2).
     'login' => [
-        'max_attempts' => 5,
-        'decay_seconds' => 15 * 60,
-    ],
-
-    // MFA (TOTP, RFC 6238). Obligatoria para plataforma (ADR-017). `window` =
-    // pasos de 30 s que se aceptan a cada lado por desfase de reloj.
-    'mfa' => [
-        // Nombre que muestra la app de autenticación. Fuera de producción lleva
-        // el ambiente entre paréntesis, para no confundir las entradas de
-        // local, staging y producción. PLATFORM_MFA_ISSUER lo fuerza si hace falta.
-        'issuer' => env('PLATFORM_MFA_ISSUER', env('APP_ENV') === 'production'
-            ? 'CuraduriAPP'
-            : 'CuraduriAPP ('.env('APP_ENV', 'local').')'),
-        'window' => 1,
-        'recovery_codes' => 8,
         'max_attempts' => 5,
         'decay_seconds' => 15 * 60,
     ],

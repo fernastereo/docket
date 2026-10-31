@@ -12,19 +12,31 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AdminPasswordDialog from '@/features/platform/components/AdminPasswordDialog.vue';
 import StatusBadge from '@/features/platform/components/StatusBadge.vue';
+import TenantAdminCell from '@/features/platform/components/TenantAdminCell.vue';
+import TenantRowActions from '@/features/platform/components/TenantRowActions.vue';
 import { useTenantsStore } from '@/features/platform/stores/tenants';
+import type { Tenant } from '@/features/platform/types';
 
 const tenants = useTenantsStore();
 
 const dialogOpen = ref(false);
-const form = reactive({ name: '', subdomain: '', active: false });
+const form = reactive({ name: '', subdomain: '', active: false, admin_name: '', admin_email: '' });
 const submitting = ref(false);
 const fieldErrors = ref<Record<string, string[]>>({});
 const formError = ref('');
 const loadError = ref(false);
+const sending = ref<string | null>(null);
 
-const dateFormat = new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium' });
+const dateFormat = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+
+/** "30 oct 2026": el formato corto de es-CO sobra de "de" y de punto. */
+function formatDate(iso: string): string {
+    const part = (type: string) => dateFormat.formatToParts(new Date(iso)).find((p) => p.type === type)?.value.replace('.', '') ?? '';
+
+    return `${part('day')} ${part('month')} ${part('year')}`;
+}
 
 onMounted(async () => {
     try {
@@ -48,10 +60,12 @@ async function submit(): Promise<void> {
     try {
         const tenant = await tenants.create({ ...form });
         dialogOpen.value = false;
-        toast.success('Curaduría creada', { description: tenant.host ?? tenant.name });
+        toast.success('Curaduría creada', { description: `La invitación llegará a ${form.admin_email}.` });
         form.name = '';
         form.subdomain = '';
         form.active = false;
+        form.admin_name = '';
+        form.admin_email = '';
     } catch (e) {
         if (!(e instanceof ApiError)) throw e;
         if (e.status === 422) {
@@ -63,6 +77,27 @@ async function submit(): Promise<void> {
         submitting.value = false;
     }
 }
+
+async function sendLink(tenant: Tenant): Promise<void> {
+    if (!tenant.admin) return;
+
+    const pending = tenant.admin.invitation_pending;
+    sending.value = tenant.id;
+    try {
+        await tenants.sendAdminLink(tenant.id);
+        toast.success(pending ? 'Invitación enviada' : 'Enlace de recuperación enviado', {
+            description: `Llegará a ${tenant.admin.email}. El enlace anterior ya no sirve.`,
+        });
+    } catch (e) {
+        if (!(e instanceof ApiError)) throw e;
+        toast.error('No se pudo enviar el enlace', { description: Object.values(e.errors ?? {})[0]?.[0] ?? e.message });
+    } finally {
+        sending.value = null;
+    }
+}
+
+/** Curaduría cuyo administrador está cambiando de contraseña (diálogo abierto). */
+const passwordTarget = ref<Tenant | null>(null);
 
 /** Enlace al sitio de la curaduría, conservando el puerto del panel (8443 en local). */
 function tenantUrl(host: string): string {
@@ -106,41 +141,43 @@ function tenantUrl(host: string): string {
 
             <Table v-else>
                 <TableHeader>
-                    <TableRow class="hover:bg-transparent">
-                        <TableHead>Nombre</TableHead>
-                        <TableHead>Dirección</TableHead>
+                    <TableRow class="bg-muted/40 hover:bg-muted/40">
+                        <TableHead class="pl-6">Curaduría</TableHead>
+                        <TableHead>Administrador</TableHead>
                         <TableHead>Estado</TableHead>
-                        <TableHead>Creada</TableHead>
+                        <TableHead>Creadasss</TableHead>
+                        <TableHead class="pr-6 text-right"><span class="sr-only">Acciones</span></TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    <TableRow v-for="t in tenants.items" :key="t.id">
-                        <TableCell>
-                            <span class="font-medium">{{ t.name }}</span>
-                            <span v-if="t.failure_reason" class="mt-0.5 block max-w-md truncate text-xs text-destructive">{{ t.failure_reason }}</span>
-                        </TableCell>
-                        <TableCell>
+                    <TableRow v-for="t in tenants.items" :key="t.id" class="last:border-b-0">
+                        <TableCell class="py-4 pl-6">
+                            <span class="block font-medium">{{ t.name }}</span>
                             <a
                                 v-if="t.host"
                                 :href="tenantUrl(t.host)"
                                 target="_blank"
                                 rel="noopener"
-                                class="inline-flex items-center gap-1.5 text-primary underline-offset-4 hover:underline"
+                                class="mt-0.5 inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-action"
                             >
                                 {{ t.host }}
-                                <ExternalLink class="size-3.5" aria-hidden="true" />
+                                <ExternalLink class="size-3" aria-hidden="true" />
                             </a>
-                            <span v-else class="text-muted-foreground">—</span>
+                            <span v-if="t.failure_reason" class="mt-0.5 block max-w-md truncate text-xs text-destructive">{{ t.failure_reason }}</span>
                         </TableCell>
-                        <TableCell><StatusBadge :status="t.status" /></TableCell>
-                        <TableCell class="text-muted-foreground tabular-nums">{{ dateFormat.format(new Date(t.created_at)) }}</TableCell>
+                        <TableCell class="py-4"><TenantAdminCell :admin="t.admin" /></TableCell>
+                        <TableCell class="py-4"><StatusBadge :status="t.status" /></TableCell>
+                        <TableCell class="py-4 text-muted-foreground tabular-nums">{{ formatDate(t.created_at) }}</TableCell>
+                        <TableCell class="py-4 pr-6">
+                            <TenantRowActions :tenant="t" :sending="sending === t.id" @send-link="sendLink(t)" @change-password="passwordTarget = t" />
+                        </TableCell>
                     </TableRow>
                 </TableBody>
             </Table>
         </Card>
 
         <Dialog v-model:open="dialogOpen">
-            <DialogContent>
+            <DialogContent class="max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Nueva curaduría</DialogTitle>
                     <DialogDescription>Se crea su base de datos y su dirección web. Puede tardar unos segundos.</DialogDescription>
@@ -169,6 +206,28 @@ function tenantUrl(host: string): string {
                         <p v-for="m in fieldErrors.subdomain" :key="m" class="text-sm text-destructive">{{ m }}</p>
                     </div>
 
+                    <fieldset class="space-y-4 rounded-lg border p-4">
+                        <legend class="px-1 text-sm font-medium">Primer administrador</legend>
+                        <p class="text-sm text-muted-foreground">Recibe un correo para elegir su contraseña y crear al resto del personal.</p>
+                        <div class="space-y-2">
+                            <Label for="admin_name">Nombre</Label>
+                            <Input id="admin_name" v-model="form.admin_name" required autocomplete="off" :aria-invalid="!!fieldErrors.admin_name" />
+                            <p v-for="m in fieldErrors.admin_name" :key="m" class="text-sm text-destructive">{{ m }}</p>
+                        </div>
+                        <div class="space-y-2">
+                            <Label for="admin_email">Correo</Label>
+                            <Input
+                                id="admin_email"
+                                v-model="form.admin_email"
+                                type="email"
+                                required
+                                autocomplete="off"
+                                :aria-invalid="!!fieldErrors.admin_email"
+                            />
+                            <p v-for="m in fieldErrors.admin_email" :key="m" class="text-sm text-destructive">{{ m }}</p>
+                        </div>
+                    </fieldset>
+
                     <label class="flex items-center gap-2.5 text-sm">
                         <input v-model="form.active" type="checkbox" class="size-4 rounded border-input accent-primary" />
                         Crearla como activa (si no, queda en demo)
@@ -186,5 +245,7 @@ function tenantUrl(host: string): string {
                 </form>
             </DialogContent>
         </Dialog>
+
+        <AdminPasswordDialog :tenant="passwordTarget" @close="passwordTarget = null" />
     </div>
 </template>

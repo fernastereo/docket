@@ -139,6 +139,9 @@ make front-check     # typecheck + Vitest, como el CI
 Tras `make front` basta recargar `https://docket.test:8443`; no hace falta
 reiniciar contenedores. Panel de plataforma: `/platform/login` (el usuario se
 crea con `make shell` → `php artisan platform:create-user "<nombre>" <email>`).
+Un empleado de una curaduría entra por el subdominio de ésta; su contraseña,
+mientras no exista la invitación por correo, se fija con `make employee-password
+SUB=<subdominio> EMAIL=<correo>`.
 No se usa el servidor de desarrollo de Vite (`npm run dev`): la app se sirve
 por HTTPS con Caddy y Vite en `http://localhost:5173` sería contenido mixto.
 

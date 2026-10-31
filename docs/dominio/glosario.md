@@ -45,6 +45,7 @@ un término entra aquí y al código, no se cambia.
 | Empresa (persona jurídica) | Company (?) | Tipo de identidad central desde el amendment 2026-08-27 a ADR-005; ver `docs/dominio/solicitante.md`. |
 | Identidad central | Central identity | Cuenta única en la base central. Solo solicitantes y usuarios de plataforma (ADR-005 amendment 2026-09-02). |
 | Cuenta de empleado | Employee account | Credencial + rol(es) + vigencia + estado, **local a la base del tenant**, gobernada por la curaduría. Absorbe la membresía (ADR-005 amendment 2026-09-02). |
+| Rol de empleado | Employee role | Valores en `EmployeeRole`: Curador `curator` · Administrador `admin` (cuentas y configuración de la curaduría) · Gerencia `manager` (visión operativa, no gobierna cuentas) · Arquitecto / Ingeniero / Abogado `architect` / `engineer` / `lawyer`, cada uno con su **auxiliar** (`*_assistant`) · Ventanilla `front_desk` · Archivo `records` · Contabilidad `accounting`. Los permisos de cada rol se definen con el flujo del trámite. |
 | Membresía | Membership | Vínculo persona↔curaduría con rol y vigencia. Para empleados va dentro de la cuenta de empleado; para ciudadanos referencia la identidad central. |
 | Nomenclatura (dirección) | Address numbering (?) | Componente de la dirección de un predio. |
 | Catálogo autogestionado | Self-managed catalog (?) | Patrón para barrio/comuna/localidad/corregimiento en Predio: se selecciona si existe, se crea si no. |

@@ -15,6 +15,14 @@ class SpaController extends Controller
 {
     public function __invoke(): View
     {
-        return view('app');
+        // El mismo shell sirve al panel de plataforma (dominio central) y a
+        // cada curaduría (su subdominio): la SPA decide qué pantallas existen
+        // según el contexto que el servidor le informa.
+        $tenant = tenant();
+
+        return view('app', [
+            'context' => $tenant === null ? 'platform' : 'tenant',
+            'tenantName' => $tenant?->name,
+        ]);
     }
 }

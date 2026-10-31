@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Platform\Models;
 
+use App\Support\Mfa\MfaSubject;
 use Database\Factories\PlatformUserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -31,7 +32,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'mfa_secret', 'mfa_recovery_codes'])]
 #[UseFactory(PlatformUserFactory::class)]
-class PlatformUser extends Authenticatable
+class PlatformUser extends Authenticatable implements MfaSubject
 {
     /** @use HasFactory<PlatformUserFactory> */
     use HasFactory, HasUuids;
@@ -53,6 +54,16 @@ class PlatformUser extends Authenticatable
     public function hasMfaEnabled(): bool
     {
         return $this->mfa_secret !== null && $this->mfa_confirmed_at !== null;
+    }
+
+    public function mfaAccountName(): string
+    {
+        return $this->email;
+    }
+
+    public function mfaThrottleKey(): string
+    {
+        return 'platform-mfa|'.$this->id;
     }
 
     /** El email se compara siempre en minúsculas: un solo formato en la base. */

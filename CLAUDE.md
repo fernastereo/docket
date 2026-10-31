@@ -232,7 +232,53 @@ y 8 h absolutas. Alta con `php artisan platform:create-user "<nombre>"
 8 recovery codes, obligatoria): la contraseña sola no abre el panel
 (`RequirePlatformMfa`); la pantalla `/platform/mfa` activa o verifica el
 segundo factor; `platform:reset-mfa <email>` lo reinicia desde consola.
-**Falta**: sesiones en Redis y revocación, empleados del tenant, solicitantes.
+**Falta**: sesiones en Redis y revocación, solicitantes.
+
+**Cuentas de empleado y RBAC, paso 1** (2026-10-26, en curso): `employees` y las
+tablas de `spatie/laravel-permission` en la base de cada curaduría
+(`database/migrations/tenant/`), dominio en `app/Domain/Identity/` (`Employee`,
+`EmployeeRole` con 12 roles, `CreateEmployee`, `SeedEmployeeRoles`). Al
+provisionar se siembran los roles y, con `--admin-name/--admin-email`, se crea
+el primer administrador sin contraseña (queda pendiente de invitación).
+**Paso 2, login del empleado** (2026-10-29, en curso): `POST
+/api/employee/{login,logout,mfa/*}` y `GET /api/employee/me` en el subdominio de
+la curaduría (guard `employee`, tenancy por dominio), sesión de 30 min / 12 h,
+bloqueo tras 5 fallos, y la misma MFA que plataforma (`app/Support/Mfa/`):
+obligatoria para curador y admin, opcional para el resto pero exigida si la
+activaron (`RequireEmployeeMfa`). Una cuenta suspendida o fuera de vigencia
+pierde la sesión en la siguiente petición. Hasta que exista la invitación, la
+contraseña se fija con `employees:set-password <subdominio> <email>`. En el
+frontend, el servidor le dice a la SPA si está en el dominio central o en una
+curaduría (`data-context` de `#app`) y solo existen las rutas de ese contexto:
+`/login`, `/mfa` e inicio en la curaduría; `/platform/*` en el central. Las
+pantallas de login y MFA son componentes compartidos
+(`features/auth/components/`) y el store de sesión sale de una fábrica
+(`defineAuthStore`).
+**Paso 3, invitación por correo** (2026-10-30, en curso):
+`InviteEmployee` crea un token de un solo uso (solo se guarda su hash, vence a
+los 7 días) y envía el correo por la cola (`EmployeeInvitationMail`, cifrado);
+el enlace `https://<curaduría>/invitation/<token>` lo atiende
+`GET/POST /api/employee/invitation/{token}[/accept]` (público, 404 uniforme).
+Al dar de alta una curaduría con admin se le invita solo cuando el tenant ya
+está operable; `employees:invite <subdominio> <email>` reenvía. Mientras
+`MAIL_MAILER=log` el correo sale al log del worker (local y staging usan
+Mailtrap por SMTP). La pantalla del enlace es `/invitation/:token` (pública, en
+el contexto de curaduría) y el alta de curaduría del panel ahora **exige** el
+primer administrador (`admin_name`/`admin_email`); el listado muestra ese
+administrador (se lee de la base de cada curaduría, la central no guarda
+empleados) y desde ahí el operador puede enviarle su enlace (invitación, o
+recuperación si ya tiene contraseña; mismo token y misma pantalla
+`/invitation/:token`) o fijarle la contraseña él mismo (decisión del dueño de
+la plataforma; queda en el log quién lo hizo, la MFA del admin se mantiene). La
+contraseña de nadie se puede ver (Argon2id). La de los empleados exige 8
+caracteres más el chequeo de filtraciones (la de plataforma sigue en 12; ADR-017
+amendment 2026-10-31), con mensajes en español (`lang/es/`) y un botón de
+sugerir contraseña (`lib/password.ts`, `PasswordFields.vue`). Falta el "olvidé mi contraseña"
+de autoservicio. Los tests fuerzan
+`MAIL_MAILER=array` y sin puerto en los enlaces, sin depender del `local.env`.
+**Falta** (en este orden): configurar Brevo (SMTP) para correo real,
+restablecer contraseña y reiniciar MFA de un empleado (lo hace su admin),
+solicitantes.
 
 **Panel de plataforma, primera rebanada vertical** (2026-10-18, en curso): se
 puede probar desde el navegador. `GET/POST /api/platform/tenants`
