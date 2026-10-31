@@ -13,6 +13,8 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AdminPasswordDialog from '@/features/platform/components/AdminPasswordDialog.vue';
+import AssignAdminDialog from '@/features/platform/components/AssignAdminDialog.vue';
+import ResetAdminMfaDialog from '@/features/platform/components/ResetAdminMfaDialog.vue';
 import StatusBadge from '@/features/platform/components/StatusBadge.vue';
 import TenantAdminCell from '@/features/platform/components/TenantAdminCell.vue';
 import TenantRowActions from '@/features/platform/components/TenantRowActions.vue';
@@ -96,8 +98,10 @@ async function sendLink(tenant: Tenant): Promise<void> {
     }
 }
 
-/** Curaduría cuyo administrador está cambiando de contraseña (diálogo abierto). */
+/** Curaduría sobre la que hay un diálogo abierto: cambio de contraseña, asignar administrador o reiniciar su MFA. */
 const passwordTarget = ref<Tenant | null>(null);
+const assignTarget = ref<Tenant | null>(null);
+const mfaTarget = ref<Tenant | null>(null);
 
 /** Enlace al sitio de la curaduría, conservando el puerto del panel (8443 en local). */
 function tenantUrl(host: string): string {
@@ -145,7 +149,7 @@ function tenantUrl(host: string): string {
                         <TableHead class="pl-6">Curaduría</TableHead>
                         <TableHead>Administrador</TableHead>
                         <TableHead>Estado</TableHead>
-                        <TableHead>Creadasss</TableHead>
+                        <TableHead>Creada</TableHead>
                         <TableHead class="pr-6 text-right"><span class="sr-only">Acciones</span></TableHead>
                     </TableRow>
                 </TableHeader>
@@ -169,7 +173,14 @@ function tenantUrl(host: string): string {
                         <TableCell class="py-4"><StatusBadge :status="t.status" /></TableCell>
                         <TableCell class="py-4 text-muted-foreground tabular-nums">{{ formatDate(t.created_at) }}</TableCell>
                         <TableCell class="py-4 pr-6">
-                            <TenantRowActions :tenant="t" :sending="sending === t.id" @send-link="sendLink(t)" @change-password="passwordTarget = t" />
+                            <TenantRowActions
+                                :tenant="t"
+                                :sending="sending === t.id"
+                                @send-link="sendLink(t)"
+                                @change-password="passwordTarget = t"
+                                @assign-admin="assignTarget = t"
+                                @reset-mfa="mfaTarget = t"
+                            />
                         </TableCell>
                     </TableRow>
                 </TableBody>
@@ -247,5 +258,7 @@ function tenantUrl(host: string): string {
         </Dialog>
 
         <AdminPasswordDialog :tenant="passwordTarget" @close="passwordTarget = null" />
+        <AssignAdminDialog :tenant="assignTarget" @close="assignTarget = null" />
+        <ResetAdminMfaDialog :tenant="mfaTarget" @close="mfaTarget = null" />
     </div>
 </template>

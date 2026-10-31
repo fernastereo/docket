@@ -18,7 +18,7 @@ const tenant = (overrides: Partial<Tenant> = {}): Tenant => ({
     name: 'Curaduría Uno',
     host: 'cuuno.docket.test',
     status: 'demo',
-    admin: { name: 'Ana Pérez', email: 'ana@cuuno.test', invitation_pending: false },
+    admin: { name: 'Ana Pérez', email: 'ana@cuuno.test', invitation_pending: false, mfa_enabled: false },
     failure_reason: null,
     provisioned_at: null,
     created_at: '2026-10-18T10:00:00+00:00',
@@ -60,6 +60,7 @@ describe('TenantsPage', () => {
 
         const wrapper = await mountPage();
 
+        expect(wrapper.findAll('thead th').map((th) => th.text())).toEqual(['Curaduría', 'Administrador', 'Estado', 'Creada', 'Acciones']);
         expect(wrapper.text()).toContain('Curaduría Uno');
         expect(wrapper.text()).toContain('18 oct 2026');
         expect(wrapper.text()).toContain('Demo');
@@ -165,7 +166,7 @@ describe('TenantsPage', () => {
     it('names the link action after what it will send', async () => {
         list([
             tenant({ id: 'done' }),
-            tenant({ id: 'pending', name: 'Curaduría Pendiente', admin: { name: 'Beto Ruiz', email: 'beto@cupend.test', invitation_pending: true } }),
+            tenant({ id: 'pending', name: 'Curaduría Pendiente', admin: { name: 'Beto Ruiz', email: 'beto@cupend.test', invitation_pending: true, mfa_enabled: false } }),
         ]);
 
         const wrapper = await mountPage();
@@ -176,7 +177,7 @@ describe('TenantsPage', () => {
     });
 
     it('sends the link and says where it went', async () => {
-        list([tenant({ id: 'pending', admin: { name: 'Beto Ruiz', email: 'beto@cupend.test', invitation_pending: true } })]);
+        list([tenant({ id: 'pending', admin: { name: 'Beto Ruiz', email: 'beto@cupend.test', invitation_pending: true, mfa_enabled: false } })]);
         const wrapper = await mountPage();
         api.mockResolvedValueOnce(undefined).mockResolvedValueOnce({ data: [], meta: { base_domain: 'docket.test' } });
 
@@ -270,5 +271,106 @@ describe('TenantsPage', () => {
         const body = JSON.parse(api.mock.calls[1][1].body);
         expect(body.password.length).toBeGreaterThanOrEqual(8);
         expect(body.password_confirmation).toBe(body.password);
+    });
+
+    async function openDialog(trigger: string, wrapper: Awaited<ReturnType<typeof mountPage>>) {
+        await wrapper.get(`button[aria-label^="${trigger}"]`).trigger('click');
+        await flushPromises();
+
+        return document.body.querySelector('[role="dialog"]') as HTMLElement;
+    }
+
+    async function type(dialog: HTMLElement, selector: string, value: string) {
+        const input = dialog.querySelector(selector) as HTMLInputElement;
+        input.value = value;
+        input.dispatchEvent(new Event('input'));
+        await flushPromises(); // el Input emite su valor en el siguiente tick
+    }
+
+    it('offers to assign an administrator only to a curaduría that has none and is not failed', async () => {
+        list([
+            tenant({ id: 'none', admin: null }),
+            tenant({ id: 'failed', status: 'failed', admin: null }),
+            tenant({ id: 'has' }),
+        ]);
+
+        const wrapper = await mountPage();
+
+        expect(wrapper.findAll('button[aria-label^="Asignar administrador"]')).toHaveLength(1);
+    });
+
+    it('assigns the administrator from the dialog and tells where the invitation goes', async () => {
+        list([tenant({ id: 'none', name: 'Curaduría Sola', admin: null })]);
+        const wrapper = await mountPage();
+        const dialog = await openDialog('Asignar administrador', wrapper);
+        expect(dialog.textContent).toContain('Curaduría Sola');
+
+        await type(dialog, '#assign_admin_name', 'Ana Pérez');
+        await type(dialog, '#assign_admin_email', 'ana@cusola.test');
+        api.mockResolvedValueOnce(undefined).mockResolvedValueOnce({ data: [], meta: { base_domain: 'docket.test' } });
+        dialog.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+        await flushPromises();
+
+        expect(api).toHaveBeenNthCalledWith(
+            2,
+            '/platform/tenants/none/admin',
+            expect.objectContaining({ method: 'POST', body: JSON.stringify({ admin_name: 'Ana Pérez', admin_email: 'ana@cusola.test' }) }),
+        );
+        expect(toast.success).toHaveBeenCalledWith('Administrador asignado', expect.objectContaining({ description: expect.stringContaining('ana@cusola.test') }));
+        expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+    });
+
+    it('shows the field errors of the new administrator and keeps the dialog open', async () => {
+        list([tenant({ id: 'none', admin: null })]);
+        const wrapper = await mountPage();
+        const dialog = await openDialog('Asignar administrador', wrapper);
+
+        api.mockRejectedValueOnce(new ApiError('Invalid', 422, { admin_email: ['El correo no es válido.'], tenant: ['Esta curaduría ya tiene un administrador.'] }));
+        dialog.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+        await flushPromises();
+
+        const text = document.body.querySelector('[role="dialog"]')!.textContent;
+        expect(text).toContain('El correo no es válido.');
+        expect(text).toContain('Esta curaduría ya tiene un administrador.');
+    });
+
+    it('only offers to reset the second factor when the administrator has it on', async () => {
+        list([
+            tenant({ id: 'off' }),
+            tenant({ id: 'on', admin: { name: 'Beto Ruiz', email: 'beto@cu.test', invitation_pending: false, mfa_enabled: true } }),
+        ]);
+
+        const wrapper = await mountPage();
+
+        expect(wrapper.findAll('button[aria-label^="Reiniciar la verificación en dos pasos"]')).toHaveLength(1);
+    });
+
+    it('asks for confirmation before resetting the second factor, then resets it', async () => {
+        list([tenant({ id: 'on', admin: { name: 'Beto Ruiz', email: 'beto@cu.test', invitation_pending: false, mfa_enabled: true } })]);
+        const wrapper = await mountPage();
+        const dialog = await openDialog('Reiniciar la verificación en dos pasos', wrapper);
+
+        expect(dialog.textContent).toContain('beto@cu.test');
+        expect(api).toHaveBeenCalledTimes(1); // solo la lista: nada se reinició todavía
+
+        api.mockResolvedValueOnce(undefined).mockResolvedValueOnce({ data: [], meta: { base_domain: 'docket.test' } });
+        (Array.from(dialog.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Reiniciar') as HTMLButtonElement).click();
+        await flushPromises();
+
+        expect(api).toHaveBeenNthCalledWith(2, '/platform/tenants/on/admin/mfa', expect.objectContaining({ method: 'DELETE' }));
+        expect(toast.success).toHaveBeenCalledWith('Verificación en dos pasos reiniciada', expect.anything());
+        expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+    });
+
+    it('cancelling the reset changes nothing', async () => {
+        list([tenant({ id: 'on', admin: { name: 'Beto Ruiz', email: 'beto@cu.test', invitation_pending: false, mfa_enabled: true } })]);
+        const wrapper = await mountPage();
+        const dialog = await openDialog('Reiniciar la verificación en dos pasos', wrapper);
+
+        (Array.from(dialog.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Cancelar') as HTMLButtonElement).click();
+        await flushPromises();
+
+        expect(api).toHaveBeenCalledTimes(1);
+        expect(document.body.querySelector('[role="dialog"]')).toBeNull();
     });
 });

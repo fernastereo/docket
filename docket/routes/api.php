@@ -69,6 +69,12 @@ foreach (config('tenancy.central_domains', []) as $domain) {
             Route::middleware(RequirePlatformMfa::class)->group(function () {
                 Route::get('/tenants', [TenantController::class, 'index'])->name('tenants.index');
                 Route::post('/tenants', [TenantController::class, 'store'])->name('tenants.store');
+                Route::post('/tenants/{tenant}/admin', [TenantAdminController::class, 'store'])
+                    ->middleware('throttle:10,1')
+                    ->name('tenants.admin.store');
+                Route::delete('/tenants/{tenant}/admin/mfa', [TenantAdminController::class, 'resetMfa'])
+                    ->middleware('throttle:10,1')
+                    ->name('tenants.admin.mfa.destroy');
                 Route::post('/tenants/{tenant}/admin/link', [TenantAdminController::class, 'sendLink'])
                     ->middleware('throttle:10,1')
                     ->name('tenants.admin.link');

@@ -18,7 +18,7 @@ use Throwable;
 final class TenantAdminSummary
 {
     /**
-     * @return array{name: string, email: string, invitation_pending: bool}|null
+     * @return array{name: string, email: string, invitation_pending: bool, mfa_enabled: bool}|null
      */
     public function for(Tenant $tenant): ?array
     {
@@ -42,6 +42,7 @@ final class TenantAdminSummary
                 'email' => $admin->email,
                 // Sin contraseña = todavía no aceptó la invitación.
                 'invitation_pending' => $admin->password === null,
+                'mfa_enabled' => $admin->hasMfaEnabled(),
             ];
         });
     }

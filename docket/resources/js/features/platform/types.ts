@@ -12,6 +12,8 @@ export interface TenantAdmin {
     name: string;
     email: string;
     invitation_pending: boolean;
+    /** Ya activó su verificación en dos pasos (hay algo que reiniciar). */
+    mfa_enabled: boolean;
 }
 
 export interface Tenant {
