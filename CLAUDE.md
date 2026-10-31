@@ -260,7 +260,11 @@ los 7 días) y envía el correo por la cola (`EmployeeInvitationMail`, cifrado);
 el enlace `https://<curaduría>/invitation/<token>` lo atiende
 `GET/POST /api/employee/invitation/{token}[/accept]` (público, 404 uniforme).
 Al dar de alta una curaduría con admin se le invita solo cuando el tenant ya
-está operable; `employees:invite <subdominio> <email>` reenvía. Mientras
+está operable; `employees:invite <subdominio> <email>` reenvía. Herramientas de soporte por
+consola, todas con `<subdominio> <correo>`: `employees:create` (admin por
+defecto, `--name`, `--role`, `--invite`), `employees:reset-mfa` (el empleado
+que perdió su app y sus códigos), `employees:set-password` y `employees:invite`
+(con `make employee-create|employee-reset-mfa|employee-password`). Mientras
 `MAIL_MAILER=log` el correo sale al log del worker (local y staging usan
 Mailtrap por SMTP). La pantalla del enlace es `/invitation/:token` (pública, en
 el contexto de curaduría) y el alta de curaduría del panel ahora **exige** el

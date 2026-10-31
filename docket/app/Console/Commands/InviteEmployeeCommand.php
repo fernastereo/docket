@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\Concerns\WorksInsideTenant;
 use App\Domain\Identity\Actions\InviteEmployee;
-use App\Domain\Identity\Models\Employee;
-use App\Platform\Rules\TenantSubdomain;
 use Illuminate\Console\Command;
 use Illuminate\Validation\ValidationException;
-use Stancl\Tenancy\Database\Models\Domain;
 
 /**
  * Envía (o reenvía) la invitación para que un empleado fije su contraseña.
@@ -18,6 +16,8 @@ use Stancl\Tenancy\Database\Models\Domain;
  */
 final class InviteEmployeeCommand extends Command
 {
+    use WorksInsideTenant;
+
     protected $signature = 'employees:invite
         {subdomain : Subdominio de la curaduría (p. ej. cu1bogota)}
         {email : Correo del empleado}';
@@ -26,37 +26,23 @@ final class InviteEmployeeCommand extends Command
 
     public function handle(InviteEmployee $invite): int
     {
-        /** @var class-string<Domain> $domainModel */
-        $domainModel = config('tenancy.domain_model');
-        $domain = $domainModel::query()
-            ->where('domain', TenantSubdomain::hostFor(mb_strtolower(trim((string) $this->argument('subdomain')))))
-            ->first();
+        $tenant = $this->resolveTenant((string) $this->argument('subdomain'));
 
-        if ($domain === null) {
-            $this->error('No existe una curaduría con ese subdominio.');
-
+        if ($tenant === null) {
             return self::FAILURE;
         }
 
-        $email = mb_strtolower(trim((string) $this->argument('email')));
-
-        return $domain->tenant->run(function () use ($email, $invite) {
-            $employee = Employee::query()->where('email', $email)->first();
+        return $tenant->run(function () use ($invite): int {
+            $employee = $this->findEmployee((string) $this->argument('email'));
 
             if ($employee === null) {
-                $this->error('No existe un empleado con ese correo en esa curaduría.');
-
                 return self::FAILURE;
             }
 
             try {
                 $invite->handle($employee);
             } catch (ValidationException $e) {
-                foreach ($e->errors() as $messages) {
-                    foreach ($messages as $message) {
-                        $this->error($message);
-                    }
-                }
+                $this->reportErrors($e);
 
                 return self::FAILURE;
             }
