@@ -114,4 +114,18 @@ describe('employee InvitationPage', () => {
 
         expect(wrapper.get('[role="alert"]').text()).toContain('Demasiados intentos');
     });
+
+    it('sets the suggested password: both fields carry the same value', async () => {
+        api.mockResolvedValueOnce(person).mockResolvedValueOnce(undefined);
+        const wrapper = await mountPage();
+
+        await wrapper.get('button[aria-label="Sugerir contraseña"]').trigger('click');
+        await wrapper.get('form').trigger('submit');
+        await flushPromises();
+
+        const body = JSON.parse(api.mock.calls[1][1].body);
+        expect(body.password.length).toBeGreaterThanOrEqual(8);
+        expect(body.password_confirmation).toBe(body.password);
+        expect(wrapper.text()).toContain('Contraseña guardada');
+    });
 });

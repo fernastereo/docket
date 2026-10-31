@@ -270,7 +270,10 @@ empleados) y desde ahí el operador puede enviarle su enlace (invitación, o
 recuperación si ya tiene contraseña; mismo token y misma pantalla
 `/invitation/:token`) o fijarle la contraseña él mismo (decisión del dueño de
 la plataforma; queda en el log quién lo hizo, la MFA del admin se mantiene). La
-contraseña de nadie se puede ver (Argon2id). Falta el "olvidé mi contraseña"
+contraseña de nadie se puede ver (Argon2id). La de los empleados exige 8
+caracteres más el chequeo de filtraciones (la de plataforma sigue en 12; ADR-017
+amendment 2026-10-31), con mensajes en español (`lang/es/`) y un botón de
+sugerir contraseña (`lib/password.ts`, `PasswordFields.vue`). Falta el "olvidé mi contraseña"
 de autoservicio. Los tests fuerzan
 `MAIL_MAILER=array` y sin puerto en los enlaces, sin depender del `local.env`.
 **Falta** (en este orden): configurar Brevo (SMTP) para correo real,

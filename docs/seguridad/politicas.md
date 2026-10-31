@@ -26,7 +26,7 @@ reglas de composición — NIST 800-63B):
 | Dominio | Longitud mínima |
 |---|---|
 | Solicitantes | 8 |
-| Empleados de curaduría (todos los roles) | 12 |
+| Empleados de curaduría (todos los roles) | 8 (bajado de 12 el 2026-10-31, ver ADR-017) |
 | Superadmin/soporte de plataforma | 12 |
 
 Chequeo contra brechas conocidas (HIBP k-anonymity) al crear/cambiar

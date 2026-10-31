@@ -61,6 +61,7 @@ describe('TenantsPage', () => {
         const wrapper = await mountPage();
 
         expect(wrapper.text()).toContain('Curaduría Uno');
+        expect(wrapper.text()).toContain('18 oct 2026');
         expect(wrapper.text()).toContain('Demo');
         expect(wrapper.text()).toContain('Activa');
         expect(wrapper.find('a[href^="https://cuuno.docket.test"]').exists()).toBe(true);
@@ -151,14 +152,14 @@ describe('TenantsPage', () => {
         expect(document.body.textContent).toContain('The admin email must be a valid email address.');
     });
 
-    it('shows the administrator of each curaduría, or a dash when there is none', async () => {
+    it('shows the administrator of each curaduría, or says there is none', async () => {
         list([tenant(), tenant({ id: 't2', name: 'Curaduría Dos', status: 'failed', admin: null })]);
 
         const wrapper = await mountPage();
 
         expect(wrapper.text()).toContain('Ana Pérez');
         expect(wrapper.text()).toContain('ana@cuuno.test');
-        expect(wrapper.findAll('tbody tr')[1].text()).toContain('—');
+        expect(wrapper.findAll('tbody tr')[1].text()).toContain('Sin administrador');
     });
 
     it('names the link action after what it will send', async () => {
@@ -253,5 +254,21 @@ describe('TenantsPage', () => {
         const wrapper = await mountPage();
 
         expect(wrapper.get('button[aria-label^="Cambiar la contraseña"]').attributes('disabled')).toBeDefined();
+    });
+
+    it('offers a suggested password in the dialog and sends it', async () => {
+        list([tenant({ id: 't1' })]);
+        const wrapper = await mountPage();
+        const dialog = await openPasswordDialog(wrapper);
+
+        (dialog.querySelector('button[aria-label="Sugerir contraseña"]') as HTMLButtonElement).click();
+        await flushPromises();
+        api.mockResolvedValueOnce(undefined).mockResolvedValueOnce({ data: [], meta: { base_domain: 'docket.test' } });
+        dialog.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+        await flushPromises();
+
+        const body = JSON.parse(api.mock.calls[1][1].body);
+        expect(body.password.length).toBeGreaterThanOrEqual(8);
+        expect(body.password_confirmation).toBe(body.password);
     });
 });

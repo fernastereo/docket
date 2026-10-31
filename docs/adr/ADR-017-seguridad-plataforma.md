@@ -337,3 +337,24 @@ crece.
 
 **No cambia**: el resto de la Capa 4 (RBAC deny-by-default, plano admin
 separado con break-glass, tokens de enrolamiento de ADR-006) queda igual.
+
+### 2026-10-31 — Contraseña de empleados: mínimo de 8 y sugerencia de contraseña
+
+El personal de las curadurías no es técnico (hay usuarios con dificultades para
+crear una contraseña de 12 caracteres). Decisión del dueño de la plataforma:
+
+- **Longitud mínima de empleados: 12 → 8** (`employee.password_min_length`). La
+  de plataforma sigue en 12 y la de solicitantes en 8. NIST 800-63B admite 8.
+- **Se mantiene** el chequeo contra filtraciones (HIBP) y no se añaden reglas de
+  composición: es lo que impide `12345678` y similares, y compensa el mínimo más
+  bajo en los roles sin MFA obligatoria (todos salvo curador y admin).
+- **Ayuda en pantalla**: botón para sugerir una contraseña (14 caracteres
+  aleatorios con minúsculas, mayúsculas, números y símbolos, sin caracteres que
+  se confunden como l/1/O/0, con el generador criptográfico del navegador) y
+  para mostrar u ocultar lo escrito. El operador de plataforma también puede fijar la
+  contraseña del admin de una curaduría (ver `CLAUDE.md`).
+- Los mensajes de la política están en español y no dan ejemplos de contraseñas.
+
+**Riesgo aceptado**: una cuenta de un rol sin MFA queda protegida por 8
+caracteres que no estén en filtraciones y por el bloqueo tras 5 fallos en 15
+min. Si aparece un incidente, subir el mínimo es un cambio de una línea.
