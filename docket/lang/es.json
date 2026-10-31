@@ -4,5 +4,6 @@
     "This employee account is not active.": "La cuenta de este empleado no está activa.",
     "This invitation is no longer valid.": "Este enlace ya no es válido.",
     "This curaduría is not ready for that yet.": "La curaduría todavía no está lista para eso.",
-    "This curaduría has no administrator.": "La curaduría no tiene administrador."
+    "This curaduría has no administrator.": "La curaduría no tiene administrador.",
+    "This curaduría already has an administrator.": "Esta curaduría ya tiene un administrador."
 }

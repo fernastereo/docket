@@ -53,5 +53,20 @@ export const useTenantsStore = defineStore('platformTenants', {
             });
             await this.refresh();
         },
+
+        /** Da su administrador a una curaduría que no lo tiene y le envía la invitación. Lanza ApiError (422 con `errors` por campo). */
+        async assignAdmin(id: string, name: string, email: string): Promise<void> {
+            await api(`/platform/tenants/${id}/admin`, {
+                method: 'POST',
+                body: JSON.stringify({ admin_name: name, admin_email: email }),
+            });
+            await this.refresh();
+        },
+
+        /** Reinicia la verificación en dos pasos del administrador. Lanza ApiError (422: sin administrador, curaduría no lista). */
+        async resetAdminMfa(id: string): Promise<void> {
+            await api(`/platform/tenants/${id}/admin/mfa`, { method: 'DELETE' });
+            await this.refresh();
+        },
     },
 });

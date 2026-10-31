@@ -272,7 +272,8 @@ primer administrador (`admin_name`/`admin_email`); el listado muestra ese
 administrador (se lee de la base de cada curaduría, la central no guarda
 empleados) y desde ahí el operador puede enviarle su enlace (invitación, o
 recuperación si ya tiene contraseña; mismo token y misma pantalla
-`/invitation/:token`) o fijarle la contraseña él mismo (decisión del dueño de
+`/invitation/:token`) o fijarle la contraseña él mismo, asignar un administrador a una curaduría
+que no lo tiene y reiniciar su MFA (decisión del dueño de
 la plataforma; queda en el log quién lo hizo, la MFA del admin se mantiene). La
 contraseña de nadie se puede ver (Argon2id). La de los empleados exige 8
 caracteres más el chequeo de filtraciones (la de plataforma sigue en 12; ADR-017

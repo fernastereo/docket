@@ -96,4 +96,27 @@ describe('tenants store', () => {
             body: JSON.stringify({ password: 'una-frase-larga-y-segura', password_confirmation: 'una-frase-larga-y-segura' }),
         });
     });
+
+    it('assigns an administrator and refreshes the list', async () => {
+        const tenants = useTenantsStore();
+        api.mockResolvedValueOnce(undefined).mockResolvedValueOnce({ data: [tenant({ id: 'abc' })], meta: { base_domain: 'docket.test' } });
+
+        await tenants.assignAdmin('abc', 'Ana Pérez', 'ana@cu.test');
+
+        expect(api).toHaveBeenNthCalledWith(1, '/platform/tenants/abc/admin', {
+            method: 'POST',
+            body: JSON.stringify({ admin_name: 'Ana Pérez', admin_email: 'ana@cu.test' }),
+        });
+        expect(tenants.items.map((t) => t.id)).toEqual(['abc']);
+    });
+
+    it('resets the administrator MFA and refreshes the list', async () => {
+        const tenants = useTenantsStore();
+        api.mockResolvedValueOnce(undefined).mockResolvedValueOnce({ data: [tenant({ id: 'abc' })], meta: { base_domain: 'docket.test' } });
+
+        await tenants.resetAdminMfa('abc');
+
+        expect(api).toHaveBeenNthCalledWith(1, '/platform/tenants/abc/admin/mfa', { method: 'DELETE' });
+        expect(tenants.items).toHaveLength(1);
+    });
 });

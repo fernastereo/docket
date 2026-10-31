@@ -10,18 +10,18 @@ use Closure;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Ejecuta algo sobre el administrador de una curaduría, desde plataforma. La
- * excepción de validación se captura dentro de run() y se relanza afuera: si
- * escapa de run(), la tenancy queda inicializada.
+ * Ejecuta algo dentro de una curaduría, desde plataforma. La excepción de
+ * validación se captura dentro de run() y se relanza afuera: si escapa de run(),
+ * la tenancy queda inicializada.
  */
 trait RunsAsTenantAdmin
 {
     /**
-     * @param  Closure(Employee): void  $callback
+     * @param  Closure(): void  $callback
      *
-     * @throws ValidationException la curaduría no está lista, no tiene administrador o el callback falla
+     * @throws ValidationException la curaduría no está lista o el callback falla
      */
-    private function asAdmin(Tenant $tenant, Closure $callback, bool $writes = false): void
+    private function inTenant(Tenant $tenant, Closure $callback, bool $writes = false): void
     {
         $ready = $writes ? $tenant->status->isWritable() : $tenant->status->isAccessible();
 
@@ -31,10 +31,7 @@ trait RunsAsTenantAdmin
 
         $failure = $tenant->run(function () use ($callback): ?ValidationException {
             try {
-                $admin = Employee::firstAdmin()
-                    ?? throw ValidationException::withMessages(['tenant' => __('This curaduría has no administrator.')]);
-
-                $callback($admin);
+                $callback();
             } catch (ValidationException $e) {
                 return $e;
             }
@@ -45,5 +42,22 @@ trait RunsAsTenantAdmin
         if ($failure !== null) {
             throw $failure;
         }
+    }
+
+    /**
+     * Lo mismo, sobre el administrador de la curaduría.
+     *
+     * @param  Closure(Employee): void  $callback
+     *
+     * @throws ValidationException la curaduría no está lista, no tiene administrador o el callback falla
+     */
+    private function asAdmin(Tenant $tenant, Closure $callback, bool $writes = false): void
+    {
+        $this->inTenant($tenant, function () use ($callback): void {
+            $admin = Employee::firstAdmin()
+                ?? throw ValidationException::withMessages(['tenant' => __('This curaduría has no administrator.')]);
+
+            $callback($admin);
+        }, $writes);
     }
 }

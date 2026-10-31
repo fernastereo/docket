@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Identity\Actions\CreateEmployee;
+use App\Domain\Identity\DataTransferObjects\CreateEmployeeData;
 use App\Domain\Identity\Enums\EmployeeRole;
 use App\Domain\Identity\Enums\EmployeeStatus;
 use App\Domain\Identity\Mail\EmployeeInvitationMail;
@@ -290,6 +292,132 @@ test('the admin actions need a platform session and an existing curaduría', fun
     asPlatformUser();
     $this->postJson(panelUrl("/tenants/{$unknown}/admin/link"))->assertNotFound();
     $this->putJson(panelUrl("/tenants/{$unknown}/admin/password"), $body)->assertNotFound();
+});
+
+function tenantWithoutAdmin(string $subdomain = 'cusola'): Tenant
+{
+    return app(ProvisionTenant::class)->handle(new ProvisionTenantData(name: 'Curaduría Sola', subdomain: $subdomain));
+}
+
+function enableAdminMfa(string $tenantId): void
+{
+    Tenant::findOrFail($tenantId)->run(fn () => Employee::firstAdmin()->forceFill([
+        'mfa_secret' => 'JBSWY3DPEHPK3PXP',
+        'mfa_confirmed_at' => now(),
+        'mfa_last_used_timestamp' => 12345,
+        'mfa_recovery_codes' => ['hash-uno', 'hash-dos'],
+    ])->save());
+}
+
+test('a curaduría without an administrator can be given one, who is invited', function () {
+    Mail::fake();
+    asPlatformUser();
+    $tenant = tenantWithoutAdmin();
+
+    $this->postJson(panelUrl("/tenants/{$tenant->id}/admin"), ['admin_name' => 'Ana Pérez', 'admin_email' => 'ANA@cusola.test'])->assertNoContent();
+
+    $tenant->run(function () {
+        $admin = Employee::firstAdmin();
+        expect($admin->email)->toBe('ana@cusola.test')
+            ->and($admin->name)->toBe('Ana Pérez')
+            ->and($admin->password)->toBeNull();
+    });
+    Mail::assertQueued(EmployeeInvitationMail::class, fn ($mail) => $mail->hasTo('ana@cusola.test'));
+    $this->getJson(panelUrl('/tenants'))
+        ->assertJsonPath('data.0.admin.email', 'ana@cusola.test')
+        ->assertJsonPath('data.0.admin.invitation_pending', true)
+        ->assertJsonPath('data.0.admin.mfa_enabled', false);
+});
+
+test('a curaduría that already has an administrator is not given another one', function () {
+    Mail::fake();
+    asPlatformUser();
+    $id = createTenantWithAdmin();
+
+    $this->postJson(panelUrl("/tenants/{$id}/admin"), ['admin_name' => 'Otro Admin', 'admin_email' => 'otro@cuuno.test'])
+        ->assertStatus(422)
+        ->assertJsonPath('errors.tenant.0', 'Esta curaduría ya tiene un administrador.');
+
+    Mail::assertQueued(EmployeeInvitationMail::class, 1);
+    Tenant::findOrFail($id)->run(fn () => expect(Employee::query()->count())->toBe(1));
+});
+
+test('the new administrator\'s data errors appear on the form fields, in Spanish', function (array $body, string $field, string $message) {
+    asPlatformUser();
+    $tenant = tenantWithoutAdmin();
+
+    $this->postJson(panelUrl("/tenants/{$tenant->id}/admin"), $body)
+        ->assertStatus(422)
+        ->assertJsonPath("errors.{$field}.0", $message);
+
+    $tenant->run(fn () => expect(Employee::query()->count())->toBe(0));
+})->with([
+    'name too short' => [['admin_name' => 'Al', 'admin_email' => 'al@cusola.test'], 'admin_name', 'El nombre debe tener al menos 3 caracteres.'],
+    'bad email' => [['admin_name' => 'Ana Pérez', 'admin_email' => 'no-es-un-correo'], 'admin_email', 'El correo no es válido.'],
+    'missing name' => [['admin_email' => 'ana@cusola.test'], 'admin_name', 'Escribe el nombre del administrador.'],
+]);
+
+test('an email already used by another employee of that curaduría is refused', function () {
+    asPlatformUser();
+    $tenant = tenantWithoutAdmin();
+    $tenant->run(fn () => app(CreateEmployee::class)->handle(new CreateEmployeeData('Beto Ruiz', 'beto@cusola.test', [EmployeeRole::Architect])));
+
+    $this->postJson(panelUrl("/tenants/{$tenant->id}/admin"), ['admin_name' => 'Beto Ruiz', 'admin_email' => 'beto@cusola.test'])
+        ->assertStatus(422)
+        ->assertJsonPath('errors.admin_email.0', 'Ya existe una cuenta con ese correo en esta curaduría.');
+});
+
+test('an administrator is only assigned to a curaduría that accepts writes', function () {
+    asPlatformUser();
+    $tenant = tenantWithoutAdmin();
+    $tenant->forceFill(['status' => TenantStatus::Suspended])->save();
+
+    $this->postJson(panelUrl("/tenants/{$tenant->id}/admin"), ['admin_name' => 'Ana Pérez', 'admin_email' => 'ana@cusola.test'])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors('tenant');
+});
+
+test('the operator can reset the administrator\'s MFA so they enrol again, keeping their password', function () {
+    asPlatformUser();
+    $id = createTenantWithAdmin();
+    setAdminPassword($id);
+    enableAdminMfa($id);
+    $this->getJson(panelUrl('/tenants'))->assertJsonPath('data.0.admin.mfa_enabled', true);
+    Log::spy();
+
+    $this->deleteJson(panelUrl("/tenants/{$id}/admin/mfa"))->assertNoContent();
+
+    Tenant::findOrFail($id)->run(function () {
+        $admin = Employee::firstAdmin();
+        expect($admin->hasMfaEnabled())->toBeFalse()
+            ->and($admin->mfa_secret)->toBeNull()
+            ->and($admin->mfa_recovery_codes)->toBeNull()
+            ->and($admin->password)->not->toBeNull();
+    });
+    $this->getJson(panelUrl('/tenants'))->assertJsonPath('data.0.admin.mfa_enabled', false);
+    Log::shouldHaveReceived('notice')->withArgs(fn ($message, $context) => $context['tenant_id'] === $id && isset($context['platform_user_id']))->once();
+});
+
+test('resetting the MFA needs an administrator and a curaduría that accepts writes', function () {
+    asPlatformUser();
+    $tenant = tenantWithoutAdmin();
+
+    $this->deleteJson(panelUrl("/tenants/{$tenant->id}/admin/mfa"))->assertStatus(422)->assertJsonValidationErrors('tenant');
+
+    $tenant->forceFill(['status' => TenantStatus::Suspended])->save();
+    $this->deleteJson(panelUrl("/tenants/{$tenant->id}/admin/mfa"))->assertStatus(422)->assertJsonValidationErrors('tenant');
+});
+
+test('assigning an administrator and resetting the MFA need a platform session and an existing curaduría', function () {
+    $unknown = '00000000-0000-0000-0000-000000000000';
+    $body = ['admin_name' => 'Ana Pérez', 'admin_email' => 'ana@cusola.test'];
+
+    $this->withHeaders(['Origin' => 'https://'.panelHost()])->postJson(panelUrl("/tenants/{$unknown}/admin"), $body)->assertUnauthorized();
+    $this->deleteJson(panelUrl("/tenants/{$unknown}/admin/mfa"))->assertUnauthorized();
+
+    asPlatformUser();
+    $this->postJson(panelUrl("/tenants/{$unknown}/admin"), $body)->assertNotFound();
+    $this->deleteJson(panelUrl("/tenants/{$unknown}/admin/mfa"))->assertNotFound();
 });
 
 test('lowercases the subdomain the operator typed', function () {
