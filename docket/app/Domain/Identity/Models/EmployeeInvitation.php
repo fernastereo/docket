@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Identity\Models;
 
-use Illuminate\Database\Eloquent\Builder;
+use App\Support\SingleUseToken;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,7 +25,7 @@ use Illuminate\Support\Str;
  */
 class EmployeeInvitation extends Model
 {
-    use HasUuids;
+    use HasUuids, SingleUseToken;
 
     protected $guarded = [];
 
@@ -41,21 +41,6 @@ class EmployeeInvitation extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
-    }
-
-    public static function hashToken(string $token): string
-    {
-        return hash('sha256', $token);
-    }
-
-    /**
-     * Sin usar y sin vencer.
-     *
-     * @param  Builder<EmployeeInvitation>  $query
-     */
-    public function scopeUsable(Builder $query): void
-    {
-        $query->whereNull('used_at')->where('expires_at', '>', now());
     }
 
     /**
@@ -77,11 +62,5 @@ class EmployeeInvitation extends Model
         });
 
         return $token;
-    }
-
-    /** La invitación vigente que corresponde a este token, si existe. */
-    public static function findUsable(string $token): ?self
-    {
-        return self::query()->usable()->where('token_hash', self::hashToken($token))->first();
     }
 }

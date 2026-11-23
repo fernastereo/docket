@@ -40,6 +40,18 @@ const platformRoutes: RouteRecordRaw[] = [
         meta: { realm: 'platform', access: 'guest' },
     },
     {
+        path: '/platform/forgot-password',
+        name: 'platform.forgot',
+        component: () => import('@/features/platform/pages/ForgotPasswordPage.vue'),
+        meta: { realm: 'platform', access: 'guest' },
+    },
+    {
+        // Enlace del correo de recuperación; público: la persona no puede entrar todavía.
+        path: '/platform/reset-password/:token',
+        name: 'platform.reset',
+        component: () => import('@/features/platform/pages/ResetPasswordPage.vue'),
+    },
+    {
         // Segundo factor: activarlo (primera vez) o verificarlo (cada login).
         path: '/platform/mfa',
         name: 'platform.mfa',
@@ -66,6 +78,12 @@ const tenantRoutes: RouteRecordRaw[] = [
         path: '/login',
         name: 'employee.login',
         component: () => import('@/features/employee/pages/LoginPage.vue'),
+        meta: { realm: 'employee', access: 'guest' },
+    },
+    {
+        path: '/forgot-password',
+        name: 'employee.forgot',
+        component: () => import('@/features/employee/pages/ForgotPasswordPage.vue'),
         meta: { realm: 'employee', access: 'guest' },
     },
     {

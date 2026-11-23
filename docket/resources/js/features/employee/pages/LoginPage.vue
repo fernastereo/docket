@@ -11,7 +11,9 @@ const { tenantName } = readAppContext();
     <LoginScreen
         :auth="auth"
         home-route="employee.home"
-        subtitle="Usa tu cuenta de la curaduría."
-        :aside-note="`${tenantName ?? 'Tu curaduría'} · acceso para el personal de la curaduría.`"
+        forgot-route="employee.forgot"
+        :subtitle="`Entra a ${tenantName ?? 'tu curaduría'} con tu correo y tu contraseña.`"
+        :aside-title="tenantName ?? 'Tu curaduría'"
+        help="¿No puedes entrar? Pídele ayuda al administrador de tu curaduría."
     />
 </template>

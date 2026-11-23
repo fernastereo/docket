@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Employee\AuthController as EmployeeAuthController;
+use App\Http\Controllers\Employee\ForgotPasswordController;
 use App\Http\Controllers\Employee\InvitationController;
 use App\Http\Controllers\Employee\MfaController as EmployeeMfaController;
 use App\Http\Controllers\Platform\AuthController as PlatformAuthController;
 use App\Http\Controllers\Platform\MfaController;
+use App\Http\Controllers\Platform\PasswordResetController;
 use App\Http\Controllers\Platform\TenantAdminController;
 use App\Http\Controllers\Platform\TenantController;
 use App\Http\Middleware\EnforceEmployeeSessionLimits;
@@ -43,9 +45,9 @@ Route::get('/user', function (Request $request) {
 |
 | Guard `platform` (ADR-005, amendment 2026-10-18). Se scopean con
 | Route::domain() igual que routes/web.php: en un subdominio de tenant estas
-| rutas no existen. El login es la única ruta pública; el resto exige
+| rutas no existen. El login y la recuperación de contraseña son públicos; el resto exige
 | `auth:platform` + los límites de sesión de plataforma (15 min de inactividad,
-| 8 h absolutas — politicas.md §2).
+| 8 h absolutas — politicas.md §2). La recuperación de contraseña también es pública.
 |
 */
 
@@ -53,6 +55,15 @@ foreach (config('tenancy.central_domains', []) as $domain) {
     Route::domain($domain)->prefix('platform')->name('platform.')->group(function () {
         Route::post('/login', [PlatformAuthController::class, 'login'])
             ->name('login');
+
+        // Recuperación de contraseña (públicas; el enlace del correo es la credencial).
+        Route::post('/forgot-password', [PasswordResetController::class, 'forgot'])
+            ->middleware('throttle:10,1')
+            ->name('forgot-password');
+        Route::middleware('throttle:20,1')->prefix('reset-password/{token}')->name('reset-password.')->group(function () {
+            Route::get('/', [PasswordResetController::class, 'show'])->name('show');
+            Route::post('/', [PasswordResetController::class, 'reset'])->name('reset');
+        });
 
         Route::middleware(['auth:platform', EnforcePlatformSessionLimits::class])->group(function () {
             Route::post('/logout', [PlatformAuthController::class, 'logout'])->name('logout');
@@ -102,6 +113,9 @@ foreach (config('tenancy.central_domains', []) as $domain) {
 Route::middleware([InitializeTenancyByDomain::class, PreventAccessFromCentralDomains::class])
     ->prefix('employee')->name('employee.')->group(function () {
         Route::post('/login', [EmployeeAuthController::class, 'login'])->name('login');
+
+        // "Olvidé mi contraseña": respuesta siempre igual; límite por IP además del de cada cuenta.
+        Route::post('/forgot-password', ForgotPasswordController::class)->middleware('throttle:10,1')->name('forgot-password');
 
         // Enlace de la invitación (públicas; el token es la credencial). Con
         // límite por IP aunque un token de 64 caracteres no se adivine.

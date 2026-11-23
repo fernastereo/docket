@@ -54,6 +54,18 @@ revocación real):
 Rotación de sesión al cambiar contraseña o privilegio. "Cerrar sesión en
 todos los dispositivos" disponible en los tres dominios (revocación
 server-side vía Redis).
+*Empleados (2026-10-31)*: cambiar la contraseña (recuperación, invitación o
+panel) cierra en la siguiente petición toda sesión abierta antes del cambio
+(`employees.password_changed_at`). La recuperación por correo ("olvidé mi
+contraseña") responde igual exista o no la cuenta, sin que el tiempo de
+respuesta lo delate, con tope de 3 correos por cuenta cada 15 min y 10
+peticiones por minuto por IP; no toca la MFA.
+*Plataforma (2026-10-31)*: misma recuperación por correo desde el login del panel,
+con enlace de un solo uso que vence a los **60 minutos** (más corto que el de los
+empleados: estas cuentas crean y suspenden curadurías), tabla
+`platform_password_resets` en la central y cierre de sesiones anteriores
+(`platform_users.password_changed_at`). El correo solo no abre el panel: la MFA
+obligatoria sigue exigiéndose en el login, y es lo que hace aceptable esta vía.
 
 **Rate limiting de login**: bloqueo temporal de cuenta tras 5 intentos
 fallidos en 15 minutos, con backoff progresivo antes de llegar al umbral —

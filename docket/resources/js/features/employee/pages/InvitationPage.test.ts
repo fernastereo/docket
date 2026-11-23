@@ -18,6 +18,7 @@ async function mountPage() {
         routes: [
             { path: '/invitation/:token', name: 'employee.invitation', component: InvitationPage },
             { path: '/login', name: 'employee.login', component: { template: '<p>login</p>' } },
+            { path: '/forgot-password', name: 'employee.forgot', component: { template: '<p>forgot</p>' } },
         ],
     });
     router.push('/invitation/tok-123');
@@ -48,6 +49,9 @@ describe('employee InvitationPage', () => {
 
         expect(api).toHaveBeenCalledWith('/employee/invitation/tok-123');
         expect(wrapper.text()).toContain('Hola, Ana Pérez');
+        // La política de empleado, no la de plataforma.
+        expect(wrapper.get('#password').attributes('minlength')).toBe('8');
+        expect(wrapper.text()).toContain('Al menos 8 caracteres');
         expect(wrapper.text()).toContain('ana@curaduria.test');
     });
 
@@ -86,6 +90,15 @@ describe('employee InvitationPage', () => {
 
         expect(wrapper.text()).toContain('Este enlace ya no es válido');
         expect(wrapper.find('form').exists()).toBe(false);
+    });
+
+    it('offers to ask for a new link when this one is no longer valid', async () => {
+        api.mockRejectedValueOnce(new ApiError('This invitation is not valid.', 404));
+
+        const wrapper = await mountPage();
+
+        expect(wrapper.get('a[href="/forgot-password"]').text()).toContain('Pedir un enlace nuevo');
+        expect(wrapper.get('a[href="/login"]').text()).toContain('Ir a iniciar sesión');
     });
 
     it('falls back to the invalid view when the link expires while typing', async () => {

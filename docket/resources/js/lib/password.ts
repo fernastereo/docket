@@ -1,11 +1,12 @@
 /**
- * Contraseña de empleado: largo mínimo y sugerencia. El servidor es quien manda
- * (config/employee.php → password_min_length); este número solo evita enviar de
- * más y debe mantenerse igual.
+ * Largos mínimos de contraseña por política (politicas.md §2). El servidor es quien
+ * manda; estos números solo evitan enviar de más y deben mantenerse iguales a
+ * config/employee.php y config/platform.php → password_min_length.
  */
-export const MIN_PASSWORD_LENGTH = 8;
+export const EMPLOYEE_MIN_PASSWORD_LENGTH = 8;
+export const PLATFORM_MIN_PASSWORD_LENGTH = 12;
 
-/** Largo de la contraseña sugerida: bien por encima del mínimo. */
+/** Largo de la contraseña sugerida: por encima de los dos mínimos. */
 export const GENERATED_PASSWORD_LENGTH = 14;
 
 // Sin los caracteres que se confunden al leerlos o copiarlos a mano (l, I, 1, O, o, 0).

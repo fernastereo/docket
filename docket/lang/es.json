@@ -5,5 +5,8 @@
     "This invitation is no longer valid.": "Este enlace ya no es válido.",
     "This curaduría is not ready for that yet.": "La curaduría todavía no está lista para eso.",
     "This curaduría has no administrator.": "La curaduría no tiene administrador.",
-    "This curaduría already has an administrator.": "Esta curaduría ya tiene un administrador."
+    "This curaduría already has an administrator.": "Esta curaduría ya tiene un administrador.",
+    "If that email has an account in this curaduría, we have sent a link to choose a new password.": "Si ese correo tiene una cuenta en esta curaduría, te enviamos un enlace para elegir una contraseña nueva.",
+    "If that email has a platform account, we have sent a link to choose a new password.": "Si ese correo tiene una cuenta de plataforma, te enviamos un enlace para elegir una contraseña nueva.",
+    "This link is no longer valid.": "Este enlace ya no es válido."
 }
