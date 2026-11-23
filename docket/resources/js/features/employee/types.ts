@@ -8,9 +8,3 @@ export interface EmployeeUser extends AuthUser {
     role_labels: string[];
     mfa_required: boolean;
 }
-
-/** Quién es la persona invitada; lo que la pantalla del enlace muestra al saludar. */
-export interface InvitationInfo {
-    name: string;
-    email: string;
-}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GENERATED_PASSWORD_LENGTH, generatePassword, MIN_PASSWORD_LENGTH, PASSWORD_CHARACTER_SETS } from '@/lib/password';
+import { GENERATED_PASSWORD_LENGTH, generatePassword, PASSWORD_CHARACTER_SETS, PLATFORM_MIN_PASSWORD_LENGTH } from '@/lib/password';
 
 const { LOWER, UPPER, DIGITS, SYMBOLS } = PASSWORD_CHARACTER_SETS;
 const has = (password: string, characters: string) => [...password].some((c) => characters.includes(c));
@@ -10,7 +10,8 @@ describe('generatePassword', () => {
             const password = generatePassword();
 
             expect(password).toHaveLength(GENERATED_PASSWORD_LENGTH);
-            expect(password.length).toBeGreaterThanOrEqual(MIN_PASSWORD_LENGTH);
+            // Sirve para las dos políticas: supera también el mínimo de plataforma.
+            expect(password.length).toBeGreaterThanOrEqual(PLATFORM_MIN_PASSWORD_LENGTH);
             expect(has(password, LOWER)).toBe(true);
             expect(has(password, UPPER)).toBe(true);
             expect(has(password, DIGITS)).toBe(true);

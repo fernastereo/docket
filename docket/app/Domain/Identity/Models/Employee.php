@@ -32,6 +32,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon $valid_from
  * @property Carbon|null $valid_until
  * @property Carbon|null $last_login_at
+ * @property Carbon|null $password_changed_at
  * @property string|null $mfa_secret
  * @property Carbon|null $mfa_confirmed_at
  * @property int|null $mfa_last_used_timestamp
@@ -57,6 +58,7 @@ class Employee extends Authenticatable implements MfaSubject
             'valid_from' => 'date',
             'valid_until' => 'date',
             'last_login_at' => 'datetime',
+            'password_changed_at' => 'datetime',
             'mfa_secret' => 'encrypted',
             'mfa_confirmed_at' => 'datetime',
             'mfa_last_used_timestamp' => 'integer',

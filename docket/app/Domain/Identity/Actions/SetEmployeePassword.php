@@ -13,7 +13,8 @@ use Illuminate\Validation\ValidationException;
  * Única vía para fijar la contraseña de un empleado. Hoy la usa el comando
  * `employees:set-password`; la invitación por correo y el restablecimiento
  * reutilizarán esta misma Action, así la política de contraseña vive en un solo
- * lugar (12+ caracteres y chequeo HIBP, politicas.md §2).
+ * lugar (largo mínimo y chequeo HIBP, politicas.md §2). Anota cuándo cambió: las
+ * sesiones abiertas antes de ese momento se cierran (EnforceEmployeeSessionLimits).
  */
 final class SetEmployeePassword
 {
@@ -27,6 +28,6 @@ final class SetEmployeePassword
             ['password' => ['required', 'string', Password::min((int) config('employee.password_min_length'))->uncompromised()]],
         )->validate();
 
-        $employee->forceFill(['password' => $password])->save();
+        $employee->forceFill(['password' => $password, 'password_changed_at' => now()])->save();
     }
 }

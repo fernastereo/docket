@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { CircleAlert, Loader2 } from 'lucide-vue-next';
-import { useRoute, useRouter } from 'vue-router';
+import { CircleAlert, Eye, EyeOff, Loader2 } from 'lucide-vue-next';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { ApiError } from '@/api/client';
 import { Button } from '@/components/ui/button';
+import { IconButton } from '@/components/ui/icon-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/features/auth/components/AuthLayout.vue';
@@ -15,8 +16,13 @@ const props = defineProps<{
     homeRoute: string;
     /** Línea bajo el título: de qué cuenta se trata. */
     subtitle: string;
-    /** Nota al pie del panel de marca (solo pantallas grandes). */
-    asideNote: string;
+    /** Lo que destaca el panel de marca (solo pantallas grandes): la curaduría, o "Panel de plataforma". */
+    asideTitle: string;
+    asideNote?: string;
+    /** Línea de ayuda bajo el formulario (qué hacer si no se puede entrar). */
+    help?: string;
+    /** Ruta de "¿Olvidaste tu contraseña?"; sin ella, el enlace no aparece (plataforma no lo tiene). */
+    forgotRoute?: string;
 }>();
 
 const router = useRouter();
@@ -24,6 +30,7 @@ const route = useRoute();
 
 const email = ref('');
 const password = ref('');
+const visible = ref(false);
 const submitting = ref(false);
 const error = ref('');
 
@@ -50,7 +57,7 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-    <AuthLayout :aside-note="asideNote">
+    <AuthLayout :aside-title="asideTitle" :aside-note="asideNote">
         <h1 class="text-2xl font-semibold tracking-tight">Iniciar sesión</h1>
         <p class="mt-1 text-sm text-muted-foreground">{{ subtitle }}</p>
 
@@ -60,8 +67,23 @@ async function submit(): Promise<void> {
                 <Input id="email" v-model="email" type="email" autocomplete="username" required />
             </div>
             <div class="space-y-2">
-                <Label for="password">Contraseña</Label>
-                <Input id="password" v-model="password" type="password" autocomplete="current-password" required />
+                <div class="flex items-center justify-between gap-4">
+                    <Label for="password">Contraseña</Label>
+                    <RouterLink v-if="forgotRoute" :to="{ name: forgotRoute }" class="text-sm text-muted-foreground transition-colors hover:text-action">
+                        ¿Olvidaste tu contraseña?
+                    </RouterLink>
+                </div>
+                <div class="relative">
+                    <Input id="password" v-model="password" :type="visible ? 'text' : 'password'" class="pr-11" autocomplete="current-password" required />
+                    <IconButton
+                        :label="visible ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                        class="absolute top-0.5 right-0.5"
+                        @click="visible = !visible"
+                    >
+                        <EyeOff v-if="visible" aria-hidden="true" />
+                        <Eye v-else aria-hidden="true" />
+                    </IconButton>
+                </div>
             </div>
 
             <p v-if="error" role="alert" class="flex items-start gap-2 text-sm text-destructive">
@@ -74,5 +96,7 @@ async function submit(): Promise<void> {
                 {{ submitting ? 'Entrando…' : 'Entrar' }}
             </Button>
         </form>
+
+        <p v-if="help" class="mt-8 text-sm text-muted-foreground">{{ help }}</p>
     </AuthLayout>
 </template>

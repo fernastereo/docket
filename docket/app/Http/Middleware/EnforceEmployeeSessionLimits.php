@@ -14,8 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
  * Límites de sesión del empleado (politicas.md §2): 30 min de inactividad y
  * 12 h absolutas (config/employee.php). Corre después de `auth:employee`. Cierra
  * la sesión con 401 si venció o si la cuenta dejó de estar activa (suspendida,
- * terminada o fuera de vigencia): un cambio de estado surte efecto en la
- * siguiente petición, no al próximo login.
+ * terminada o fuera de vigencia) o si se cambió su contraseña después de entrar:
+ * un cambio surte efecto en la siguiente petición, no al próximo login.
  */
 final class EnforceEmployeeSessionLimits
 {
@@ -41,7 +41,10 @@ final class EnforceEmployeeSessionLimits
             || ($now - $loggedInAt) > $absoluteLimit
             || ($now - $lastActivityAt) > $idleLimit
             || ! $employee instanceof Employee
-            || ! $employee->isActive();
+            || ! $employee->isActive()
+            // La contraseña cambió después de este login (recuperación, invitación,
+            // panel): quien tuviera la cuenta comprometida no sigue dentro.
+            || ($employee->password_changed_at !== null && $employee->password_changed_at->getTimestamp() > $loggedInAt);
 
         if ($expired) {
             Auth::guard('employee')->logout();

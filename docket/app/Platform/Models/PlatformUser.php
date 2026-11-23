@@ -24,6 +24,7 @@ use Illuminate\Support\Carbon;
  * @property string $email
  * @property Carbon|null $disabled_at
  * @property Carbon|null $last_login_at
+ * @property Carbon|null $password_changed_at
  * @property string|null $mfa_secret
  * @property Carbon|null $mfa_confirmed_at
  * @property int|null $mfa_last_used_timestamp
@@ -43,6 +44,7 @@ class PlatformUser extends Authenticatable implements MfaSubject
             'password' => 'hashed',
             'disabled_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'password_changed_at' => 'datetime',
             'mfa_secret' => 'encrypted',
             'mfa_confirmed_at' => 'datetime',
             'mfa_last_used_timestamp' => 'integer',

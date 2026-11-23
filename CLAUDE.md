@@ -231,7 +231,11 @@ y 8 h absolutas. Alta con `php artisan platform:create-user "<nombre>"
 <email>` (pide la contraseña). **MFA de plataforma** (2026-10-25, TOTP +
 8 recovery codes, obligatoria): la contraseña sola no abre el panel
 (`RequirePlatformMfa`); la pantalla `/platform/mfa` activa o verifica el
-segundo factor; `platform:reset-mfa <email>` lo reinicia desde consola.
+segundo factor; `platform:reset-mfa <email>` lo reinicia desde consola. **Recuperación de
+contraseña** (2026-10-31): `¿Olvidaste tu contraseña?` en el login del panel,
+enlace por correo de un solo uso y 60 min (`platform_password_resets`), misma
+respuesta exista o no la cuenta; la MFA sigue siendo obligatoria y cambiar la
+contraseña cierra las sesiones anteriores.
 **Falta**: sesiones en Redis y revocación, solicitantes.
 
 **Cuentas de empleado y RBAC, paso 1** (2026-10-26, en curso): `employees` y las
@@ -278,12 +282,16 @@ la plataforma; queda en el log quién lo hizo, la MFA del admin se mantiene). La
 contraseña de nadie se puede ver (Argon2id). La de los empleados exige 8
 caracteres más el chequeo de filtraciones (la de plataforma sigue en 12; ADR-017
 amendment 2026-10-31), con mensajes en español (`lang/es/`) y un botón de
-sugerir contraseña (`lib/password.ts`, `PasswordFields.vue`). Falta el "olvidé mi contraseña"
-de autoservicio. Los tests fuerzan
+sugerir contraseña (`lib/password.ts`, `PasswordFields.vue`). El empleado puede
+recuperar su acceso solo (`/forgot-password` → `POST /api/employee/forgot-password`,
+que responde siempre igual y hace el trabajo al terminar la respuesta, con tope de
+3 correos por cuenta cada 15 min; a quien no tiene contraseña le reenvía la
+invitación). Cambiar una contraseña (recuperación, invitación o panel) cierra las
+sesiones abiertas antes (`employees.password_changed_at`). Los tests fuerzan
 `MAIL_MAILER=array` y sin puerto en los enlaces, sin depender del `local.env`.
 **Falta** (en este orden): configurar Brevo (SMTP) para correo real,
-restablecer contraseña y reiniciar MFA de un empleado (lo hace su admin),
-solicitantes.
+la pantalla de personal de la curaduría (el admin gestiona a su gente y reinicia
+su MFA, con permisos por rol), solicitantes.
 
 **Panel de plataforma, primera rebanada vertical** (2026-10-18, en curso): se
 puede probar desde el navegador. `GET/POST /api/platform/tenants`

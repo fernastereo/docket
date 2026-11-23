@@ -12,7 +12,8 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Límites de sesión del usuario de plataforma (politicas.md §2): 15 min de
  * inactividad y 8 h absolutas (configurables en config/platform.php). Corre
- * después de `auth:platform`; al vencer cierra la sesión y responde 401.
+ * después de `auth:platform`; al vencer (o si se cambió la contraseña después de
+ * entrar) cierra la sesión y responde 401.
  *
  * Los tiempos los sella el controlador de login en la sesión
  * (`platform.logged_in_at`); acá solo se comprueban y se renueva la actividad.
@@ -34,10 +35,15 @@ final class EnforcePlatformSessionLimits
         $idleLimit = (int) config('platform.session.idle_minutes') * 60;
         $absoluteLimit = (int) config('platform.session.absolute_hours') * 3600;
 
+        $user = $request->user('platform');
+
         // Sin sello de login la sesión no nació por nuestro flujo: se descarta.
         $expired = $loggedInAt === 0
             || ($now - $loggedInAt) > $absoluteLimit
-            || ($now - $lastActivityAt) > $idleLimit;
+            || ($now - $lastActivityAt) > $idleLimit
+            // La contraseña cambió después de este login (recuperación): quien
+            // tuviera la cuenta comprometida no sigue dentro.
+            || ($user?->password_changed_at !== null && $user->password_changed_at->getTimestamp() > $loggedInAt);
 
         if ($expired) {
             Auth::guard('platform')->logout();

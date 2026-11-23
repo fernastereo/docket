@@ -33,3 +33,9 @@ export interface AuthSession {
 export function needsMfa(user: AuthUser): boolean {
     return !user.mfa_verified || (user.mfa_required === true && !user.mfa_enabled);
 }
+
+/** Quién es la persona a la que pertenece un enlace de contraseña (invitación o recuperación); lo que la pantalla muestra al saludar. */
+export interface PasswordLinkOwner {
+    name: string;
+    email: string;
+}

@@ -9,7 +9,9 @@ const auth = usePlatformAuthStore();
     <LoginScreen
         :auth="auth"
         home-route="platform.tenants"
+        forgot-route="platform.forgot"
         subtitle="Usa tu cuenta del panel de plataforma."
-        aside-note="Panel de plataforma · acceso para el equipo de CuraduriAPP."
+        aside-title="Panel de plataforma"
+        aside-note="Acceso para el equipo de CuraduriAPP."
     />
 </template>

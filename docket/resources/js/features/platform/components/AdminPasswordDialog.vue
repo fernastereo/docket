@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import PasswordFields from '@/features/auth/components/PasswordFields.vue';
 import { useTenantsStore } from '@/features/platform/stores/tenants';
+import { EMPLOYEE_MIN_PASSWORD_LENGTH } from '@/lib/password';
 import type { Tenant } from '@/features/platform/types';
 
 /**
@@ -63,7 +64,7 @@ async function submit(): Promise<void> {
             </DialogHeader>
 
             <form class="space-y-5" @submit.prevent="submit">
-                <PasswordFields id="admin_password" v-model:password="form.password" v-model:confirmation="form.confirmation" />
+                <PasswordFields id="admin_password" :min-length="EMPLOYEE_MIN_PASSWORD_LENGTH" v-model:password="form.password" v-model:confirmation="form.confirmation" />
 
                 <p v-for="m in errors" :key="m" role="alert" class="text-sm text-destructive">{{ m }}</p>
 

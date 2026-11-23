@@ -17,6 +17,7 @@ async function mountLogin() {
         history: createMemoryHistory(),
         routes: [
             { path: '/login', name: 'employee.login', component: LoginPage },
+            { path: '/forgot-password', name: 'employee.forgot', component: { template: '<p>forgot</p>' } },
             { path: '/', name: 'employee.home', component: { template: '<p>home</p>' } },
         ],
     });
@@ -58,5 +59,11 @@ describe('employee LoginPage', () => {
 
         expect(api).toHaveBeenCalledWith('/employee/login', expect.objectContaining({ method: 'POST' }));
         expect(router.currentRoute.value.name).toBe('employee.home');
+    });
+
+    it('links to the password recovery', async () => {
+        const { wrapper } = await mountLogin();
+
+        expect(wrapper.get('a[href="/forgot-password"]').text()).toContain('¿Olvidaste tu contraseña?');
     });
 });

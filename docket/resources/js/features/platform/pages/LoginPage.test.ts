@@ -18,6 +18,7 @@ async function mountLogin(initial = '/platform/login') {
         history: createMemoryHistory(),
         routes: [
             { path: '/platform/login', name: 'platform.login', component: LoginPage },
+            { path: '/platform/forgot-password', name: 'platform.forgot', component: { template: '<p>forgot</p>' } },
             { path: '/platform/tenants', name: 'platform.tenants', component: { template: '<p>tenants</p>' } },
             { path: '/platform/other', name: 'other', component: { template: '<p>other</p>' } },
         ],
@@ -88,5 +89,11 @@ describe('LoginPage', () => {
         await fill(wrapper);
 
         expect(wrapper.get('[role="alert"]').text()).toContain('Demasiados intentos');
+    });
+
+    it('links to the password recovery', async () => {
+        const { wrapper } = await mountLogin();
+
+        expect(wrapper.text()).toContain('¿Olvidaste tu contraseña?');
     });
 });
